@@ -1,12 +1,13 @@
 'use client'
 
 import PageHero from '@/components/shared/PageHero'
+import { INDIVIDUALS_HERO } from '@/lib/media'
 
 export default function IndividualsHero() {
   return (
     <PageHero
-      image="https://images.unsplash.com/photo-1528543606781-2f6e6857f318?w=1800&q=85&fit=crop"
-      imageAlt="Young adults gathered around a campfire in warm evening light"
+      image={INDIVIDUALS_HERO.src}
+      imageAlt={INDIVIDUALS_HERO.alt}
       eyebrow="For Individuals"
       headline={
         <>

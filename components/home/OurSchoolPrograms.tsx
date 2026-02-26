@@ -5,25 +5,23 @@ import Image from 'next/image'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import Section from '@/components/ui/Section'
 import { premiumEase } from '@/lib/animation'
+import { SCHOOLS_PROGRAMS } from '@/lib/media'
 
 const programs = [
   {
     title: '2-Day On-Campus Camps',
     subtitle: 'Immersive outdoor experiences delivered right at your school gates.',
-    image:
-      'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80&auto=format&fit=crop',
+    image: SCHOOLS_PROGRAMS[0].src,
   },
   {
     title: 'Eco-Awareness Modules',
     subtitle: 'Curriculum-aligned sessions that build lasting environmental stewardship.',
-    image:
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80&auto=format&fit=crop',
+    image: SCHOOLS_PROGRAMS[1].src,
   },
   {
     title: 'Leadership Development',
     subtitle: 'Structured challenges that grow confident, collaborative young leaders.',
-    image:
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80&auto=format&fit=crop',
+    image: SCHOOLS_PROGRAMS[2].src,
   },
 ]
 

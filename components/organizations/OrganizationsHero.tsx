@@ -1,12 +1,13 @@
 'use client'
 
 import PageHero from '@/components/shared/PageHero'
+import { ORGANIZATIONS_HERO } from '@/lib/media'
 
 export default function OrganizationsHero() {
   return (
     <PageHero
-      image="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1800&q=85&fit=crop"
-      imageAlt="Professional team collaborating outdoors in a lush natural setting"
+      image={ORGANIZATIONS_HERO.src}
+      imageAlt={ORGANIZATIONS_HERO.alt}
       eyebrow="For Organizations"
       headline={
         <>

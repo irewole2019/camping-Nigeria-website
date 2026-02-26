@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { premiumEase } from '@/lib/animation'
+import { SCHOOLS_FINAL_CTA } from '@/lib/media'
 
 export default function FinalCta() {
   return (
@@ -11,8 +12,8 @@ export default function FinalCta() {
       {/* Subtle background texture image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1445308394109-4ec2920981b1?w=1600&q=60"
-          alt=""
+          src={SCHOOLS_FINAL_CTA.src}
+          alt={SCHOOLS_FINAL_CTA.alt}
           fill
           className="object-cover opacity-20"
           sizes="100vw"

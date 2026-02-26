@@ -4,44 +4,9 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Section from '@/components/ui/Section'
 import { premiumEase } from '@/lib/animation'
+import { INDIVIDUALS_GALLERY } from '@/lib/media'
 
-const images = [
-  {
-    src: 'https://images.unsplash.com/photo-1533575770077-052fa2c609fc?w=800&q=80',
-    alt: 'Friends gathered around a glowing campfire at night',
-    className: 'row-span-2',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1487730116645-74489c95b41b?w=800&q=80',
-    alt: 'Young adults hiking through a forest trail',
-    className: '',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&q=80',
-    alt: 'Tent pitched at sunrise in a clearing',
-    className: '',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1510672981848-a1c4f1cb5ccf?w=800&q=80',
-    alt: 'Group of campers laughing and connecting outdoors',
-    className: 'row-span-2',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
-    alt: 'Hiker standing on a ridge overlooking a valley',
-    className: '',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80',
-    alt: 'Camping gear neatly arranged on a wooden surface',
-    className: '',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1525811902-f2342640856e?w=800&q=80',
-    alt: 'Stars over a campsite in the wilderness',
-    className: '',
-  },
-]
+const images = INDIVIDUALS_GALLERY
 
 export default function ImageGallery() {
   return (

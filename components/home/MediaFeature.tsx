@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { premiumEase } from '@/lib/animation'
+import { SCHOOLS_MEDIA_FEATURE } from '@/lib/media'
 
 export default function MediaFeature() {
   const ref = useRef<HTMLElement>(null)
@@ -22,8 +23,8 @@ export default function MediaFeature() {
         className="absolute inset-0 h-[110%]"
       >
         <Image
-          src="https://images.unsplash.com/photo-1465188162913-8fb5709d6d57?w=1600&q=80&auto=format&fit=crop"
-          alt="A wide camping landscape at dusk"
+          src={SCHOOLS_MEDIA_FEATURE.src}
+          alt={SCHOOLS_MEDIA_FEATURE.alt}
           fill
           sizes="100vw"
           className="object-cover"

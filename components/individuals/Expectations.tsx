@@ -4,35 +4,36 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Section from '@/components/ui/Section'
 import { premiumEase, containerVariants, itemVariants } from '@/lib/animation'
+import { INDIVIDUALS_EXPECTATIONS } from '@/lib/media'
 
 const cards = [
   {
-    image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80',
-    alt: 'Guide leading a group through a forest trail',
+    image: INDIVIDUALS_EXPECTATIONS[0].src,
+    alt: INDIVIDUALS_EXPECTATIONS[0].alt,
     title: 'Guided camping experiences',
     description: 'Expert-led expeditions that take the guesswork out of the wild.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&q=80',
-    alt: 'Verified campsite with tents at dusk',
+    image: INDIVIDUALS_EXPECTATIONS[1].src,
+    alt: INDIVIDUALS_EXPECTATIONS[1].alt,
     title: 'Safe and verified locations',
     description: 'Every site is scouted, risk-assessed, and approved before your visit.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1537225228614-56cc3556d7ed?w=800&q=80',
-    alt: 'Quality camping equipment laid out',
+    image: INDIVIDUALS_EXPECTATIONS[2].src,
+    alt: INDIVIDUALS_EXPECTATIONS[2].alt,
     title: 'Equipment provided',
     description: 'Quality gear included — just show up ready to experience nature.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
-    alt: 'Group following a structured hiking itinerary',
+    image: INDIVIDUALS_EXPECTATIONS[3].src,
+    alt: INDIVIDUALS_EXPECTATIONS[3].alt,
     title: 'Structured yet exciting itineraries',
     description: 'Balanced programmes with planned activities and free exploration time.',
   },
   {
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80',
-    alt: 'Community of friends gathered outdoors',
+    image: INDIVIDUALS_EXPECTATIONS[4].src,
+    alt: INDIVIDUALS_EXPECTATIONS[4].alt,
     title: 'Community-driven experiences',
     description: 'Meet like-minded individuals and build lasting connections outdoors.',
   },

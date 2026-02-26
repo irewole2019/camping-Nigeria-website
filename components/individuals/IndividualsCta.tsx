@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { premiumEase } from '@/lib/animation'
+import { INDIVIDUALS_CTA } from '@/lib/media'
 
 export default function IndividualsCta() {
   return (
@@ -11,8 +12,8 @@ export default function IndividualsCta() {
       {/* Subtle background texture */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="https://images.unsplash.com/photo-1476611338391-6f395a0dd82e?w=1600&q=50"
-          alt=""
+          src={INDIVIDUALS_CTA.src}
+          alt={INDIVIDUALS_CTA.alt}
           fill
           sizes="100vw"
           className="object-cover opacity-15"

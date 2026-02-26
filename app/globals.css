@@ -31,8 +31,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-syne);
+  --font-sans: var(--font-helvetica-now);
+  --font-serif: var(--font-agrandir);
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
 
   --color-brand-dark: var(--brand-dark);

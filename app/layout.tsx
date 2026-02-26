@@ -1,18 +1,18 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Syne } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
 import './globals.css'
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+const helveticaNow = localFont({
+  src: '../public/fonts/Helvetica.ttf',
+  variable: '--font-helvetica-now',
   display: 'swap',
 })
 
-const syne = Syne({
-  subsets: ['latin'],
-  variable: '--font-syne',
+const agrandir = localFont({
+  src: '../public/fonts/Agrandir-Regular.otf',
+  variable: '--font-agrandir',
   display: 'swap',
 })
 
@@ -56,7 +56,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-NG" className={`${inter.variable} ${syne.variable} scroll-smooth`}>
+    <html lang="en-NG" className={`${helveticaNow.variable} ${agrandir.variable} scroll-smooth`}>
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
       </head>

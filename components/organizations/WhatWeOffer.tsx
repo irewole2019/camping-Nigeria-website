@@ -5,30 +5,31 @@ import { motion } from 'framer-motion'
 import { Users, Brain, Shield } from 'lucide-react'
 import Section from '@/components/ui/Section'
 import { premiumEase } from '@/lib/animation'
+import { ORGANIZATIONS_OFFERINGS } from '@/lib/media'
 
 const offerings = [
   {
     icon: Users,
     title: 'Outdoor team-building programs',
     sub: 'Structured activities and challenges designed to foster unity.',
-    image: 'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?w=1000&q=80&fit=crop',
-    alt: 'Group of colleagues completing an outdoor challenge together',
+    image: ORGANIZATIONS_OFFERINGS[0].src,
+    alt: ORGANIZATIONS_OFFERINGS[0].alt,
     reverse: false,
   },
   {
     icon: Brain,
     title: 'Leadership and collaboration modules',
     sub: 'Specialized frameworks that build communication and problem-solving skills in the wild.',
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1000&q=80&fit=crop',
-    alt: 'Team leaders collaborating in a nature setting',
+    image: ORGANIZATIONS_OFFERINGS[1].src,
+    alt: ORGANIZATIONS_OFFERINGS[1].alt,
     reverse: true,
   },
   {
     icon: Shield,
     title: 'Full logistics and safety management',
     sub: 'We handle the custom retreat planning from start to finish so your team can focus entirely on the experience.',
-    image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1000&q=80&fit=crop',
-    alt: 'Well-organised luxury camp setup in a forest clearing',
+    image: ORGANIZATIONS_OFFERINGS[2].src,
+    alt: ORGANIZATIONS_OFFERINGS[2].alt,
     reverse: false,
   },
 ]

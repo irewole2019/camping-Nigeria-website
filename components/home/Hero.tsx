@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
+import { SCHOOLS_HERO } from '@/lib/media'
 
 const HEADING_ID = 'home-hero-heading'
 
@@ -22,8 +23,8 @@ export default function Hero() {
         transition={{ duration: 2.5, ease: 'easeOut' }}
       >
         <Image
-          src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1800&q=85&fit=crop"
-          alt="Students gathered around a campfire during an outdoor learning expedition"
+          src={SCHOOLS_HERO.src}
+          alt={SCHOOLS_HERO.alt}
           fill
           priority
           sizes="100vw"

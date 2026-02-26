@@ -5,29 +5,30 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Section from '@/components/ui/Section'
+import { SCHOOLS_SECONDARY_AUDIENCES } from '@/lib/media'
 
 const customEase = [0.22, 1, 0.36, 1] as const
 
 const cards = [
   {
-    image: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=800&q=80',
-    alt: 'Young adults on a camping trip',
+    image: SCHOOLS_SECONDARY_AUDIENCES[0].src,
+    alt: SCHOOLS_SECONDARY_AUDIENCES[0].alt,
     headline: 'Your First Real Outdoor Experience',
     body: 'Discover structured and accessible camping experiences designed for young adults and adventure seekers.',
     link: 'Book Your Spot',
     href: '/individuals',
   },
   {
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=800&q=80',
-    alt: 'Team bonding outdoors',
+    image: SCHOOLS_SECONDARY_AUDIENCES[1].src,
+    alt: SCHOOLS_SECONDARY_AUDIENCES[1].alt,
     headline: 'Team Bonding Beyond the Boardroom',
     body: 'Camping Nigeria designs structured outdoor team experiences for companies, NGOs, churches, and social groups seeking meaningful connection and collaboration.',
     link: "Plan Your Organization's Retreat",
     href: '/organizations',
   },
   {
-    image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=800&q=80',
-    alt: 'Premium camping gear laid out',
+    image: SCHOOLS_SECONDARY_AUDIENCES[2].src,
+    alt: SCHOOLS_SECONDARY_AUDIENCES[2].alt,
     headline: 'Premium Camping Gear, Ready When You Are',
     body: 'Rent high-quality camping equipment for schools, individuals, and organizations without the stress of ownership.',
     link: 'Request a Rental Quote',

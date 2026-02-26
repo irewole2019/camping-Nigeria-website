@@ -1,12 +1,13 @@
 'use client'
 
 import PageHero from '@/components/shared/PageHero'
+import { GEAR_RENTAL_HERO } from '@/lib/media'
 
 export default function GearHero() {
   return (
     <PageHero
-      image="https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=1800&q=85&fit=crop"
-      imageAlt="Premium camping gear and tent setup in a forest clearing"
+      image={GEAR_RENTAL_HERO.src}
+      imageAlt={GEAR_RENTAL_HERO.alt}
       eyebrow="Gear Rental"
       headline={
         <>

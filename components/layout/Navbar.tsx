@@ -16,23 +16,11 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
+
 
   const toggleButtonRef = useRef<HTMLButtonElement>(null)
   const firstLinkRef = useRef<HTMLAnchorElement>(null)
 
-  // ------- Sticky background on scroll -------
-  useEffect(() => {
-    function handleScroll() {
-      setScrolled(window.scrollY > 50)
-    }
-
-    // Check initial position (e.g. if the page is already scrolled on mount)
-    handleScroll()
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // ------- Focus management for mobile menu -------
   useEffect(() => {
@@ -67,8 +55,8 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'sticky top-0 left-0 right-0 z-50 transition-colors duration-300',
-        scrolled ? 'bg-brand-dark/95 backdrop-blur-md' : 'bg-transparent'
+        'absolute top-0 left-0 right-0 z-50',
+        'bg-transparent'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -1,5 +1,6 @@
 import Section from '@/components/ui/Section'
 import Image from 'next/image'
+import { SCHOOLS_WHY_OUTDOOR_LEARNING } from '@/lib/media'
 
 export default function WhyOutdoorLearning() {
   return (
@@ -15,8 +16,8 @@ export default function WhyOutdoorLearning() {
           />
           <div className="relative rounded-xl overflow-hidden aspect-[4/3]">
             <Image
-              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=900&q=80"
-              alt="Students engaged in focused outdoor learning and nature reflection"
+              src={SCHOOLS_WHY_OUTDOOR_LEARNING.src}
+              alt={SCHOOLS_WHY_OUTDOOR_LEARNING.alt}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
