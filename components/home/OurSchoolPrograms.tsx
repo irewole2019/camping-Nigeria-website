@@ -1,10 +1,10 @@
 'use client'
 
 import { useRef } from 'react'
+import Image from 'next/image'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import Section from '@/components/ui/Section'
-
-const premiumEase = [0.16, 1, 0.3, 1]
+import { premiumEase } from '@/lib/animation'
 
 const programs = [
   {
@@ -57,12 +57,18 @@ function ParallaxCard({ title, subtitle, image }: (typeof programs)[0]) {
     >
       {/* Parallax image layer */}
       <div className="absolute inset-0 overflow-hidden rounded-xl">
-        <motion.img
-          src={image}
-          alt={title}
+        <motion.div
           style={{ y }}
-          className="absolute inset-0 w-full h-[110%] object-cover transition-[filter] duration-700 ease-out grayscale group-hover:grayscale-0 group-hover:scale-105"
-        />
+          className="absolute inset-0 h-[110%]"
+        >
+          <Image
+            src={image}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, 33vw"
+            className="object-cover transition-[filter] duration-700 ease-out grayscale group-hover:grayscale-0 group-hover:scale-105"
+          />
+        </motion.div>
       </div>
 
       {/* Gradient overlay */}
@@ -90,7 +96,7 @@ export default function OurSchoolPrograms() {
       {/* Intro copy */}
       <div className="text-center max-w-2xl mx-auto mb-14">
         <motion.span
-          className="text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent"
+          className="text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent-readable"
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}

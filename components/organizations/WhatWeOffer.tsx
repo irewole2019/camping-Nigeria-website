@@ -1,10 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Users, Brain, Shield } from 'lucide-react'
 import Section from '@/components/ui/Section'
-
-const premiumEase = [0.16, 1, 0.3, 1]
+import { premiumEase } from '@/lib/animation'
 
 const offerings = [
   {
@@ -39,7 +39,7 @@ export default function WhatWeOffer() {
       {/* Section header */}
       <div className="text-center mb-16">
         <motion.p
-          className="text-sm font-sans font-semibold tracking-widest text-brand-accent uppercase mb-3"
+          className="text-sm font-sans font-semibold tracking-widest text-brand-accent-readable uppercase mb-3"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-60px' }}
@@ -49,7 +49,7 @@ export default function WhatWeOffer() {
         </motion.p>
         <div className="overflow-hidden">
           <motion.h2
-            className="font-serif text-3xl md:text-5xl font-bold text-brand-dark text-balance"
+            className="font-serif text-3xl md:text-4xl font-bold text-brand-dark text-balance"
             initial={{ y: '100%' }}
             whileInView={{ y: '0%' }}
             viewport={{ once: true, margin: '-60px' }}
@@ -75,11 +75,13 @@ export default function WhatWeOffer() {
             >
               {/* Image */}
               <div className="w-full md:w-1/2 shrink-0">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden">
-                  <img
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden">
+                  <Image
                     src={item.image}
                     alt={item.alt}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover transition-transform duration-700 hover:scale-105"
                   />
                 </div>
               </div>

@@ -1,7 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 import Section from '@/components/ui/Section'
+import { premiumEase } from '@/lib/animation'
 
 const images = [
   {
@@ -46,7 +48,7 @@ export default function ImageGallery() {
     <Section className="bg-white">
       {/* Heading */}
       <div className="mb-10 max-w-xl">
-        <p className="text-xs font-sans font-semibold tracking-widest uppercase text-brand-accent mb-3">
+        <p className="text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent-readable mb-3">
           Life outside
         </p>
         <div className="overflow-hidden">
@@ -55,7 +57,7 @@ export default function ImageGallery() {
             initial={{ y: '100%' }}
             whileInView={{ y: '0%' }}
             viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.9, ease: premiumEase }}
           >
             Experience the Wild
           </motion.h2>
@@ -72,16 +74,18 @@ export default function ImageGallery() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: i * 0.08 }}
+            transition={{ duration: 0.7, ease: premiumEase, delay: i * 0.08 }}
           >
-            <img
+            <Image
               src={img.src}
               alt={img.alt}
-              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              fill
+              sizes="(max-width: 768px) 50vw, 33vw"
+              className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
             />
             {/* Subtle hover overlay */}
             <div
-              className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/20 transition-colors duration-400"
+              className="absolute inset-0 bg-brand-dark/0 group-hover:bg-brand-dark/20 transition-colors duration-500"
               aria-hidden="true"
             />
           </motion.div>

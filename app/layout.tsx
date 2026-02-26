@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Syne } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import MotionProvider from '@/components/MotionProvider'
 import './globals.css'
 
 const inter = Inter({
@@ -16,10 +17,10 @@ const syne = Syne({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://campingnigeria.com'),
   title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
   description:
     'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
-  generator: 'v0.app',
   icons: {
     icon: [
       { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
@@ -27,6 +28,21 @@ export const metadata: Metadata = {
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-icon.png',
+  },
+  openGraph: {
+    title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
+    description:
+      'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
+    url: 'https://campingnigeria.com',
+    siteName: 'Camping Nigeria',
+    locale: 'en_NG',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
+    description:
+      'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
   },
 }
 
@@ -40,9 +56,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${syne.variable}`}>
+    <html lang="en-NG" className={`${inter.variable} ${syne.variable} scroll-smooth`}>
+      <head>
+        <link rel="preconnect" href="https://images.unsplash.com" />
+      </head>
       <body className="font-sans antialiased bg-brand-light text-brand-dark">
-        {children}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-accent focus:text-brand-dark focus:px-4 focus:py-2 focus:rounded focus:font-semibold"
+        >
+          Skip to content
+        </a>
+        <MotionProvider>{children}</MotionProvider>
         <Analytics />
       </body>
     </html>

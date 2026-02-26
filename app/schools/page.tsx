@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import Hero from '@/components/home/Hero'
 import WhyOutdoorLearning from '@/components/home/WhyOutdoorLearning'
 import OurSchoolPrograms from '@/components/home/OurSchoolPrograms'
@@ -10,12 +11,25 @@ import FinalCta from '@/components/home/FinalCta'
 
 export const metadata = {
   title: 'Schools | Camping Nigeria',
-  description: 'Outdoor education programmes designed for Nigerian schools — safe, structured, and transformative.',
+  description:
+    'Outdoor education programmes designed for Nigerian schools — safe, structured, and transformative.',
+  openGraph: {
+    title: 'Schools | Camping Nigeria',
+    description:
+      'Outdoor education programmes designed for Nigerian schools — safe, structured, and transformative.',
+    url: '/schools',
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'Schools | Camping Nigeria',
+    description:
+      'Outdoor education programmes designed for Nigerian schools — safe, structured, and transformative.',
+  },
 }
 
 export default function SchoolsPage() {
   return (
-    <main>
+    <main id="main-content">
       <Navbar />
       <Hero />
       <WhyOutdoorLearning />
@@ -25,6 +39,7 @@ export default function SchoolsPage() {
       <HowItWorks />
       <SecondaryAudiences />
       <FinalCta />
+      <Footer />
     </main>
   )
 }

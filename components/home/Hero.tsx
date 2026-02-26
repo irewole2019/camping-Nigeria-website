@@ -1,29 +1,33 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download } from 'lucide-react'
+import { premiumEase } from '@/lib/animation'
 
-const premiumEase = [0.16, 1, 0.3, 1]
+const HEADING_ID = 'home-hero-heading'
 
 export default function Hero() {
   return (
     <section
       className="relative min-h-screen flex items-center"
-      aria-label="Hero section"
+      aria-labelledby={HEADING_ID}
     >
-      {/* Background Image — slow scale on load */}
+      {/* Background Image -- slow scale on load */}
       <motion.div
-        className="absolute inset-0 -z-10 overflow-hidden"
+        className="absolute inset-0 -z-10 overflow-hidden will-change-transform"
         initial={{ scale: 1.1 }}
         animate={{ scale: 1.0 }}
         transition={{ duration: 2.5, ease: 'easeOut' }}
       >
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1800&q=85&fit=crop"
-          alt="Students gathered around a campfire during an outdoor learning expedition in natural surroundings"
-          className="w-full h-full object-cover object-center"
-          fetchPriority="high"
+          alt="Students gathered around a campfire during an outdoor learning expedition"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-brand-dark/65" aria-hidden="true" />
         <div
@@ -35,7 +39,6 @@ export default function Hero() {
       {/* Hero Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-32 pb-20 md:pt-44 md:pb-28">
         <div className="max-w-3xl">
-
           {/* Eyebrow */}
           <motion.p
             className="inline-flex items-center gap-2 text-brand-accent font-semibold text-sm uppercase tracking-widest mb-6"
@@ -50,6 +53,7 @@ export default function Hero() {
           {/* Masked headline reveal */}
           <div className="overflow-hidden mb-6">
             <motion.h1
+              id={HEADING_ID}
               className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-tight text-balance"
               initial={{ y: '100%' }}
               animate={{ y: '0%' }}
@@ -72,7 +76,7 @@ export default function Hero() {
             designed to build confidence, teamwork, and environmental awareness.
           </motion.p>
 
-          {/* CTA Buttons — staggered */}
+          {/* CTA Buttons -- staggered */}
           <div className="flex flex-col sm:flex-row gap-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -80,8 +84,8 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.8 }}
             >
               <Link
-                href="/schools"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-brand-accent text-brand-dark font-semibold rounded text-base tracking-wide hover:bg-brand-accent/90 active:scale-[0.98] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                href="#contact"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-brand-accent text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-accent/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
                 Request a School Proposal
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
@@ -94,8 +98,8 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.95 }}
             >
               <Link
-                href="/schools"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-transparent border-2 border-white text-white font-semibold rounded text-base tracking-wide hover:bg-white/10 active:scale-[0.98] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                href="#contact"
+                className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg text-base tracking-wide hover:bg-white/10 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <Download className="w-5 h-5" aria-hidden="true" />
                 Download Program Overview

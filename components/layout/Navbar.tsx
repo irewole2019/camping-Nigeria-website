@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LOGO_URL } from '@/lib/constants'
 
 const NAV_LINKS = [
   { label: 'Schools', href: '/schools' },
@@ -15,16 +16,68 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  const toggleButtonRef = useRef<HTMLButtonElement>(null)
+  const firstLinkRef = useRef<HTMLAnchorElement>(null)
+
+  // ------- Sticky background on scroll -------
+  useEffect(() => {
+    function handleScroll() {
+      setScrolled(window.scrollY > 50)
+    }
+
+    // Check initial position (e.g. if the page is already scrolled on mount)
+    handleScroll()
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // ------- Focus management for mobile menu -------
+  useEffect(() => {
+    if (mobileOpen) {
+      // Focus the first link when the menu opens
+      requestAnimationFrame(() => {
+        firstLinkRef.current?.focus()
+      })
+    }
+  }, [mobileOpen])
+
+  // ------- Close on Escape -------
+  useEffect(() => {
+    if (!mobileOpen) return
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setMobileOpen(false)
+        toggleButtonRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [mobileOpen])
+
+  const closeMobileMenu = useCallback(() => {
+    setMobileOpen(false)
+    toggleButtonRef.current?.focus()
+  }, [])
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50 bg-transparent">
+    <header
+      className={cn(
+        'sticky top-0 left-0 right-0 z-50 transition-colors duration-300',
+        scrolled ? 'bg-brand-dark/95 backdrop-blur-md' : 'bg-transparent'
+      )}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
 
           {/* Logo */}
           <Link href="/" aria-label="Camping Nigeria Home">
             <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Camping%20Nigeria%20Logo%20-4Afjc35DawMRahQENzyiYcdmyAP92k.png"
+              src={LOGO_URL}
               alt="Camping Nigeria"
               width={120}
               height={60}
@@ -49,7 +102,7 @@ export default function Navbar() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center">
             <Link
-              href="/schools"
+              href="/contact"
               className="inline-flex items-center justify-center px-5 py-2.5 bg-brand-accent text-brand-dark text-sm font-semibold rounded tracking-wide hover:bg-brand-accent/90 transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
             >
               Partner With Us
@@ -58,8 +111,9 @@ export default function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
+            ref={toggleButtonRef}
             onClick={() => setMobileOpen((prev) => !prev)}
-            className="md:hidden text-white p-2 rounded-md hover:bg-white/10 transition-colors"
+            className="md:hidden text-white p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
@@ -80,25 +134,26 @@ export default function Navbar() {
           'md:hidden overflow-hidden transition-all duration-300 ease-in-out',
           mobileOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         )}
-        aria-hidden={!mobileOpen}
+        inert={!mobileOpen || undefined}
       >
         <nav
           aria-label="Mobile navigation"
           className="bg-brand-dark/95 backdrop-blur-sm border-t border-white/10 px-4 pt-3 pb-5 flex flex-col gap-1"
         >
-          {NAV_LINKS.map((link) => (
+          {NAV_LINKS.map((link, index) => (
             <Link
               key={link.href}
               href={link.href}
-              onClick={() => setMobileOpen(false)}
+              ref={index === 0 ? firstLinkRef : undefined}
+              onClick={closeMobileMenu}
               className="text-white/80 hover:text-white font-medium py-3 border-b border-white/5 tracking-wide transition-colors duration-200"
             >
               {link.label}
             </Link>
           ))}
           <Link
-            href="/schools"
-            onClick={() => setMobileOpen(false)}
+            href="/contact"
+            onClick={closeMobileMenu}
             className="mt-3 inline-flex items-center justify-center px-5 py-3 bg-brand-accent text-brand-dark text-sm font-semibold rounded tracking-wide hover:bg-brand-accent/90 transition-colors duration-200"
           >
             Partner With Us

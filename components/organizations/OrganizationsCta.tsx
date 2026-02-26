@@ -11,23 +11,23 @@ export default function OrganizationsCta() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }}
           className="flex flex-col items-center gap-8"
         >
-          <p className="text-sm font-sans font-semibold tracking-widest text-brand-accent uppercase">
-            Let's get started
+          <p className="text-sm font-sans font-semibold tracking-widest text-brand-accent-readable uppercase">
+            Let&#39;s get started
           </p>
-          <h2 className="font-serif text-3xl md:text-5xl font-bold text-brand-dark text-balance leading-tight">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-brand-dark text-balance leading-tight">
             Ready to transform your team dynamics?
           </h2>
           <p className="font-sans text-base md:text-lg text-brand-dark/65 max-w-xl leading-relaxed">
-            Tell us about your group and we'll design a retreat that delivers lasting impact.
+            Tell us about your group and we&#39;ll design a retreat that delivers lasting impact.
           </p>
           <Link
             href="mailto:hello@campingnigeria.com"
-            className="inline-flex items-center justify-center px-10 py-4 bg-brand-dark text-white font-sans font-bold text-base rounded-lg hover:bg-brand-accent hover:text-brand-dark active:scale-95 transition-all duration-200 shadow-md"
+            className="inline-flex items-center justify-center px-10 py-4 bg-brand-dark text-white font-sans font-semibold text-base rounded-lg hover:bg-brand-accent hover:text-brand-dark active:scale-95 transition-transform duration-200 shadow-md"
           >
-            Plan Your Organization's Retreat
+            Plan Your Organization&#39;s Retreat
           </Link>
         </motion.div>
       </div>

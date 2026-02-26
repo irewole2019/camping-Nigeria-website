@@ -14,8 +14,7 @@ import {
   PackageOpen,
 } from 'lucide-react'
 import Section from '@/components/ui/Section'
-
-const premiumEase = [0.16, 1, 0.3, 1]
+import { premiumEase } from '@/lib/animation'
 
 const equipment = [
   { icon: Tent, label: 'Tents' },
@@ -48,11 +47,11 @@ export default function EquipmentAndOptions() {
     <Section className="bg-brand-light">
       <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
 
-        {/* Left — Available Equipment */}
+        {/* Left -- Available Equipment */}
         <div>
-          <h3 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark mb-8">
+          <h2 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark mb-8">
             Available Equipment
-          </h3>
+          </h2>
           <motion.ul
             className="grid grid-cols-2 gap-4"
             variants={containerVariants}
@@ -77,11 +76,11 @@ export default function EquipmentAndOptions() {
           </motion.ul>
         </div>
 
-        {/* Right — Rental Options */}
+        {/* Right -- Rental Options */}
         <div>
-          <h3 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark mb-8">
+          <h2 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark mb-8">
             Rental Options
-          </h3>
+          </h2>
           <motion.ul
             className="flex flex-col gap-4"
             variants={containerVariants}

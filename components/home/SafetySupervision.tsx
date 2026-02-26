@@ -3,8 +3,7 @@
 import { motion } from 'framer-motion'
 import { ShieldCheck, Users, FileText } from 'lucide-react'
 import Section from '@/components/ui/Section'
-
-const premiumEase = [0.16, 1, 0.3, 1]
+import { premiumEase } from '@/lib/animation'
 
 const pillars = [
   {
@@ -82,13 +81,13 @@ export default function SafetySupervision() {
         transition={{ duration: 0.8, ease: premiumEase }}
         className="text-center mb-14 relative"
       >
-        <span className="inline-block text-xs font-sans font-semibold tracking-widest uppercase text-brand-accent mb-4">
+        <span className="inline-block text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent mb-4">
           Built on Trust
         </span>
         {/* Masked H2 reveal */}
         <div className="overflow-hidden">
           <motion.h2
-            className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-brand-light text-balance leading-tight"
+            className="font-serif text-3xl md:text-4xl font-bold text-brand-light text-balance leading-tight"
             initial={{ y: '100%' }}
             whileInView={{ y: '0%' }}
             viewport={{ once: true }}
@@ -114,7 +113,7 @@ export default function SafetySupervision() {
             className="flex flex-col items-center text-center gap-5 p-8 rounded-xl border border-white/10 bg-white/5"
           >
             <div className="flex items-center justify-center w-14 h-14 rounded-full bg-brand-accent/15">
-              <Icon className="w-7 h-7 text-brand-accent" strokeWidth={1.75} />
+              <Icon className="w-7 h-7 text-brand-accent" strokeWidth={1.75} aria-hidden="true" />
             </div>
             <h3 className="font-serif text-lg font-semibold text-brand-light">{title}</h3>
             <p className="font-sans text-sm leading-relaxed text-brand-light/70">{body}</p>

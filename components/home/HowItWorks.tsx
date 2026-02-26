@@ -4,6 +4,8 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import Section from '@/components/ui/Section'
 
+const customEase = [0.22, 1, 0.36, 1] as const
+
 const steps = [
   'Consultation with School Leadership',
   'Program Customization and Safety Planning',
@@ -17,7 +19,7 @@ const stepVariants = {
   visible: {
     opacity: 1,
     x: 0,
-    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.55, ease: customEase },
   },
 }
 
@@ -37,13 +39,13 @@ export default function HowItWorks() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, ease: customEase }}
         className="text-center mb-16"
       >
-        <span className="inline-block text-xs font-sans font-semibold tracking-widest uppercase text-brand-accent mb-4">
+        <span className="inline-block text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent-readable mb-4">
           Our Process
         </span>
-        <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark text-balance leading-tight">
+        <h2 className="font-serif text-3xl md:text-4xl font-bold text-brand-dark text-balance leading-tight">
           How It Works
         </h2>
       </motion.div>
