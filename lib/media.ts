@@ -43,6 +43,15 @@
  *   public/images/organizations/offering-luxury-camp.jpg
  *
  *   public/images/gear-rental/hero.jpg
+ *
+ *   public/images/about/hero.jpg
+ *   public/images/about/our-story.jpg
+ *   public/images/about/what-we-do.jpg
+ *   public/images/about/value-intentional.jpg
+ *   public/images/about/value-community.jpg
+ *   public/images/about/value-trust.jpg
+ *   public/images/about/manifesto.jpg
+ *   public/images/about/cta.jpg
  */
 
 // ─── Branding ────────────────────────────────────────────────────────────────
@@ -203,4 +212,46 @@ export const ORGANIZATIONS_OFFERINGS = [
 export const GEAR_RENTAL_HERO = {
   src: '/images/gear-rental/hero.jpg',
   alt: 'Premium camping gear and tent setup in a forest clearing',
+}
+
+// ─── About Page ─────────────────────────────────────────────────────────────
+
+export const ABOUT_HERO = {
+  src: '/images/about/hero.jpg',
+  alt: 'Explorer sitting on a cliff edge overlooking a lush Nigerian valley',
+}
+
+export const ABOUT_OUR_STORY = {
+  src: '/images/about/our-story.jpg',
+  alt: 'The Camping Nigeria community gathered together in a tropical setting',
+}
+
+export const ABOUT_WHAT_WE_DO = {
+  src: '/images/about/what-we-do.jpg',
+  alt: 'Colorful tents spread across a green hillside at a Camping Nigeria event',
+}
+
+export const ABOUT_VALUES = [
+  {
+    src: '/images/about/value-intentional.jpg',
+    alt: 'Two explorers sitting on a rock overlooking Nigerian mountains',
+  },
+  {
+    src: '/images/about/value-community.jpg',
+    alt: 'A large group gathered in a circle during an outdoor activity',
+  },
+  {
+    src: '/images/about/value-trust.jpg',
+    alt: 'Smiling cyclist in proper safety gear ready for adventure',
+  },
+]
+
+export const ABOUT_MANIFESTO = {
+  src: '/images/about/manifesto.jpg',
+  alt: 'Tents pitched by a waterfront at night with city lights reflecting on the water',
+}
+
+export const ABOUT_CTA = {
+  src: '/images/about/cta.jpg',
+  alt: 'Group of adventurers on ATVs with arms raised against a mountain backdrop',
 }
