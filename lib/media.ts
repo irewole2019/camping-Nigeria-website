@@ -69,7 +69,7 @@ export const SCHOOLS_HERO = {
 
 export const SCHOOLS_WHY_OUTDOOR_LEARNING = {
   src: '/images/schools/why-outdoor-learning.jpg',
-  alt: 'Students engaged in focused outdoor learning and nature reflection',
+  alt: 'Students gathered at an outdoor school event',
 }
 
 export const SCHOOLS_PROGRAMS = [
@@ -122,15 +122,15 @@ export const INDIVIDUALS_HERO = {
 export const INDIVIDUALS_EXPECTATIONS = [
   {
     src: '/images/individuals/expect-guided-trails.jpg',
-    alt: 'Guide leading a group through a forest trail',
+    alt: 'Beautiful resort grounds with palm trees and a serene poolside setting',
   },
   {
     src: '/images/individuals/expect-verified-campsites.jpg',
-    alt: 'Verified campsite with tents at dusk',
+    alt: 'Lush palm garden with outdoor seating areas on manicured grounds',
   },
   {
     src: '/images/individuals/expect-quality-equipment.jpg',
-    alt: 'Quality camping equipment laid out',
+    alt: 'Colorful tents arranged on a wide green field under clear skies',
   },
   {
     src: '/images/individuals/expect-structured-itinerary.jpg',
