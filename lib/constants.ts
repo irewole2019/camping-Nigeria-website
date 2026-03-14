@@ -4,11 +4,10 @@ export { MEDIA_LOGO as LOGO_URL, MEDIA_VIDEO as VIDEO_URL } from './media'
 /** Company contact info */
 export const CONTACT = {
   email: 'hello@campingnigeria.com',
-  phone: '+234 800 CAMPING',
-  whatsapp: 'https://wa.me/2348001234567',
-  instagram: 'https://instagram.com/campingnigeria',
-  twitter: 'https://x.com/campingnigeria',
-  facebook: 'https://facebook.com/campingnigeria',
+  phone: '+234 704 053 8528',
+  whatsapp: 'https://wa.me/2347040538528',
+  instagram: 'https://www.instagram.com/camping_ng/',
+  facebook: 'https://www.facebook.com/campinggearsng',
 } as const
 
 export const SITE_URL = 'https://campingnigeria.com'

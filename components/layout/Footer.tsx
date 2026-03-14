@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { Instagram, Twitter, Facebook, Mail, Phone, MessageCircle } from 'lucide-react'
+import { Instagram, Facebook, Mail, Phone, MessageCircle } from 'lucide-react'
 import { LOGO_URL, CONTACT, SITE_URL } from '@/lib/constants'
 
 const quickLinks = [
@@ -19,7 +19,6 @@ const companyLinks = [
 
 const socialLinks = [
   { label: 'Instagram', href: CONTACT.instagram, icon: Instagram },
-  { label: 'Twitter / X', href: CONTACT.twitter, icon: Twitter },
   { label: 'Facebook', href: CONTACT.facebook, icon: Facebook },
 ]
 

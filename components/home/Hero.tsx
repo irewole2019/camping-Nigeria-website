@@ -84,13 +84,13 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.8 }}
             >
-              <Link
-                href="#contact"
+              <a
+                href="mailto:hello@campingnigeria.com?subject=School%20Proposal%20Request"
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-brand-accent text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-accent/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
                 Request a School Proposal
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
-              </Link>
+              </a>
             </motion.div>
 
             <motion.div
