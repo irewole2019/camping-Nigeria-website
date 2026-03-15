@@ -2,7 +2,9 @@
 
 import { useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import Section from '@/components/ui/Section'
 import { premiumEase } from '@/lib/animation'
 import { SCHOOLS_PROGRAMS } from '@/lib/media'
@@ -12,16 +14,19 @@ const programs = [
     title: '2-Day On-Campus Camps',
     subtitle: 'Immersive outdoor experiences delivered right at your school gates.',
     image: SCHOOLS_PROGRAMS[0].src,
+    href: '/schools/programs/on-campus-camps',
   },
   {
-    title: 'Eco-Awareness Modules',
-    subtitle: 'Curriculum-aligned sessions that build lasting environmental stewardship.',
+    title: 'Nature & Craft',
+    subtitle: 'A single-day immersive experience blending outdoor adventure, creative expression, and environmental education.',
     image: SCHOOLS_PROGRAMS[1].src,
+    href: '/schools/programs/nature-craft',
   },
   {
     title: 'Leadership Development',
     subtitle: 'Structured challenges that grow confident, collaborative young leaders.',
     image: SCHOOLS_PROGRAMS[2].src,
+    href: '/schools/programs/leadership-development',
   },
 ]
 
@@ -41,7 +46,7 @@ const cardVariants = {
   },
 }
 
-function ParallaxCard({ title, subtitle, image }: (typeof programs)[0]) {
+function ParallaxCard({ title, subtitle, image, href }: (typeof programs)[0]) {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
   const y = useTransform(scrollYProgress, [0, 1], ['-5%', '5%'])
@@ -53,6 +58,10 @@ function ParallaxCard({ title, subtitle, image }: (typeof programs)[0]) {
       style={{ position: 'relative' }}
       className="h-[400px] rounded-xl overflow-hidden group"
     >
+      <Link href={href} className="absolute inset-0 z-10" aria-label={`Learn more about ${title}`}>
+        <span className="sr-only">View {title} program details</span>
+      </Link>
+
       {/* Parallax image layer */}
       <div className="absolute inset-0 overflow-hidden rounded-xl">
         <motion.div
@@ -80,6 +89,9 @@ function ParallaxCard({ title, subtitle, image }: (typeof programs)[0]) {
         <p className="font-sans text-sm leading-relaxed text-brand-light/75 mt-2 text-pretty">
           {subtitle}
         </p>
+        <span className="inline-flex items-center gap-1.5 text-brand-accent text-sm font-semibold mt-3 group-hover:gap-2.5 transition-all duration-300">
+          Learn more <ArrowRight className="w-4 h-4" />
+        </span>
       </div>
     </motion.div>
   )
@@ -124,7 +136,7 @@ export default function OurSchoolPrograms() {
           transition={{ duration: 0.8, ease: premiumEase, delay: 0.25 }}
         >
           We design structured outdoor programs tailored to Nigerian primary and secondary schools.
-          From 2-day on-campus camps to eco-awareness and leadership modules, every experience is
+          From 2-day on-campus camps to nature &amp; craft and leadership modules, every experience is
           planned with safety, structure, and developmental outcomes in mind.
         </motion.p>
       </div>

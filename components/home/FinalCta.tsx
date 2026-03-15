@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { premiumEase } from '@/lib/animation'
 import { SCHOOLS_FINAL_CTA } from '@/lib/media'
@@ -38,12 +39,12 @@ export default function FinalCta() {
           <p className="font-sans text-base md:text-lg text-white/70 max-w-2xl leading-relaxed">
             Join hundreds of schools across Nigeria that trust Camping Nigeria to deliver safe, enriching, and curriculum-aligned outdoor programmes.
           </p>
-          <a
-            href="mailto:hello@campingnigeria.com?subject=School%20Proposal%20Request"
+          <Link
+            href="/schools/proposal"
             className="inline-flex items-center justify-center px-10 py-4 bg-brand-accent text-brand-dark font-sans font-semibold text-base rounded-lg hover:brightness-105 active:scale-95 transition-transform duration-200 shadow-lg shadow-brand-accent/20"
           >
             Request a School Proposal
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

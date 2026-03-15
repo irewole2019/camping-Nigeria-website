@@ -84,13 +84,13 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.8 }}
             >
-              <a
-                href="mailto:hello@campingnigeria.com?subject=School%20Proposal%20Request"
+              <Link
+                href="/schools/proposal"
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-brand-accent text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-accent/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
                 Request a School Proposal
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
-              </a>
+              </Link>
             </motion.div>
 
             <motion.div
@@ -98,13 +98,14 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.95 }}
             >
-              <Link
-                href="#contact"
+              <a
+                href="/pdf/Camping_Nigeria_Programs_Overview.pdf"
+                download
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-lg text-base tracking-wide hover:bg-white/10 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <Download className="w-5 h-5" aria-hidden="true" />
                 Download Program Overview
-              </Link>
+              </a>
             </motion.div>
           </div>
 
