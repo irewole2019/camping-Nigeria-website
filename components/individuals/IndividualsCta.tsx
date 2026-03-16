@@ -39,12 +39,14 @@ export default function IndividualsCta() {
           <p className="font-sans text-base md:text-lg text-white/70 max-w-xl leading-relaxed">
             Join a community of young Nigerians discovering the outdoors — safely, meaningfully, and memorably.
           </p>
-          <Link
-            href="mailto:hello@campingnigeria.com"
+          <a
+            href="https://forms.office.com/r/bgsZ4shNxD"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-10 py-4 bg-brand-accent text-brand-dark font-sans font-semibold text-base rounded-lg hover:brightness-105 active:scale-95 transition-transform duration-200 shadow-lg shadow-brand-accent/20"
           >
             Book Your Spot
-          </Link>
+          </a>
         </motion.div>
       </div>
     </section>

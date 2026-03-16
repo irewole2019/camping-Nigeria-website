@@ -17,7 +17,7 @@ export default function IndividualsHero() {
       }
       subheadline="Discover structured and accessible camping experiences designed for young adults and adventure seekers."
       ctaLabel="Book Your Spot"
-      ctaHref="mailto:hello@campingnigeria.com"
+      ctaHref="https://forms.office.com/r/bgsZ4shNxD"
       height="h-[70vh]"
       minHeight="min-h-[480px]"
     />
