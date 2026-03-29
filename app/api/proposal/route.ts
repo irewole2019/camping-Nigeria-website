@@ -76,37 +76,108 @@ function formatLabel(value: string | string[]): string {
   return OPTION_LABELS[value] || value
 }
 
-// ─── Internal Notification (plain text) ─────────────────────────────────────
+// ─── Internal Notification (branded HTML) ───────────────────────────────────
 
 function buildInternalEmail(body: ProposalPayload): string {
   const { answers, contact, result } = body
-  const lines = [
-    `RECOMMENDED PROGRAM`,
-    `  Program: ${result.programTitle}`,
-    `  Package: ${result.tierName} (${result.tierTag})`,
-    `  Duration: ${result.tierDuration}`,
-    ``,
-    `SCHOOL DETAILS`,
-    `  School: ${contact.schoolName}`,
-    `  Contact: ${contact.contactName}${contact.role ? `, ${contact.role}` : ''}`,
-    `  Email: ${contact.email}`,
-    `  Phone: ${contact.phone}`,
-    contact.website ? `  Website: ${contact.website}` : null,
-    ``,
-    `RESPONSES`,
+
+  const responseRows = QUESTION_ORDER
+    .filter(({ key }) => answers[key] !== undefined)
+    .map(
+      ({ key, label }) =>
+        `<tr>
+          <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${label}</td>
+          <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${formatLabel(answers[key])}</td>
+        </tr>`
+    )
+    .join('')
+
+  const contactRows = [
+    ['School', contact.schoolName],
+    ['Contact', `${contact.contactName}${contact.role ? ` (${contact.role})` : ''}`],
+    ['Email', `<a href="mailto:${contact.email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.email}</a>`],
+    ['Phone', `<a href="tel:${contact.phone}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.phone}</a>`],
+    ...(contact.website ? [['Website', `<a href="${contact.website}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.website}</a>`]] : []),
   ]
+    .map(
+      ([label, value]) =>
+        `<tr>
+          <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${label}</td>
+          <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${value}</td>
+        </tr>`
+    )
+    .join('')
 
-  for (const { key, label } of QUESTION_ORDER) {
-    const value = answers[key]
-    if (value !== undefined) {
-      lines.push(`  ${label}: ${formatLabel(value)}`)
-    }
-  }
+  return `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background-color:#f3efe6;font-family:Helvetica,Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3efe6;padding:32px 16px;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-  lines.push(``)
-  lines.push(`Sent from campingnigeria.com proposal form`)
+  <!-- Header -->
+  <tr><td style="background-color:#0e3e2e;padding:24px 40px;border-radius:12px 12px 0 0;" align="center">
+    <h1 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;letter-spacing:0.5px;">New School Proposal Request</h1>
+    <p style="margin:6px 0 0;font-size:12px;color:#e6b325;text-transform:uppercase;letter-spacing:2px;">Camping Nigeria</p>
+  </td></tr>
 
-  return lines.filter((l): l is string => l !== null).join('\n')
+  <!-- Body -->
+  <tr><td style="background-color:#ffffff;padding:32px 40px;">
+
+    <!-- Recommendation -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:24px;">
+      <tr><td style="background-color:#0e3e2e;padding:16px 20px;">
+        <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Recommended Programme</p>
+        <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#ffffff;">${result.programTitle}</h2>
+      </td></tr>
+      <tr><td style="padding:16px 20px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size:14px;font-weight:700;color:#0e3e2e;">${result.tierName} <span style="font-size:11px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:4px;">${result.tierTag}</span></td>
+            <td style="font-size:14px;color:#555;font-weight:600;" align="right">${result.tierDuration}</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+
+    <!-- School Details -->
+    <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#888;font-weight:600;">School Details</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#fafaf8;border-radius:8px;overflow:hidden;">
+      ${contactRows}
+    </table>
+
+    <!-- Responses -->
+    <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#888;font-weight:600;">Form Responses</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#fafaf8;border-radius:8px;overflow:hidden;">
+      ${responseRows}
+    </table>
+
+    <!-- Quick Actions -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center" style="padding:4px 0;">
+          <a href="mailto:${contact.email}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
+            Reply to ${contact.contactName.split(' ')[0]}
+          </a>
+        </td>
+      </tr>
+    </table>
+
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background-color:#0e3e2e;padding:16px 40px;border-radius:0 0 12px 12px;" align="center">
+    <p style="margin:0;font-size:11px;color:#ffffff50;">
+      Sent from campingnigeria.com proposal form &middot; ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+    </p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
 }
 
 // ─── Customer Confirmation (branded HTML) ───────────────────────────────────
@@ -264,13 +335,13 @@ export async function POST(request: Request) {
 
     // Send both emails in parallel
     const [internalRes, customerRes] = await Promise.all([
-      // 1. Internal notification to team
+      // 1. Branded notification to team
       sendResendEmail(
         resendKey,
         'Camping Nigeria <proposals@campingnigeria.com>',
         [RECIPIENT],
         `New School Proposal Request — ${contact.schoolName}`,
-        { text: buildInternalEmail(body) },
+        { html: buildInternalEmail(body) },
         contact.email
       ),
       // 2. Branded confirmation to customer

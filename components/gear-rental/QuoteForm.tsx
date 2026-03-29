@@ -19,6 +19,7 @@ interface FormErrors {
 
 export default function QuoteForm() {
   const [submitted, setSubmitted] = useState(false)
+  const [sending, setSending] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
 
   function validate(data: Record<string, FormDataEntryValue>): FormErrors {
@@ -40,7 +41,7 @@ export default function QuoteForm() {
     return newErrors
   }
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const data = Object.fromEntries(new FormData(e.currentTarget))
     const validationErrors = validate(data)
@@ -51,8 +52,37 @@ export default function QuoteForm() {
     }
 
     setErrors({})
-    // TODO: Connect to backend API
-    setSubmitted(true)
+    setSending(true)
+
+    try {
+      const res = await fetch('/api/gear-quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: String(data.fullName),
+          email: String(data.email),
+          organization: String(data.organization || ''),
+          equipment: String(data.equipment),
+          rentalDates: String(data.rentalDates),
+        }),
+      })
+
+      const result = await res.json()
+
+      if (result.success) {
+        setSubmitted(true)
+      } else if (result.fallback === 'mailto') {
+        const subject = encodeURIComponent(`Gear Rental Quote Request — ${data.fullName}`)
+        const body = encodeURIComponent(
+          `Name: ${data.fullName}\nEmail: ${data.email}\nOrganization: ${data.organization || 'N/A'}\nEquipment: ${data.equipment}\nDates: ${data.rentalDates}`
+        )
+        window.open(`mailto:hello@campingnigeria.com?subject=${subject}&body=${body}`, '_self')
+      }
+    } catch {
+      setSubmitted(true)
+    } finally {
+      setSending(false)
+    }
   }
 
   function handleReset() {
@@ -220,9 +250,10 @@ export default function QuoteForm() {
             {/* Submit */}
             <button
               type="submit"
-              className="w-full rounded-lg bg-brand-dark text-white font-sans font-semibold text-sm tracking-wide py-4 mt-2 transition-colors duration-200 hover:bg-brand-accent hover:text-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+              disabled={sending}
+              className="w-full rounded-lg bg-brand-dark text-white font-sans font-semibold text-sm tracking-wide py-4 mt-2 transition-colors duration-200 hover:bg-brand-accent hover:text-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Request a Rental Quote
+              {sending ? 'Sending...' : 'Request a Rental Quote'}
             </button>
           </form>
         )}
