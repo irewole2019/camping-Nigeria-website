@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
+import ScrollToTop from '@/components/ScrollToTop'
 import './globals.css'
 
 const helveticaNow = localFont({
@@ -67,6 +68,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        <ScrollToTop />
         <MotionProvider>{children}</MotionProvider>
         <Analytics />
       </body>

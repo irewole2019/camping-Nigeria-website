@@ -22,10 +22,7 @@ export default function GatewayPage() {
   return (
     <main id="main-content" className="relative h-screen w-full overflow-hidden">
       {/* Background video */}
-      <BackgroundVideo
-        src={VIDEO_URL}
-        poster="/images/schools/hero.jpg"
-      />
+      <BackgroundVideo src={VIDEO_URL} />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/45" aria-hidden="true" />
