@@ -1,9 +1,8 @@
 'use client'
 
 import { useRef } from 'react'
-import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
+import { Download } from 'lucide-react'
 import Section from '@/components/ui/Section'
 import { premiumEase } from '@/lib/animation'
 
@@ -12,6 +11,7 @@ const tiers = [
     name: 'Base Camp',
     tag: 'Equipment Only',
     price: 'From ₦3,000,000',
+    priceNote: 'for up to 60 students',
     description:
       'Equipment only. We deliver and collect tents, sleeping bags, mats, and lighting. Your school runs its own program.',
     bestFor: 'Schools that have facilitation covered.',
@@ -20,6 +20,7 @@ const tiers = [
     name: 'Trail Ready',
     tag: 'Most Popular',
     price: 'From ₦5,000,000',
+    priceNote: 'for up to 60 students',
     description:
       'Equipment plus facilitation. Our team is on-site throughout. We design and run the outdoor program.',
     bestFor: 'Schools that want a structured program.',
@@ -28,6 +29,7 @@ const tiers = [
     name: 'Summit Partner',
     tag: 'Fully Managed',
     price: 'From ₦8,000,000',
+    priceNote: 'for up to 60 students',
     description:
       'Fully managed. Equipment, facilitation, catering coordination, first aid, certificates, and documentation.',
     bestFor: 'Schools that want everything handled.',
@@ -123,8 +125,11 @@ export default function ExpeditionTiers() {
               </h3>
 
               {/* Price */}
-              <p className="font-sans text-base font-semibold text-brand-dark/80 mt-1 mb-4">
+              <p className="font-sans text-base font-semibold text-brand-dark/80 mt-1">
                 {tier.price}
+              </p>
+              <p className="font-sans text-xs text-brand-dark/55 mb-4">
+                {tier.priceNote}
               </p>
 
               {/* Divider */}
@@ -149,21 +154,33 @@ export default function ExpeditionTiers() {
         })}
       </motion.div>
 
+      {/* Additional students note */}
+      <motion.p
+        className="text-center font-sans text-sm text-brand-dark/60 mt-8 max-w-xl mx-auto leading-relaxed"
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: premiumEase }}
+      >
+        <span className="font-semibold text-brand-dark/80">Additional students</span> from ₦50,000 per student &mdash; max group of 100.
+      </motion.p>
+
       {/* Link below cards */}
       <motion.div
-        className="text-center mt-12"
+        className="text-center mt-8"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: premiumEase }}
       >
-        <Link
-          href="/schools"
+        <a
+          href="/pdf/CampingNigeria_DoE_Offer_download.pdf"
+          download
           className="group inline-flex items-center gap-2 text-brand-dark font-sans font-semibold text-base border-b-2 border-brand-accent pb-1 hover:text-brand-accent-readable transition-colors duration-200"
         >
           See the full offer breakdown
-          <ArrowRight className="w-4 h-4 text-brand-accent-readable transition-transform duration-200 group-hover:translate-x-1" aria-hidden="true" />
-        </Link>
+          <Download className="w-4 h-4 text-brand-accent-readable transition-transform duration-200 group-hover:translate-y-0.5" aria-hidden="true" />
+        </a>
       </motion.div>
     </Section>
   )

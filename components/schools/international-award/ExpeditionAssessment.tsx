@@ -84,14 +84,7 @@ interface TierResult {
   summary: string
   includes: string[]
   price: string
-}
-
-// Q3 (group size) drives the "up to X students" copy in every tier
-const GROUP_SIZE_LABEL: Record<AnswerKey, string> = {
-  A: 'up to 30 students',
-  B: 'up to 60 students',
-  C: 'up to 100 students',
-  D: '100+ students',
+  priceNote: string
 }
 
 // Q2 (Award status) tunes the opening of the summary paragraph
@@ -102,6 +95,9 @@ const Q2_SUMMARY_PREFIX: Record<AnswerKey, string> = {
   D: '',
 }
 
+// Shared across every tier — base includes up to 60 students, then per-head to 100
+const PRICE_NOTE = 'Additional students from ₦50,000 each — max group of 100.'
+
 function buildTier(
   key: TierResult['key'],
   name: string,
@@ -109,15 +105,14 @@ function buildTier(
   includes: string[],
   price: string
 ): TierResult {
-  return { key, name, summary, includes, price }
+  return { key, name, summary, includes, price, priceNote: PRICE_NOTE }
 }
 
 function getRecommendedTier(
   q2: AnswerKey | undefined,
-  q3: AnswerKey | undefined,
+  _q3: AnswerKey | undefined,
   q4: AnswerKey | undefined
 ): TierResult {
-  const capacity = q3 ? GROUP_SIZE_LABEL[q3] : 'up to 100 students'
   const prefix = q2 ? Q2_SUMMARY_PREFIX[q2] : ''
 
   // Helper that lowercases the first character of the base summary when a prefix is present
@@ -134,13 +129,12 @@ function getRecommendedTier(
             'You are in a good position to run the expedition yourself. What you need is reliable, quality equipment that is delivered, set up, and collected without drama.'
           ),
           [
-            `Tent rental for ${capacity}`,
-            'Sleeping bags, sleeping mats, and camping lights',
+            'Tent rental, sleeping bags, mats, and camping lights',
             'Equipment delivery and collection',
             'Setup guidance from our team',
             'Safety checklist document',
           ],
-          `Starting from ₦3,000,000 for ${capacity}`
+          'From ₦3,000,000 for up to 60 students'
         )
       case 'trail-ready':
         return buildTier(
@@ -157,7 +151,7 @@ function getRecommendedTier(
             'Post-event summary report',
             'Photo documentation',
           ],
-          `Starting from ₦5,000,000 for ${capacity}`
+          'From ₦5,000,000 for up to 60 students'
         )
       case 'summit-partner':
         return buildTier(
@@ -176,7 +170,7 @@ function getRecommendedTier(
             'Full written debrief with school leadership',
             'Priority annual slot',
           ],
-          `Starting from ₦8,000,000 for ${capacity}`
+          'From ₦8,000,000 for up to 60 students'
         )
     }
   }
@@ -681,6 +675,9 @@ export default function ExpeditionAssessment() {
                   </p>
                   <p className="font-serif text-lg md:text-xl font-bold text-brand-dark mt-1">
                     {recommendedTier.price}
+                  </p>
+                  <p className="font-sans text-xs text-brand-dark/60 mt-2 leading-relaxed">
+                    {recommendedTier.priceNote}
                   </p>
                 </motion.div>
 
