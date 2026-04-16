@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 
+// text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
 const inputBase =
-  'w-full rounded-lg border border-brand-dark/15 bg-white px-4 py-3 font-sans text-sm text-brand-dark placeholder:text-brand-dark/40 outline-none transition-colors duration-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20'
+  'w-full rounded-lg border border-brand-dark/15 bg-white px-4 py-3 font-sans text-base sm:text-sm text-brand-dark placeholder:text-brand-dark/40 outline-none transition-colors duration-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20'
 
 const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 
@@ -27,6 +28,7 @@ interface FormErrors {
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false)
   const [sending, setSending] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
 
   function validate(data: Record<string, FormDataEntryValue>): FormErrors {
@@ -59,6 +61,7 @@ export default function ContactForm() {
     }
 
     setErrors({})
+    setSubmitError(null)
     setSending(true)
 
     try {
@@ -73,17 +76,27 @@ export default function ContactForm() {
         }),
       })
 
-      const result = await res.json()
+      const result = await res.json().catch(() => ({}))
 
-      if (result.success) {
+      if (res.ok && result.success) {
         setSubmitted(true)
-      } else if (result.fallback === 'mailto') {
+        return
+      }
+
+      if (result.fallback === 'mailto') {
         const subject = encodeURIComponent(String(data.subject))
         const body = encodeURIComponent(`Name: ${data.fullName}\nEmail: ${data.email}\n\n${data.message}`)
         window.open(`mailto:hello@campingnigeria.com?subject=${subject}&body=${body}`, '_self')
+        return
       }
+
+      setSubmitError(
+        "We couldn't send your message. Please email hello@campingnigeria.com or try again."
+      )
     } catch {
-      setSubmitted(true)
+      setSubmitError(
+        "We couldn't reach the server. Please check your connection and try again, or email hello@campingnigeria.com."
+      )
     } finally {
       setSending(false)
     }
@@ -92,6 +105,7 @@ export default function ContactForm() {
   function handleReset() {
     setSubmitted(false)
     setErrors({})
+    setSubmitError(null)
   }
 
   if (submitted) {
@@ -121,6 +135,15 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-brand-dark/5 shadow-sm bg-white p-8 md:p-10 flex flex-col gap-6"
     >
+      {submitError && (
+        <div
+          role="alert"
+          className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-900 leading-relaxed"
+        >
+          {submitError}
+        </div>
+      )}
+
       {/* Full Name */}
       <div>
         <label htmlFor="fullName" className={labelBase}>

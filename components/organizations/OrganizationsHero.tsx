@@ -18,7 +18,7 @@ export default function OrganizationsHero() {
       subheadline="Camping Nigeria designs structured outdoor team experiences for companies, NGOs, churches, and social groups seeking meaningful connection and collaboration."
       ctaLabel="Plan Your Retreat"
       ctaHref="mailto:hello@campingnigeria.com"
-      height="h-[70vh]"
+      height="h-[70dvh]"
       minHeight="min-h-[480px]"
     />
   )

@@ -19,7 +19,7 @@ export default function AboutHero() {
       subheadline="Camping Nigeria exists to remove the fear, friction, and barriers that keep people from enjoying nature — so everyone can explore confidently."
       ctaLabel="Get in Touch"
       ctaHref="mailto:hello@campingnigeria.com"
-      height="h-[70vh]"
+      height="h-[70dvh]"
       minHeight="min-h-[520px]"
     />
   )

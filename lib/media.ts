@@ -112,6 +112,11 @@ export const SCHOOLS_FINAL_CTA = {
   alt: '',
 }
 
+export const SCHOOLS_DOE_CALLOUT = {
+  src: '/images/schools/doe-award.webp',
+  alt: 'Students participating in the Duke of Edinburgh Award expedition',
+}
+
 // ─── Individuals Page ────────────────────────────────────────────────────────
 
 export const INDIVIDUALS_HERO = {

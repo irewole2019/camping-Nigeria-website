@@ -12,7 +12,7 @@ const HEADING_ID = 'home-hero-heading'
 export default function Hero() {
   return (
     <section
-      className="relative min-h-screen flex items-center"
+      className="relative min-h-dvh flex items-center"
       aria-labelledby={HEADING_ID}
     >
       {/* Background Image -- slow scale on load */}

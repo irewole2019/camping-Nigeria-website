@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { escapeHtml, safeUrl } from '@/lib/html'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
@@ -70,10 +71,12 @@ const QUESTION_ORDER = [
 ]
 
 function formatLabel(value: string | string[]): string {
+  // OPTION_LABELS values are trusted (static); unknown keys fall through
+  // to raw user input, so escape the output to prevent HTML injection.
   if (Array.isArray(value)) {
-    return value.map((v) => OPTION_LABELS[v] || v).join(', ')
+    return value.map((v) => escapeHtml(OPTION_LABELS[v] || v)).join(', ')
   }
-  return OPTION_LABELS[value] || value
+  return escapeHtml(OPTION_LABELS[value] || value)
 }
 
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
@@ -81,23 +84,36 @@ function formatLabel(value: string | string[]): string {
 function buildInternalEmail(body: ProposalPayload): string {
   const { answers, contact, result } = body
 
+  const schoolName = escapeHtml(contact.schoolName)
+  const contactName = escapeHtml(contact.contactName)
+  const role = escapeHtml(contact.role)
+  const email = escapeHtml(contact.email)
+  const phone = escapeHtml(contact.phone)
+  const websiteHref = safeUrl(contact.website)
+  const websiteDisplay = escapeHtml(contact.website)
+  const firstName = escapeHtml(contact.contactName.split(' ')[0])
+  const programTitle = escapeHtml(result.programTitle)
+  const tierName = escapeHtml(result.tierName)
+  const tierTag = escapeHtml(result.tierTag)
+  const tierDuration = escapeHtml(result.tierDuration)
+
   const responseRows = QUESTION_ORDER
     .filter(({ key }) => answers[key] !== undefined)
     .map(
       ({ key, label }) =>
         `<tr>
-          <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${label}</td>
+          <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${escapeHtml(label)}</td>
           <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${formatLabel(answers[key])}</td>
         </tr>`
     )
     .join('')
 
   const contactRows = [
-    ['School', contact.schoolName],
-    ['Contact', `${contact.contactName}${contact.role ? ` (${contact.role})` : ''}`],
-    ['Email', `<a href="mailto:${contact.email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.email}</a>`],
-    ['Phone', `<a href="tel:${contact.phone}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.phone}</a>`],
-    ...(contact.website ? [['Website', `<a href="${contact.website}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${contact.website}</a>`]] : []),
+    ['School', schoolName],
+    ['Contact', `${contactName}${role ? ` (${role})` : ''}`],
+    ['Email', `<a href="mailto:${email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${email}</a>`],
+    ['Phone', `<a href="tel:${phone}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${phone}</a>`],
+    ...(websiteHref ? [['Website', `<a href="${escapeHtml(websiteHref)}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${websiteDisplay}</a>`]] : []),
   ]
     .map(
       ([label, value]) =>
@@ -129,13 +145,13 @@ function buildInternalEmail(body: ProposalPayload): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:24px;">
       <tr><td style="background-color:#0e3e2e;padding:16px 20px;">
         <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Recommended Programme</p>
-        <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#ffffff;">${result.programTitle}</h2>
+        <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#ffffff;">${programTitle}</h2>
       </td></tr>
       <tr><td style="padding:16px 20px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="font-size:14px;font-weight:700;color:#0e3e2e;">${result.tierName} <span style="font-size:11px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:4px;">${result.tierTag}</span></td>
-            <td style="font-size:14px;color:#555;font-weight:600;" align="right">${result.tierDuration}</td>
+            <td style="font-size:14px;font-weight:700;color:#0e3e2e;">${tierName} <span style="font-size:11px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:4px;">${tierTag}</span></td>
+            <td style="font-size:14px;color:#555;font-weight:600;" align="right">${tierDuration}</td>
           </tr>
         </table>
       </td></tr>
@@ -157,8 +173,8 @@ function buildInternalEmail(body: ProposalPayload): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td align="center" style="padding:4px 0;">
-          <a href="mailto:${contact.email}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
-            Reply to ${contact.contactName.split(' ')[0]}
+          <a href="mailto:${email}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
+            Reply to ${firstName}
           </a>
         </td>
       </tr>
@@ -184,11 +200,23 @@ function buildInternalEmail(body: ProposalPayload): string {
 
 function buildCustomerEmail(body: ProposalPayload): string {
   const { contact, result } = body
-  const programUrl = `${SITE_URL}/schools/programs/${result.programSlug}`
+
+  // Constrain programSlug to known slugs to prevent open-redirect or path injection
+  const SAFE_SLUGS = new Set(['on-campus-camps', 'nature-craft', 'leadership-development'])
+  const safeSlug = SAFE_SLUGS.has(result.programSlug) ? result.programSlug : ''
+  const programUrl = safeSlug ? `${SITE_URL}/schools/programs/${safeSlug}` : `${SITE_URL}/schools`
+
+  const firstName = escapeHtml(contact.contactName.split(' ')[0])
+  const schoolName = escapeHtml(contact.schoolName)
+  const programTitle = escapeHtml(result.programTitle)
+  const tierName = escapeHtml(result.tierName)
+  const tierTag = escapeHtml(result.tierTag)
+  const tierDuration = escapeHtml(result.tierDuration)
+
   const includesList = result.tierIncludes
     .map(
       (item) =>
-        `<tr><td style="padding:4px 0;font-size:14px;color:#3d3d3d;"><span style="color:#e6b325;margin-right:8px;">&#10003;</span>${item}</td></tr>`
+        `<tr><td style="padding:4px 0;font-size:14px;color:#3d3d3d;"><span style="color:#e6b325;margin-right:8px;">&#10003;</span>${escapeHtml(item)}</td></tr>`
     )
     .join('')
 
@@ -211,17 +239,17 @@ function buildCustomerEmail(body: ProposalPayload): string {
 
     <!-- Greeting -->
     <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#0e3e2e;">
-      Hi ${contact.contactName.split(' ')[0]},
+      Hi ${firstName},
     </p>
     <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#555555;">
-      Thank you for your interest in bringing outdoor learning to <strong>${contact.schoolName}</strong>. Based on your responses, here's what we recommend:
+      Thank you for your interest in bringing outdoor learning to <strong>${schoolName}</strong>. Based on your responses, here's what we recommend:
     </p>
 
     <!-- Recommendation Card -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:28px;">
       <tr><td style="background-color:#0e3e2e;padding:20px 24px;">
         <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Recommended Programme</p>
-        <h2 style="margin:6px 0 0;font-size:24px;font-weight:700;color:#ffffff;">${result.programTitle}</h2>
+        <h2 style="margin:6px 0 0;font-size:24px;font-weight:700;color:#ffffff;">${programTitle}</h2>
       </td></tr>
       <tr><td style="padding:24px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
@@ -230,8 +258,8 @@ function buildCustomerEmail(body: ProposalPayload): string {
             <td style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:4px;" align="right">Duration</td>
           </tr>
           <tr>
-            <td style="font-size:18px;font-weight:700;color:#0e3e2e;">${result.tierName} <span style="font-size:12px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:6px;">${result.tierTag}</span></td>
-            <td style="font-size:16px;color:#0e3e2e;font-weight:600;" align="right">${result.tierDuration}</td>
+            <td style="font-size:18px;font-weight:700;color:#0e3e2e;">${tierName} <span style="font-size:12px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:6px;">${tierTag}</span></td>
+            <td style="font-size:16px;color:#0e3e2e;font-weight:600;" align="right">${tierDuration}</td>
           </tr>
         </table>
         <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
@@ -323,9 +351,45 @@ async function sendResendEmail(
   })
 }
 
+function isValidPayload(body: unknown): body is ProposalPayload {
+  if (!body || typeof body !== 'object') return false
+  const b = body as Record<string, unknown>
+
+  if (!b.answers || typeof b.answers !== 'object') return false
+
+  const contact = b.contact as Record<string, unknown> | undefined
+  if (!contact || typeof contact !== 'object') return false
+  if (typeof contact.contactName !== 'string' || !contact.contactName.trim()) return false
+  if (typeof contact.email !== 'string' || !contact.email.trim()) return false
+  if (typeof contact.schoolName !== 'string' || !contact.schoolName.trim()) return false
+  if (typeof contact.role !== 'string') return false
+  if (typeof contact.phone !== 'string') return false
+  if (typeof contact.website !== 'string') return false
+
+  const result = b.result as Record<string, unknown> | undefined
+  if (!result || typeof result !== 'object') return false
+  if (typeof result.programTitle !== 'string' || !result.programTitle.trim()) return false
+  if (typeof result.programSlug !== 'string') return false
+  if (typeof result.tierName !== 'string' || !result.tierName.trim()) return false
+  if (typeof result.tierTag !== 'string') return false
+  if (typeof result.tierDuration !== 'string') return false
+  if (!Array.isArray(result.tierIncludes) || !result.tierIncludes.every((s) => typeof s === 'string')) return false
+
+  return true
+}
+
+// Strip CRLF from header values to prevent header injection in email subjects
+function safeHeader(s: string): string {
+  return s.replace(/[\r\n]/g, ' ').trim()
+}
+
 export async function POST(request: Request) {
   try {
-    const body: ProposalPayload = await request.json()
+    const rawBody: unknown = await request.json().catch(() => null)
+    if (!isValidPayload(rawBody)) {
+      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    const body: ProposalPayload = rawBody
     const { contact } = body
 
     const resendKey = process.env.RESEND_API_KEY
@@ -340,7 +404,7 @@ export async function POST(request: Request) {
         resendKey,
         'Camping Nigeria <proposals@campingnigeria.com>',
         [RECIPIENT],
-        `New School Proposal Request — ${contact.schoolName}`,
+        safeHeader(`New School Proposal Request — ${contact.schoolName}`),
         { html: buildInternalEmail(body) },
         contact.email
       ),
@@ -349,7 +413,7 @@ export async function POST(request: Request) {
         resendKey,
         'Camping Nigeria <proposals@campingnigeria.com>',
         [contact.email],
-        `Your Programme Recommendation — ${body.result.programTitle}`,
+        safeHeader(`Your Programme Recommendation — ${body.result.programTitle}`),
         { html: buildCustomerEmail(body) }
       ),
     ])

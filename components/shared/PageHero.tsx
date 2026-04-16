@@ -15,7 +15,7 @@ interface PageHeroProps {
   subheadline: string
   ctaLabel?: string
   ctaHref?: string
-  height?: 'min-h-screen' | 'h-[70vh]' | 'h-[60vh]'
+  height?: 'min-h-dvh' | 'h-[70dvh]' | 'h-[60dvh]'
   minHeight?: string
 }
 
@@ -29,7 +29,7 @@ export default function PageHero({
   subheadline,
   ctaLabel,
   ctaHref,
-  height = 'min-h-screen',
+  height = 'min-h-dvh',
   minHeight,
 }: PageHeroProps) {
   const sectionClassName = [

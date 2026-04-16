@@ -131,21 +131,27 @@ export function scoreAnswers(answers: ProposalAnswers): ProposalResult {
 
   const [camps, nature, leadership] = scores
 
+  // All on-campus-camps tiers are 2-day packages (see program-data.ts).
+  // If the user didn't pick a 2-day duration, camps is a content mismatch —
+  // disqualify it from winning regardless of score.
+  const campsEligible = answers.duration === '2-days'
+  const effectiveCamps = campsEligible ? camps : -Infinity
+
   // Determine winning program — ties broken by goal alignment
   let program: ProgramData
-  if (camps >= nature && camps >= leadership) {
+  if (effectiveCamps >= nature && effectiveCamps >= leadership) {
     program = ON_CAMPUS_CAMPS
-  } else if (nature >= camps && nature >= leadership) {
+  } else if (nature >= leadership) {
     program = NATURE_CRAFT
   } else {
     program = LEADERSHIP_DEVELOPMENT
   }
 
-  // Goal-based tiebreaker override
-  if (camps === nature && camps === leadership) {
+  // Goal-based tiebreaker override (only applies when eligible)
+  if (effectiveCamps === nature && nature === leadership) {
     if (answers.primaryGoal === 'leadership') program = LEADERSHIP_DEVELOPMENT
     else if (answers.primaryGoal === 'eco-creativity') program = NATURE_CRAFT
-    else program = ON_CAMPUS_CAMPS
+    else program = campsEligible ? ON_CAMPUS_CAMPS : NATURE_CRAFT
   }
 
   const tier = selectTier(program, answers)

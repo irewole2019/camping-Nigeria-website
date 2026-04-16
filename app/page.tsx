@@ -24,7 +24,7 @@ export default function GatewayPage() {
       {/* Background video */}
       <BackgroundVideo
         src={VIDEO_URL}
-        poster="/placeholder.jpg"
+        poster="/images/schools/hero.jpg"
       />
 
       {/* Dark overlay */}

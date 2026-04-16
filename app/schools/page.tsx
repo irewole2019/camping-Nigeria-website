@@ -2,6 +2,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Hero from '@/components/home/Hero'
 import WhyOutdoorLearning from '@/components/home/WhyOutdoorLearning'
+import DoECallout from '@/components/schools/DoECallout'
 import OurSchoolPrograms from '@/components/home/OurSchoolPrograms'
 import SafetySupervision from '@/components/home/SafetySupervision'
 import MediaFeature from '@/components/home/MediaFeature'
@@ -33,6 +34,7 @@ export default function SchoolsPage() {
       <Navbar />
       <Hero />
       <WhyOutdoorLearning />
+      <DoECallout />
       <OurSchoolPrograms />
       <SafetySupervision />
       <MediaFeature />

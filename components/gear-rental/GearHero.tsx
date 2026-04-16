@@ -16,7 +16,7 @@ export default function GearHero() {
         </>
       }
       subheadline="Rent high-quality camping equipment for schools, individuals, and organizations without the stress of ownership."
-      height="h-[60vh]"
+      height="h-[60dvh]"
       minHeight="min-h-[420px]"
     />
   )

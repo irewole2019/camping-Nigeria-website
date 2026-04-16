@@ -18,7 +18,7 @@ export default function IndividualsHero() {
       subheadline="Discover structured and accessible camping experiences designed for young adults and adventure seekers."
       ctaLabel="Book Your Spot"
       ctaHref="https://forms.office.com/r/bgsZ4shNxD"
-      height="h-[70vh]"
+      height="h-[70dvh]"
       minHeight="min-h-[480px]"
     />
   )

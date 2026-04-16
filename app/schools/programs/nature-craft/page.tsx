@@ -40,7 +40,7 @@ export default function NatureCraftPage() {
         eyebrow="School Program"
         headline={data.title}
         subheadline={data.subtitle}
-        height="h-[70vh]"
+        height="h-[70dvh]"
       />
       <ProgramOverview data={data} />
       <ProgramPillars pillars={data.pillars} />

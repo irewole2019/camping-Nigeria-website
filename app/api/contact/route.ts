@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '@/lib/html'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
@@ -13,6 +14,13 @@ interface ContactPayload {
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
 
 function buildInternalEmail(data: ContactPayload): string {
+  const fullName = escapeHtml(data.fullName)
+  const email = escapeHtml(data.email)
+  const subject = escapeHtml(data.subject)
+  const message = escapeHtml(data.message)
+  const firstName = escapeHtml(data.fullName.split(' ')[0])
+  const replySubject = encodeURIComponent(`Re: ${data.subject}`)
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -34,7 +42,7 @@ function buildInternalEmail(data: ContactPayload): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:24px;">
       <tr><td style="background-color:#0e3e2e;padding:16px 20px;">
         <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Subject</p>
-        <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#ffffff;">${data.subject}</h2>
+        <h2 style="margin:4px 0 0;font-size:20px;font-weight:700;color:#ffffff;">${subject}</h2>
       </td></tr>
       <tr><td style="padding:20px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -42,7 +50,7 @@ function buildInternalEmail(data: ContactPayload): string {
             <td style="font-size:13px;font-weight:600;color:#0e3e2e;padding-bottom:4px;">From</td>
           </tr>
           <tr>
-            <td style="font-size:15px;color:#3d3d3d;">${data.fullName} &mdash; <a href="mailto:${data.email}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${data.email}</a></td>
+            <td style="font-size:15px;color:#3d3d3d;">${fullName} &mdash; <a href="mailto:${email}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${email}</a></td>
           </tr>
         </table>
       </td></tr>
@@ -51,15 +59,15 @@ function buildInternalEmail(data: ContactPayload): string {
     <!-- Message -->
     <p style="margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#888;font-weight:600;">Message</p>
     <div style="background:#fafaf8;border-radius:8px;padding:20px;margin-bottom:24px;">
-      <p style="margin:0;font-size:14px;color:#3d3d3d;line-height:1.7;white-space:pre-wrap;">${data.message}</p>
+      <p style="margin:0;font-size:14px;color:#3d3d3d;line-height:1.7;white-space:pre-wrap;">${message}</p>
     </div>
 
     <!-- Quick Action -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td align="center" style="padding:4px 0;">
-          <a href="mailto:${data.email}?subject=Re: ${encodeURIComponent(data.subject)}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
-            Reply to ${data.fullName.split(' ')[0]}
+          <a href="mailto:${email}?subject=${replySubject}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
+            Reply to ${firstName}
           </a>
         </td>
       </tr>
@@ -84,7 +92,9 @@ function buildInternalEmail(data: ContactPayload): string {
 // ─── Customer Confirmation (branded HTML) ───────────────────────────────────
 
 function buildCustomerEmail(data: ContactPayload): string {
-  const firstName = data.fullName.split(' ')[0]
+  const firstName = escapeHtml(data.fullName.split(' ')[0])
+  const subject = escapeHtml(data.subject)
+  const message = escapeHtml(data.message)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -115,10 +125,10 @@ function buildCustomerEmail(data: ContactPayload): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:28px;">
       <tr><td style="background-color:#0e3e2e;padding:16px 20px;">
         <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Your Message</p>
-        <h2 style="margin:4px 0 0;font-size:18px;font-weight:700;color:#ffffff;">${data.subject}</h2>
+        <h2 style="margin:4px 0 0;font-size:18px;font-weight:700;color:#ffffff;">${subject}</h2>
       </td></tr>
       <tr><td style="padding:20px;">
-        <p style="margin:0;font-size:14px;color:#3d3d3d;line-height:1.7;white-space:pre-wrap;">${data.message}</p>
+        <p style="margin:0;font-size:14px;color:#3d3d3d;line-height:1.7;white-space:pre-wrap;">${message}</p>
       </td></tr>
     </table>
 
@@ -193,11 +203,26 @@ async function sendResendEmail(
 
 export async function POST(request: Request) {
   try {
-    const data: ContactPayload = await request.json()
+    const raw: unknown = await request.json().catch(() => null)
+    if (!raw || typeof raw !== 'object') {
+      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    const r = raw as Record<string, unknown>
+    if (
+      typeof r.fullName !== 'string' ||
+      typeof r.email !== 'string' ||
+      typeof r.subject !== 'string' ||
+      typeof r.message !== 'string'
+    ) {
+      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    const data = raw as ContactPayload
 
-    if (!data.fullName || !data.email || !data.subject || !data.message) {
+    if (!data.fullName.trim() || !data.email.trim() || !data.subject.trim() || !data.message.trim()) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
+
+    const safeHeader = (s: string) => s.replace(/[\r\n]/g, ' ').trim()
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
@@ -209,7 +234,7 @@ export async function POST(request: Request) {
         resendKey,
         'Camping Nigeria <hello@campingnigeria.com>',
         [RECIPIENT],
-        `Contact: ${data.subject} — ${data.fullName}`,
+        safeHeader(`Contact: ${data.subject} — ${data.fullName}`),
         { html: buildInternalEmail(data) },
         data.email
       ),

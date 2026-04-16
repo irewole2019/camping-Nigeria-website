@@ -16,8 +16,9 @@ import ProposalResultView from './ProposalResult'
 
 // ─── Shared Styles ──────────────────────────────────────────────────────────
 
+// text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
 const inputBase =
-  'w-full rounded-lg border border-brand-dark/15 bg-white px-4 py-3 font-sans text-sm text-brand-dark placeholder:text-brand-dark/40 outline-none transition-colors duration-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20'
+  'w-full rounded-lg border border-brand-dark/15 bg-white px-4 py-3 font-sans text-base sm:text-sm text-brand-dark placeholder:text-brand-dark/40 outline-none transition-colors duration-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20'
 
 const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { escapeHtml } from '@/lib/html'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
@@ -14,10 +15,17 @@ interface GearQuotePayload {
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
 
 function buildInternalEmail(data: GearQuotePayload): string {
+  const fullName = escapeHtml(data.fullName)
+  const email = escapeHtml(data.email)
+  const organization = escapeHtml(data.organization)
+  const equipment = escapeHtml(data.equipment)
+  const rentalDates = escapeHtml(data.rentalDates)
+  const firstName = escapeHtml(data.fullName.split(' ')[0])
+
   const contactRows = [
-    ['Name', data.fullName],
-    ['Email', `<a href="mailto:${data.email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${data.email}</a>`],
-    ...(data.organization ? [['Organization', data.organization]] : []),
+    ['Name', fullName],
+    ['Email', `<a href="mailto:${email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${email}</a>`],
+    ...(data.organization ? [['Organization', organization]] : []),
   ]
     .map(
       ([label, value]) =>
@@ -51,13 +59,13 @@ function buildInternalEmail(data: GearQuotePayload): string {
         <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#e6b325;font-weight:600;">Equipment Requested</p>
       </td></tr>
       <tr><td style="padding:20px;">
-        <p style="margin:0 0 16px;font-size:14px;color:#3d3d3d;line-height:1.6;">${data.equipment}</p>
+        <p style="margin:0 0 16px;font-size:14px;color:#3d3d3d;line-height:1.6;">${equipment}</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Rental Dates</td>
           </tr>
           <tr>
-            <td style="font-size:16px;font-weight:700;color:#0e3e2e;padding-top:4px;">${data.rentalDates}</td>
+            <td style="font-size:16px;font-weight:700;color:#0e3e2e;padding-top:4px;">${rentalDates}</td>
           </tr>
         </table>
       </td></tr>
@@ -73,8 +81,8 @@ function buildInternalEmail(data: GearQuotePayload): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td align="center" style="padding:4px 0;">
-          <a href="mailto:${data.email}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
-            Reply to ${data.fullName.split(' ')[0]}
+          <a href="mailto:${email}" style="display:inline-block;background-color:#e6b325;color:#0e3e2e;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:8px;">
+            Reply to ${firstName}
           </a>
         </td>
       </tr>
@@ -99,7 +107,9 @@ function buildInternalEmail(data: GearQuotePayload): string {
 // ─── Customer Confirmation (branded HTML) ───────────────────────────────────
 
 function buildCustomerEmail(data: GearQuotePayload): string {
-  const firstName = data.fullName.split(' ')[0]
+  const firstName = escapeHtml(data.fullName.split(' ')[0])
+  const equipment = escapeHtml(data.equipment)
+  const rentalDates = escapeHtml(data.rentalDates)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -138,13 +148,13 @@ function buildCustomerEmail(data: GearQuotePayload): string {
             <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:8px;">Equipment Requested</td>
           </tr>
           <tr>
-            <td style="font-size:14px;color:#3d3d3d;padding-bottom:16px;line-height:1.6;">${data.equipment}</td>
+            <td style="font-size:14px;color:#3d3d3d;padding-bottom:16px;line-height:1.6;">${equipment}</td>
           </tr>
           <tr>
             <td style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:8px;">Rental Dates</td>
           </tr>
           <tr>
-            <td style="font-size:14px;color:#3d3d3d;font-weight:600;">${data.rentalDates}</td>
+            <td style="font-size:14px;color:#3d3d3d;font-weight:600;">${rentalDates}</td>
           </tr>
         </table>
       </td></tr>
@@ -235,11 +245,27 @@ async function sendResendEmail(
 
 export async function POST(request: Request) {
   try {
-    const data: GearQuotePayload = await request.json()
+    const raw: unknown = await request.json().catch(() => null)
+    if (!raw || typeof raw !== 'object') {
+      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    const r = raw as Record<string, unknown>
+    if (
+      typeof r.fullName !== 'string' ||
+      typeof r.email !== 'string' ||
+      typeof r.equipment !== 'string' ||
+      typeof r.rentalDates !== 'string' ||
+      (r.organization !== undefined && typeof r.organization !== 'string')
+    ) {
+      return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    const data = raw as GearQuotePayload
 
-    if (!data.fullName || !data.email || !data.equipment || !data.rentalDates) {
+    if (!data.fullName.trim() || !data.email.trim() || !data.equipment.trim() || !data.rentalDates.trim()) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
+
+    const safeHeader = (s: string) => s.replace(/[\r\n]/g, ' ').trim()
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
@@ -251,7 +277,7 @@ export async function POST(request: Request) {
         resendKey,
         'Camping Nigeria <rentals@campingnigeria.com>',
         [RECIPIENT],
-        `Gear Rental Quote Request — ${data.fullName}`,
+        safeHeader(`Gear Rental Quote Request — ${data.fullName}`),
         { html: buildInternalEmail(data) },
         data.email
       ),
