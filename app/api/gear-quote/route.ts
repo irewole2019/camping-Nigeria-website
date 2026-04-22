@@ -7,6 +7,7 @@ const SITE_URL = 'https://campingnigeria.com'
 interface GearQuotePayload {
   fullName: string
   email: string
+  phone: string
   organization: string
   equipment: string
   rentalDates: string
@@ -17,6 +18,8 @@ interface GearQuotePayload {
 function buildInternalEmail(data: GearQuotePayload): string {
   const fullName = escapeHtml(data.fullName)
   const email = escapeHtml(data.email)
+  const phone = escapeHtml(data.phone)
+  const phoneDigits = data.phone.replace(/\D/g, '')
   const organization = escapeHtml(data.organization)
   const equipment = escapeHtml(data.equipment)
   const rentalDates = escapeHtml(data.rentalDates)
@@ -25,6 +28,7 @@ function buildInternalEmail(data: GearQuotePayload): string {
   const contactRows = [
     ['Name', fullName],
     ['Email', `<a href="mailto:${email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${email}</a>`],
+    ['Phone', `<a href="tel:${phoneDigits}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${phone}</a>`],
     ...(data.organization ? [['Organization', organization]] : []),
   ]
     .map(
@@ -253,6 +257,7 @@ export async function POST(request: Request) {
     if (
       typeof r.fullName !== 'string' ||
       typeof r.email !== 'string' ||
+      typeof r.phone !== 'string' ||
       typeof r.equipment !== 'string' ||
       typeof r.rentalDates !== 'string' ||
       (r.organization !== undefined && typeof r.organization !== 'string')
@@ -261,8 +266,17 @@ export async function POST(request: Request) {
     }
     const data = raw as GearQuotePayload
 
-    if (!data.fullName.trim() || !data.email.trim() || !data.equipment.trim() || !data.rentalDates.trim()) {
+    if (
+      !data.fullName.trim() ||
+      !data.email.trim() ||
+      !data.phone.trim() ||
+      !data.equipment.trim() ||
+      !data.rentalDates.trim()
+    ) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
+    }
+    if (data.phone.replace(/\D/g, '').length < 7) {
+      return NextResponse.json({ success: false, error: 'Invalid phone number' }, { status: 400 })
     }
 
     const safeHeader = (s: string) => s.replace(/[\r\n]/g, ' ').trim()

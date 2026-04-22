@@ -11,9 +11,26 @@ const inputBase =
 
 const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 
+function todayISO(): string {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
+function formatRentalDates(start: string, end: string): string {
+  const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' }
+  const startStr = new Date(`${start}T00:00:00`).toLocaleDateString('en-GB', opts)
+  if (start === end) return startStr
+  const endStr = new Date(`${end}T00:00:00`).toLocaleDateString('en-GB', opts)
+  return `${startStr} – ${endStr}`
+}
+
 interface FormErrors {
   fullName?: string
   email?: string
+  phone?: string
   equipment?: string
   rentalDates?: string
 }
@@ -23,6 +40,8 @@ export default function QuoteForm() {
   const [sending, setSending] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
+  const [minEndDate, setMinEndDate] = useState<string>(todayISO())
+  const today = todayISO()
 
   function validate(data: Record<string, FormDataEntryValue>): FormErrors {
     const newErrors: FormErrors = {}
@@ -34,11 +53,20 @@ export default function QuoteForm() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.email))) {
       newErrors.email = 'Please enter a valid email address.'
     }
+    if (!data.phone || String(data.phone).trim() === '') {
+      newErrors.phone = 'Phone number is required.'
+    } else if (String(data.phone).replace(/\D/g, '').length < 7) {
+      newErrors.phone = 'Please enter a valid phone number.'
+    }
     if (!data.equipment || String(data.equipment).trim() === '') {
       newErrors.equipment = 'Please describe the equipment you need.'
     }
-    if (!data.rentalDates || String(data.rentalDates).trim() === '') {
-      newErrors.rentalDates = 'Expected rental dates are required.'
+    const startDate = String(data.startDate || '')
+    const endDate = String(data.endDate || '')
+    if (!startDate || !endDate) {
+      newErrors.rentalDates = 'Please pick both a start and end date.'
+    } else if (endDate < startDate) {
+      newErrors.rentalDates = 'End date must be on or after the start date.'
     }
     return newErrors
   }
@@ -57,6 +85,8 @@ export default function QuoteForm() {
     setSubmitError(null)
     setSending(true)
 
+    const rentalDates = formatRentalDates(String(data.startDate), String(data.endDate))
+
     try {
       const res = await fetch('/api/gear-quote', {
         method: 'POST',
@@ -64,9 +94,10 @@ export default function QuoteForm() {
         body: JSON.stringify({
           fullName: String(data.fullName),
           email: String(data.email),
+          phone: String(data.phone),
           organization: String(data.organization || ''),
           equipment: String(data.equipment),
-          rentalDates: String(data.rentalDates),
+          rentalDates,
         }),
       })
 
@@ -80,7 +111,7 @@ export default function QuoteForm() {
       if (result.fallback === 'mailto') {
         const subject = encodeURIComponent(`Gear Rental Quote Request — ${data.fullName}`)
         const body = encodeURIComponent(
-          `Name: ${data.fullName}\nEmail: ${data.email}\nOrganization: ${data.organization || 'N/A'}\nEquipment: ${data.equipment}\nDates: ${data.rentalDates}`
+          `Name: ${data.fullName}\nEmail: ${data.email}\nPhone: ${data.phone}\nOrganization: ${data.organization || 'N/A'}\nEquipment: ${data.equipment}\nDates: ${rentalDates}`
         )
         window.open(`mailto:hello@campingnigeria.com?subject=${subject}&body=${body}`, '_self')
         return
@@ -209,6 +240,33 @@ export default function QuoteForm() {
               )}
             </div>
 
+            {/* Phone */}
+            <div>
+              <label htmlFor="phone" className={labelBase}>
+                Phone Number{' '}
+                <span className="text-brand-dark/40 font-normal">(WhatsApp preferred)</span>{' '}
+                <span className="text-brand-accent">*</span>
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                required
+                aria-required="true"
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? 'phone-error' : undefined}
+                placeholder="e.g. 0704 053 8528"
+                className={inputBase}
+              />
+              {errors.phone && (
+                <p id="phone-error" className="mt-1 text-sm text-red-600" role="alert">
+                  {errors.phone}
+                </p>
+              )}
+            </div>
+
             {/* Organization */}
             <div>
               <label htmlFor="organization" className={labelBase}>
@@ -248,23 +306,46 @@ export default function QuoteForm() {
             </div>
 
             {/* Rental Dates */}
-            <div>
-              <label htmlFor="rentalDates" className={labelBase}>
-                Expected Rental Dates <span className="text-brand-accent">*</span>
-              </label>
-              <input
-                id="rentalDates"
-                name="rentalDates"
-                type="text"
-                required
-                aria-required="true"
-                aria-invalid={!!errors.rentalDates}
-                aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
-                placeholder="e.g. March 14-17, 2026"
-                className={inputBase}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="startDate" className={labelBase}>
+                  Rental Start Date <span className="text-brand-accent">*</span>
+                </label>
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  required
+                  min={today}
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
+                  onChange={(e) => setMinEndDate(e.target.value || today)}
+                  className={inputBase}
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className={labelBase}>
+                  Rental End Date <span className="text-brand-accent">*</span>
+                </label>
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  required
+                  min={minEndDate}
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
+                  className={inputBase}
+                />
+              </div>
               {errors.rentalDates && (
-                <p id="rentalDates-error" className="mt-1 text-sm text-red-600" role="alert">
+                <p
+                  id="rentalDates-error"
+                  className="sm:col-span-2 -mt-2 text-sm text-red-600"
+                  role="alert"
+                >
                   {errors.rentalDates}
                 </p>
               )}
