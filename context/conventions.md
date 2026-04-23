@@ -9,9 +9,10 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `home/`, `shared/`, `ui/`, `layout/`)
 - **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `program-data.ts`, `utils.ts`
 - **Assets**:
-  - `public/images/<feature>/...`
+  - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - `public/pdf/...`
   - Video referenced via `MEDIA_VIDEO` from `lib/media.ts` (not raw paths)
+  - Images registered in `lib/media.ts` with `{ src, alt }` tuples — components import the registry, never raw paths
 - **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-helvetica-now` / `--font-agrandir`
 
 ## Components
@@ -125,19 +126,62 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 - `components/ScrollToTop.tsx` is mounted once in `app/layout.tsx` — don't add per-page scroll logic.
 - `Link` from `next/link` for internal nav. External links + downloads use plain `<a>` with `href` and (for downloads) the `download` attribute.
 
+## SEO
+
+Every page adds **two things**:
+
+```tsx
+import { buildPageMetadata } from '@/lib/seo'
+import JsonLd from '@/components/seo/JsonLd'
+import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
+
+export const metadata = buildPageMetadata({
+  title: 'Page Title | Camping Nigeria',
+  description: 'One sentence that reads like a search snippet.',
+  path: '/path-from-root',
+})
+
+export default function Page() {
+  return (
+    <main id="main-content">
+      <JsonLd
+        id="page-breadcrumb-jsonld"
+        data={buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          // ...ancestors...
+          { name: 'This Page', path: '/path-from-root' },
+        ])}
+      />
+      {/* ... */}
+    </main>
+  )
+}
+```
+
+- `buildPageMetadata` fills canonical, keywords, Open Graph, Twitter automatically. Only provide `title`, `description`, `path`; override `keywords`/`type` when needed.
+- Every page gets a `BreadcrumbList`. Pages with rich content (FAQ, programmes, services) additionally get `FaqJsonLd` / `ServiceJsonLd`.
+- Organization + WebSite JSON-LD are emitted once in `app/layout.tsx` — don't re-emit per page.
+- Address, phone, socials flow from `CONTACT` in `lib/constants.ts`. **Never hardcode the company address** — use `CONTACT.address.formatted` (or the structured fields for schema).
+- Dynamic OG/Twitter images live at `app/opengraph-image.tsx` and `app/twitter-image.tsx` and are served under `/opengraph-image` / `/twitter-image`. Keep them edge-runtime-compatible (no custom fonts without extra setup).
+- Sitemap (`app/sitemap.ts`): add new pages to `ROUTES` with `changeFrequency`, `priority`, and an `image` URL if there's a primary hero/feature image.
+
 ## Env and secrets
 
 - `RESEND_API_KEY` — transactional email. Fail open to `mailto:` fallback if missing; never throw.
-- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — per-IP rate limiting. Fail open (no limiter) if either is missing so local dev works. Production deploys MUST have both set.
-- Never commit `.env.local`. `.env.example` documents the variables.
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — per-IP rate limiting. Fail *closed* in production (429) when missing; fail open in dev. Production deploys MUST have both set.
+- `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` — optional. When set, adds `<meta name="google-site-verification">` to the root layout.
+- `NEXT_PUBLIC_SEO_LAST_MODIFIED` — optional ISO date used for sitemap `<lastmod>` timestamps. Defaults to a baked-in fallback if missing.
+- Never commit `.env.local`. `.env.example` documents the full list.
 
 ## Dev commands
 
 ```bash
-npm run dev     # next dev on :3000 / :3001
-npm run build   # production build — run before merging
-npm run lint    # eslint flat config in eslint.config.mjs
-npx tsc --noEmit  # type check
+npm run dev        # next dev on :3000 / :3001
+npm run build      # production build — run before merging
+npm run lint       # eslint flat config in eslint.config.mjs
+npm test           # vitest run (pure-function tests)
+npm run test:watch # vitest watch mode
+npx tsc --noEmit   # type check
 ```
 
 `npm audit` is clean as of Next 16.2.4.

@@ -236,6 +236,44 @@ Extracted to `lib/mail.ts`. Takes a `from`, an `internal` (with `replyTo`), and 
 
 ---
 
+## `Organization + LocalBusiness` hybrid, one global entry with a stable `@id`
+
+`lib/structured-data.ts#buildOrganizationJsonLd` emits `"@type": ["Organization", "LocalBusiness"]` with a stable `"@id": "{SITE_URL}/#organization"` and a real `PostalAddress` (198 Damboa Close, PW, Kubwa, Abuja). `WebSite` and every `Service` schema reference the org via `@id` instead of duplicating name/url/logo.
+
+**Why:**
+- Google accepts the array `@type` and applies both treatments — we keep the generic Organization signals while unlocking LocalBusiness features (address, priceRange, local-pack eligibility) for "camping Abuja"-type queries.
+- Stable `@id` lets graph consumers (Google, Bing, LLMs) deduplicate entities. Without it, every page's structured data would assert a separate "Camping Nigeria" organisation.
+- `priceRange: ₦₦₦` signals premium positioning without committing to a specific number; real prices appear only where they're fixed (the DoE page).
+
+---
+
+## Service schema: `AggregateOffer` when prices are public, `hasOfferCatalog` when they're quote-based
+
+`buildServiceJsonLd(input)` inspects the `offers` array. When every offer has a numeric `price`, it emits `AggregateOffer` with `lowPrice`/`highPrice`/`offerCount` + individual `Offer` children. When none have prices, it falls back to `hasOfferCatalog` with named `Offer` → `Service` children and no price data.
+
+**Why:**
+- Google's price-range rich results require `AggregateOffer` with real numbers. Fabricating prices for quote-based programs would be misleading and risk a manual action.
+- The three school programs (Nature Craft, Leadership Development, On-Campus Camps) are quote-based — their tiers describe what's included, not what it costs. `hasOfferCatalog` is the correct shape: it tells Google the tier structure without pretending there's a published price.
+- DoE has real, public tier prices (₦3M / ₦5M / ₦8M), so it gets the full `AggregateOffer` treatment and is eligible for price-range snippets in search.
+
+---
+
+## Sitemap includes per-URL `<image:image>` entries
+
+`app/sitemap.ts` attaches an `images: [primaryImageUrl]` field to 10 of 14 routes (every content-heavy page except the forms and legal pages).
+
+**Why:** Google Image Search indexes from sitemaps more reliably than from in-page HTML alone, especially for marketing sites where images often carry the same keyword weight as copy. Zero runtime cost; one more signal path to Google Images for hero imagery that otherwise would only get discovered via crawl.
+
+---
+
+## `CONTACT.address` is the single source of truth for the company address
+
+The registered address is declared once in [lib/constants.ts](../lib/constants.ts) as a structured object (`streetAddress`, `locality`, `region`, `country`, `formatted`). Every consumer — `PostalAddress` in the LocalBusiness schema, the `/contact` page, the privacy policy, any future footer reference — reads from this constant.
+
+**Why:** The address was initially hardcoded as "Lagos, Nigeria" in three places and in the schema. When the real address turned out to be in Abuja (not Lagos), we had to hunt down three strings plus the schema. A single structured constant means the next move/rename is a one-line change that flows everywhere, and `PostalAddress` fields map cleanly from the same object.
+
+---
+
 ## Post-hydration date initialisation in `QuoteForm`
 
 `today` and `minEndDate` start as empty strings and are set to `todayISO()` inside a `useEffect`. The effect is marked with a single `eslint-disable-next-line react-hooks/set-state-in-effect` comment.

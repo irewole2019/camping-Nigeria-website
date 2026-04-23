@@ -1,7 +1,26 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/seo'
 
-const LAST_MODIFIED = new Date(process.env.NEXT_PUBLIC_SEO_LAST_MODIFIED ?? '2026-04-23T00:00:00.000Z')
+/**
+ * Read NEXT_PUBLIC_SEO_LAST_MODIFIED defensively. `??` only falls back on
+ * null/undefined, so an empty-string env var (common on Vercel when a key is
+ * kept but the value is cleared) would produce `new Date('')` → Invalid Date,
+ * and `toISOString()` during prerender throws `RangeError: Invalid time value`
+ * — breaking the whole build. Treat empty / whitespace / unparseable values
+ * as "use the fallback".
+ */
+const FALLBACK_LAST_MODIFIED = '2026-04-23T00:00:00.000Z'
+
+function resolveLastModified(): Date {
+  const raw = process.env.NEXT_PUBLIC_SEO_LAST_MODIFIED
+  if (raw && raw.trim() !== '') {
+    const parsed = new Date(raw)
+    if (!Number.isNaN(parsed.getTime())) return parsed
+  }
+  return new Date(FALLBACK_LAST_MODIFIED)
+}
+
+const LAST_MODIFIED = resolveLastModified()
 
 const OG = `${SITE_URL}/opengraph-image`
 

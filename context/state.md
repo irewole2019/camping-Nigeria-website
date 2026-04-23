@@ -2,7 +2,11 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-04-22
+Last updated: 2026-04-23
+
+## Company
+
+Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close, PW, Kubwa, Abuja, FCT, Nigeria**. Address flows from [`CONTACT.address` in lib/constants.ts](../lib/constants.ts) — never hardcoded; both the contact page, privacy policy, and `LocalBusiness` schema reference the same constant.
 
 ## Built
 
@@ -85,6 +89,7 @@ All 4 routes send **two** emails (internal + customer confirmation) via `sendPai
 - `ScrollToTop` component forces `behavior: 'instant'` on every route change
 - `npm run lint` works — `eslint@9` + `eslint-config-next@16.2.4` with flat config in `eslint.config.mjs`
 - **Dependencies current: Next 16.2.4, `npm audit` clean.** Upgrade from 16.1.6 resolved 6 HIGH CVEs (HTTP request smuggling, CSRF bypass, DoS variants).
+- **Images are WebP-only.** All 37 orphan `.jpg` files under `public/images/**` were deleted once the media registry was fully webp-native. Repo `public/images/` went from 129 MB to 17 MB. Don't reintroduce JPGs — export WebP from the design tool directly.
 
 ## In progress
 
@@ -120,3 +125,11 @@ Worked through the full code-review punch list plus a follow-up review:
 16. ✅ **CSP shipped in report-only mode** — browsers log violations without blocking. Flip the header key when ready to enforce.
 17. ✅ **On-campus-camps tier differentiation restored** — uses `groupSize` (under-40 → Spark, 40-150 → Trail, 150+ → Summit), matching nature-craft / leadership-development patterns.
 18. ✅ **Test suite added** — Vitest with 44 tests across html/proposal-engine/expedition-recommendation. `npm test` runs in <1s.
+19. ✅ **WebP migration completed** — deleted 37 orphan `.jpg` files; `public/images/` shrunk from 129 MB to 17 MB. Site was already serving webp; the jpgs were dead weight.
+20. ✅ **SEO audit and upgrade** — audit found a strong technical foundation (~87/100) with gaps in structured-data depth. Shipped all four recommended fixes:
+    - `Organization` upgraded to `Organization + LocalBusiness` hybrid with real `PostalAddress`, `priceRange`, and stable `@id`
+    - `Service` + `hasOfferCatalog` on all three program pages (quote-based pricing)
+    - `Service` + `AggregateOffer` on `/schools/international-award` with real NGN prices (₦3M / ₦5M / ₦8M) — eligible for price-range rich results
+    - `<image:image>` entries added to 10 of 14 sitemap URLs
+    - Estimated new score: ~95/100; remaining gap is content-strategy (no blog) not technical.
+21. ✅ **Address corrected sitewide** — "Lagos, Nigeria" was wrong; company is based at 198 Damboa Close, PW, Kubwa, Abuja. Added `CONTACT.address` constant as the single source of truth. Fixed contact page, privacy policy, LocalBusiness schema, and CLAUDE.md.
