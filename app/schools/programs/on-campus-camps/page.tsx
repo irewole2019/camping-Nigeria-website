@@ -1,5 +1,6 @@
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import JsonLd from '@/components/seo/JsonLd'
 import PageHero from '@/components/shared/PageHero'
 import ProgramOverview from '@/components/programs/ProgramOverview'
 import ProgramPillars from '@/components/programs/ProgramPillars'
@@ -9,30 +10,42 @@ import PackageTiers from '@/components/programs/PackageTiers'
 import ProgramCta from '@/components/programs/ProgramCta'
 import { ON_CAMPUS_CAMPS } from '@/lib/program-data'
 import { SCHOOLS_PROGRAMS } from '@/lib/media'
+import { buildPageMetadata } from '@/lib/seo'
+import { buildBreadcrumbJsonLd, buildServiceJsonLd } from '@/lib/structured-data'
 
 const data = ON_CAMPUS_CAMPS
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: '2-Day On-Campus Camps | Camping Nigeria',
   description:
     'Immersive 2-day camp experiences delivered right at your school gates — adventure, teamwork, and growth without long-distance travel.',
-  openGraph: {
-    title: '2-Day On-Campus Camps | Camping Nigeria',
-    description:
-      'Immersive 2-day camp experiences delivered right at your school gates — adventure, teamwork, and growth without long-distance travel.',
-    url: '/schools/programs/on-campus-camps',
-  },
-  twitter: {
-    card: 'summary_large_image' as const,
-    title: '2-Day On-Campus Camps | Camping Nigeria',
-    description:
-      'Immersive 2-day camp experiences delivered right at your school gates — adventure, teamwork, and growth without long-distance travel.',
-  },
-}
+  path: '/schools/programs/on-campus-camps',
+})
 
 export default function OnCampusCampsPage() {
   return (
     <main id="main-content">
+      <JsonLd
+        id="on-campus-camps-breadcrumb-jsonld"
+        data={buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Schools', path: '/schools' },
+          { name: '2-Day On-Campus Camps', path: '/schools/programs/on-campus-camps' },
+        ])}
+      />
+      <JsonLd
+        id="on-campus-camps-service-jsonld"
+        data={buildServiceJsonLd({
+          name: data.title,
+          description: data.overview,
+          path: '/schools/programs/on-campus-camps',
+          serviceType: 'Overnight school camp',
+          offers: data.tiers.map((tier) => ({
+            name: `${tier.name} — ${tier.tag}`,
+            description: `${tier.duration}. Includes: ${tier.includes.join(', ')}.`,
+          })),
+        })}
+      />
       <Navbar />
       <PageHero
         image={SCHOOLS_PROGRAMS[0].src}

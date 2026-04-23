@@ -3,6 +3,9 @@ import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
 import ScrollToTop from '@/components/ScrollToTop'
+import JsonLd from '@/components/seo/JsonLd'
+import { buildOrganizationJsonLd, buildWebsiteJsonLd } from '@/lib/structured-data'
+import { buildPageMetadata, SITE_URL } from '@/lib/seo'
 import './globals.css'
 
 const helveticaNow = localFont({
@@ -17,11 +20,34 @@ const agrandir = localFont({
   display: 'swap',
 })
 
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://campingnigeria.com'),
-  title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
-  description:
-    'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
+  ...buildPageMetadata({
+    title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
+    description:
+      'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
+    path: '/',
+  }),
+  metadataBase: new URL(SITE_URL),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  ...(googleSiteVerification
+    ? {
+        verification: {
+          google: googleSiteVerification,
+        },
+      }
+    : {}),
   icons: {
     icon: [
       { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
@@ -29,21 +55,6 @@ export const metadata: Metadata = {
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
     apple: '/apple-icon.png',
-  },
-  openGraph: {
-    title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
-    description:
-      'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
-    url: 'https://campingnigeria.com',
-    siteName: 'Camping Nigeria',
-    locale: 'en_NG',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Camping Nigeria — Outdoor Learning Reimagined for Schools',
-    description:
-      'Structured, safe, and development-focused camping experiences designed to build confidence, teamwork, and environmental awareness in Nigerian schools.',
   },
 }
 
@@ -59,6 +70,8 @@ export default function RootLayout({
   return (
     <html lang="en-NG" className={`${helveticaNow.variable} ${agrandir.variable} scroll-smooth`}>
       <body className="font-sans antialiased bg-brand-light text-brand-dark">
+        <JsonLd id="organization-jsonld" data={buildOrganizationJsonLd()} />
+        <JsonLd id="website-jsonld" data={buildWebsiteJsonLd()} />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:bg-brand-accent focus:text-brand-dark focus:px-4 focus:py-2 focus:rounded focus:font-semibold"

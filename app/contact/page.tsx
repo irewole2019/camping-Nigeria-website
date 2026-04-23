@@ -3,13 +3,17 @@ import { Mail, Phone, MessageCircle, MapPin } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ContactForm from '@/components/contact/ContactForm'
+import JsonLd from '@/components/seo/JsonLd'
 import { CONTACT } from '@/lib/constants'
+import { buildPageMetadata } from '@/lib/seo'
+import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: 'Contact Us | Camping Nigeria',
   description:
     'Get in touch with Camping Nigeria. Reach us via email, phone, WhatsApp, or send us a message for inquiries about our outdoor education programmes.',
-}
+  path: '/contact',
+})
 
 const contactCards = [
   {
@@ -36,7 +40,7 @@ const contactCards = [
   {
     icon: MapPin,
     label: 'Address',
-    value: 'Lagos, Nigeria',
+    value: CONTACT.address.formatted,
     href: undefined,
     external: false,
   },
@@ -45,6 +49,13 @@ const contactCards = [
 export default function ContactPage() {
   return (
     <main id="main-content">
+      <JsonLd
+        id="contact-breadcrumb-jsonld"
+        data={buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Contact', path: '/contact' },
+        ])}
+      />
       <Navbar />
 
       {/* Hero Banner */}

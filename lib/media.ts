@@ -9,7 +9,7 @@
  *   public/images/shared/logo.webp
  *   public/videos/hero-bg.mp4
  *
- *   public/images/home/poster.jpg              (video poster / fallback)
+ *   public/images/home/poster.webp             (video poster / fallback)
  *
  *   public/images/schools/hero.webp
  *   public/images/schools/why-outdoor-learning.webp

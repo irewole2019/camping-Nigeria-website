@@ -1,16 +1,27 @@
 import type { Metadata } from 'next'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import JsonLd from '@/components/seo/JsonLd'
+import { CONTACT } from '@/lib/constants'
+import { buildPageMetadata } from '@/lib/seo'
+import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: 'Privacy Policy | Camping Nigeria',
-  description:
-    'Learn how Camping Nigeria collects, uses, and protects your personal information.',
-}
+  description: 'Learn how Camping Nigeria collects, uses, and protects your personal information.',
+  path: '/privacy-policy',
+})
 
 export default function PrivacyPolicyPage() {
   return (
     <main id="main-content">
+      <JsonLd
+        id="privacy-breadcrumb-jsonld"
+        data={buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Privacy Policy', path: '/privacy-policy' },
+        ])}
+      />
       <Navbar />
 
       {/* Hero Banner */}
@@ -175,7 +186,7 @@ export default function PrivacyPolicyPage() {
                 <p>
                   <strong>Camping Nigeria</strong>
                 </p>
-                <p>Lagos, Nigeria</p>
+                <p>{CONTACT.address.formatted}</p>
                 <p>
                   Email:{' '}
                   <a

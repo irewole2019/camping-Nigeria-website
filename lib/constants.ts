@@ -8,6 +8,14 @@ export const CONTACT = {
   whatsapp: 'https://wa.me/2347040538528',
   instagram: 'https://www.instagram.com/camping_ng/',
   facebook: 'https://www.facebook.com/campinggearsng',
+  address: {
+    streetAddress: '198 Damboa Close, PW',
+    locality: 'Kubwa',
+    city: 'Abuja',
+    region: 'FCT',
+    country: 'NG',
+    formatted: '198 Damboa Close, PW, Kubwa, Abuja',
+  },
 } as const
 
 /** Outlook Bookings "Book With Me" scheduling link (cannot be iframe-embedded — open in new tab) */

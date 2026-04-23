@@ -57,6 +57,7 @@ Use as `bg-brand-dark`, `text-brand-accent-readable`, etc.
 
 ## Contact + ownership
 
+- **Registered address:** 198 Damboa Close, PW, Kubwa, Abuja, FCT, Nigeria
 - Domain contact: `hello@campingnigeria.com` / `+234 704 053 8528` (WhatsApp: `wa.me/2347040538528`)
 - Socials: Instagram `@camping_ng`, Facebook `campinggearsng`
 - Built by the three founders: **Irewole** (CEO · [@irewole2019](https://github.com/irewole2019) · `iakande@live.com`), **Taiye** (President), **Kehinde** (Managing Director). See [context/people.md](context/people.md) for who to involve in which decisions.

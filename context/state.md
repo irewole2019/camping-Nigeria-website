@@ -10,7 +10,7 @@ Last updated: 2026-04-22
 - **Home** (`/`) — hero video, scroll-to-top on route change. `<BackgroundVideo>` now:
   - Honours `prefers-reduced-motion` (pause) and `prefers-reduced-data` (skip video entirely, show poster only)
   - Accepts optional additional `<source>` variants (WebM first, MP4 fallback)
-  - Uses `/images/schools/hero.jpg` as the backup poster — shown until first frame paints, or permanently if the video is slow/failed/blocked
+  - Uses `/images/schools/hero.webp` as the backup poster — shown until first frame paints, or permanently if the video is slow/failed/blocked
   - Wired in [app/page.tsx](../app/page.tsx) to read `/videos/hero-bg.webm` when the browser supports it, falling back to the MP4 in `VIDEO_URL`
 - **Schools** (`/schools`) — hub page with Duke of Edinburgh split callout (image right, gold offset border)
 - **Individuals** (`/individuals`) — light marketing page, "Book Your Spot" → Microsoft Forms
@@ -62,6 +62,22 @@ All 4 routes send **two** emails (internal + customer confirmation) via `sendPai
 - **Date pickers** for rental dates (`min={today}` on start, end `min` tracks start) — `today` and `minEndDate` are initialised in a `useEffect` instead of during render, so the SSR-rendered `min=""` and the client value can't disagree near midnight.
 - Combined into `"14 March 2026 – 17 March 2026"` string before POST so API + email templates stay unchanged.
 
+### SEO
+- **Per-page metadata** via `lib/seo.ts#buildPageMetadata` — canonical, keywords, Open Graph (1200×630, `en_NG`), Twitter (`summary_large_image`). Used on all 14 routes.
+- **Dynamic OG + Twitter images** (`app/opengraph-image.tsx`, `app/twitter-image.tsx`) via `next/og` — branded gradient + gold pill.
+- **Structured data** (`lib/structured-data.ts`, rendered via `components/seo/JsonLd.tsx`):
+  - `Organization` + `LocalBusiness` hybrid (global) with `PostalAddress` (198 Damboa Close, PW, Kubwa, Abuja, FCT, NG), `priceRange`, `areaServed: Nigeria`, `sameAs` (IG/FB), `contactPoint`
+  - `WebSite` with publisher reference to the org `@id`
+  - `BreadcrumbList` on every page
+  - `FAQPage` on `/schools/international-award` driven by `AWARD_FAQS`
+  - `Service` on each of the 3 program pages (Nature Craft, Leadership Development, On-Campus Camps) with `hasOfferCatalog` describing each tier
+  - `Service` + `AggregateOffer` on `/schools/international-award` with real NGN prices (₦3M / ₦5M / ₦8M) — eligible for price-range rich results
+- **Sitemap** (`app/sitemap.ts`) — 14 URLs with priorities, changefreq, env-driven `lastModified`, **and per-URL `<image:image>` entries** for the key pages (home, schools hub, DoE, each program, audience pages, gear rental, about).
+- **Robots** (`app/robots.ts`) — allow all, disallow `/api/`.
+- **Manifest** (`app/manifest.ts`) — PWA manifest with theme/background colors, all icon sizes.
+- **Favicons** — light/dark variants with `prefers-color-scheme`, apple-icon, SVG.
+- **Google Search Console verification** wired via `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` env var (optional).
+
 ### Cross-cutting
 - Favicons (light + dark variants) = Camping Nigeria logo
 - Sitemap includes all DoE pages, 3 program pages, and `/schools/proposal`
@@ -89,7 +105,7 @@ Worked through the full code-review punch list plus a follow-up review:
 1. ✅ Honeypot field on all 4 forms — shared `<Honeypot />` component + `isHoneypotTripped()` helper; server returns fake success
 2. ✅ Dead-code sweep — unused `SITE_URL` export, `ALL_PROGRAMS`, stale font, Unsplash preconnect, hardcoded 2026, unreachable proposal-engine branches
 3. ✅ ESLint + config-next installed, flat config, `npm run lint` passes
-4. ✅ Hero video poster + reduced-data handling + WebM source slot — wired to `/images/schools/hero.jpg` as the backup poster
+4. ✅ Hero video poster + reduced-data handling + WebM source slot — wired to `/images/schools/hero.webp` as the backup poster
 5. ✅ Server-side recommendation derivation — `scoreAnswers`/`getRecommendedTier` are now the source of truth for outbound emails; shared `lib/expedition-recommendation.ts` between client and server
 6. ✅ IP rate limiting — `lib/rate-limit.ts` with Upstash, 5/hr/route/IP
 7. ✅ Security headers — 5 non-CSP headers at framework edge

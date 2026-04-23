@@ -28,7 +28,6 @@ export default function MediaFeature() {
           fill
           sizes="100vw"
           className="object-cover"
-          priority
         />
       </motion.div>
 

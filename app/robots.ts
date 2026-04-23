@@ -6,8 +6,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        disallow: ['/api/'],
       },
     ],
+    host: 'https://campingnigeria.com',
     sitemap: 'https://campingnigeria.com/sitemap.xml',
   }
 }

@@ -1,16 +1,27 @@
 import type { Metadata } from 'next'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import JsonLd from '@/components/seo/JsonLd'
+import { buildPageMetadata } from '@/lib/seo'
+import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: 'Terms of Service | Camping Nigeria',
   description:
     'Read the terms and conditions governing the use of Camping Nigeria services, bookings, and equipment rental.',
-}
+  path: '/terms',
+})
 
 export default function TermsOfServicePage() {
   return (
     <main id="main-content">
+      <JsonLd
+        id="terms-breadcrumb-jsonld"
+        data={buildBreadcrumbJsonLd([
+          { name: 'Home', path: '/' },
+          { name: 'Terms of Service', path: '/terms' },
+        ])}
+      />
       <Navbar />
 
       {/* Hero Banner */}
