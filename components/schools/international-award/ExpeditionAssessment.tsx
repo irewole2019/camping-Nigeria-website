@@ -1,17 +1,18 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check, Sparkles, Loader2 } from 'lucide-react'
 import Section from '@/components/ui/Section'
+import Honeypot from '@/components/ui/Honeypot'
 import { premiumEase } from '@/lib/animation'
 import { CALENDAR_BOOKING_URL } from '@/lib/constants'
+import { getRecommendedTier, type AnswerKey } from '@/lib/expedition-recommendation'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 type Phase = 'capture' | 'questions' | 'submitting' | 'results'
-type AnswerKey = 'A' | 'B' | 'C' | 'D'
 
 interface LeadData {
   name: string
@@ -76,116 +77,7 @@ const questions: Question[] = [
   },
 ]
 
-// ─── Tiers & results logic ──────────────────────────────────────────────────
-
-interface TierResult {
-  key: 'base-camp' | 'trail-ready' | 'summit-partner'
-  name: string
-  summary: string
-  includes: string[]
-  price: string
-  priceNote: string
-}
-
-// Q2 (Award status) tunes the opening of the summary paragraph
-const Q2_SUMMARY_PREFIX: Record<AnswerKey, string> = {
-  A: 'Since your school already runs the Award, ',
-  B: 'As your school prepares to launch the Award, ',
-  C: 'Although your school is not yet running the Award, ',
-  D: '',
-}
-
-// Shared across every tier — base includes up to 60 students, then per-head to 100
-const PRICE_NOTE = 'Additional students from ₦50,000 each — max group of 100.'
-
-function buildTier(
-  key: TierResult['key'],
-  name: string,
-  summary: string,
-  includes: string[],
-  price: string
-): TierResult {
-  return { key, name, summary, includes, price, priceNote: PRICE_NOTE }
-}
-
-function getRecommendedTier(
-  q2: AnswerKey | undefined,
-  _q3: AnswerKey | undefined,
-  q4: AnswerKey | undefined
-): TierResult {
-  const prefix = q2 ? Q2_SUMMARY_PREFIX[q2] : ''
-
-  // Helper that lowercases the first character of the base summary when a prefix is present
-  const summary = (base: string) =>
-    prefix ? prefix + base.charAt(0).toLowerCase() + base.slice(1) : base
-
-  const tier = (k: TierResult['key']): TierResult => {
-    switch (k) {
-      case 'base-camp':
-        return buildTier(
-          'base-camp',
-          'Base Camp',
-          summary(
-            'You are in a good position to run the expedition yourself. What you need is reliable, quality equipment that is delivered, set up, and collected without drama.'
-          ),
-          [
-            'Tent rental, sleeping bags, mats, and camping lights',
-            'Equipment delivery and collection',
-            'Setup guidance from our team',
-            'Safety checklist document',
-          ],
-          'From ₦3,000,000 for up to 60 students'
-        )
-      case 'trail-ready':
-        return buildTier(
-          'trail-ready',
-          'Trail Ready',
-          summary(
-            'You need more than equipment. You need a structured program delivered by people who know what they are doing. Trail Ready puts our facilitators on-site alongside your team so the expedition runs properly.'
-          ),
-          [
-            'Everything in Base Camp',
-            'Camping Nigeria facilitators on-site throughout',
-            'Structured program: eco-awareness, team challenges, evening experience',
-            'Parent communication pack ready to send',
-            'Post-event summary report',
-            'Photo documentation',
-          ],
-          'From ₦5,000,000 for up to 60 students'
-        )
-      case 'summit-partner':
-        return buildTier(
-          'summit-partner',
-          'Summit Partner',
-          summary(
-            'You want it done. Summit Partner means you hand over the operational weight and we carry it. Equipment, facilitation, catering, first aid, certificates, documentation. Your school provides a teacher on-site and the student list. We handle the rest.'
-          ),
-          [
-            'Everything in Trail Ready',
-            'Full custom program design',
-            'Catering coordination',
-            'On-site first aid trained staff',
-            'Branded participant certificates',
-            'Professional photo and video recap',
-            'Full written debrief with school leadership',
-            'Priority annual slot',
-          ],
-          'From ₦8,000,000 for up to 60 students'
-        )
-    }
-  }
-
-  switch (q4) {
-    case 'A':
-      return tier('base-camp')
-    case 'C':
-      return tier('summit-partner')
-    case 'B':
-    case 'D':
-    default:
-      return tier('trail-ready')
-  }
-}
+// ─── Results preamble ───────────────────────────────────────────────────────
 
 const EXPLORING_PREFIX =
   'Based on what you have shared, here is where most schools in your position start.'
@@ -209,6 +101,7 @@ export default function ExpeditionAssessment() {
   const [submitError, setSubmitError] = useState(false)
   // Prevents double-advance from rapid clicks during the 400ms feedback delay
   const [isAdvancing, setIsAdvancing] = useState(false)
+  const honeypotRef = useRef<HTMLInputElement>(null)
 
   // ─── Phase 1: Capture ─────────────────────────────────────────────────────
 
@@ -239,11 +132,6 @@ export default function ExpeditionAssessment() {
   // ─── Phase 2: Questions ───────────────────────────────────────────────────
 
   async function submitAssessment(finalAnswers: Record<string, AnswerKey>) {
-    const q2 = finalAnswers[questions[1].id]
-    const q3 = finalAnswers[questions[2].id]
-    const q4 = finalAnswers[questions[3].id]
-    const tier = getRecommendedTier(q2, q3, q4)
-
     try {
       const res = await fetch('/api/assessment-lead', {
         method: 'POST',
@@ -253,7 +141,7 @@ export default function ExpeditionAssessment() {
           email: leadData.email,
           school: leadData.school,
           answers: finalAnswers,
-          recommended: tier.name,
+          website_confirm: honeypotRef.current?.value || '',
         }),
       })
       if (!res.ok) setSubmitError(true)
@@ -332,6 +220,8 @@ export default function ExpeditionAssessment() {
   return (
     <Section id="assessment" className="bg-brand-accent-tint">
       <div className="max-w-2xl mx-auto">
+        <Honeypot ref={honeypotRef} />
+
         {/* Section heading (persistent across phases) */}
         <div className="text-center mb-10">
           <motion.span

@@ -33,8 +33,8 @@ export default function ProgramCta({ programTitle }: { programTitle: string }) {
             Bring {programTitle} to Your School
           </h2>
           <p className="font-sans text-base text-white/70 mb-8 leading-relaxed">
-            Every programme is tailored to your school's needs, calendar, and developmental goals.
-            Let's design the right experience for your students.
+            Every programme is tailored to your school&apos;s needs, calendar, and developmental goals.
+            Let&apos;s design the right experience for your students.
           </p>
           <Link
             href="/schools/proposal"

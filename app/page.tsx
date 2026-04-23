@@ -21,8 +21,13 @@ const NAV_BUTTONS = [
 export default function GatewayPage() {
   return (
     <main id="main-content" className="relative h-screen w-full overflow-hidden">
-      {/* Background video */}
-      <BackgroundVideo src={VIDEO_URL} />
+      {/* Background video — poster falls back to the schools hero image if
+          the video is slow to load, fails, or when prefers-reduced-data is set. */}
+      <BackgroundVideo
+        src={VIDEO_URL}
+        poster="/images/schools/hero.jpg"
+        sources={[{ src: '/videos/hero-bg.webm', type: 'video/webm' }]}
+      />
 
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/45" aria-hidden="true" />

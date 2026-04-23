@@ -58,7 +58,7 @@ export default function PackageTiers({ tiers }: { tiers: PackageTier[] }) {
         initial="hidden"
         animate={isInView ? 'visible' : 'hidden'}
       >
-        {tiers.map((tier, i) => {
+        {tiers.map((tier) => {
           const isPopular = tier.tag === 'Most Popular'
           return (
             <motion.div

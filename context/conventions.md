@@ -49,18 +49,39 @@ const [errors, setErrors] = useState<FormErrors>({})  // per-field errors
 
 ## API routes
 
-Every route in `app/api/*/route.ts` follows this skeleton:
+Every route in `app/api/*/route.ts` follows this skeleton (in order):
 
 1. Parse JSON, return 400 on non-object.
-2. `isValidPayload`-style type guard: check every field's `typeof`, return 400 on mismatch.
-3. Trim-check required fields, return 400 on empties.
-4. Field-specific validation (e.g. phone digit count) — 400 on failure.
-5. Read `process.env.RESEND_API_KEY`; if missing, return `{ success: false, fallback: 'mailto' }` with 422 so the client opens a `mailto:` draft.
-6. Build branded HTML with `escapeHtml()` on every user field.
-7. `safeHeader(subject)` to strip CRLF.
-8. `Promise.all` two `sendResendEmail` calls — internal + customer.
-9. If both OK → `{ success: true }`. If only internal OK → still `{ success: true }` (customer confirmation is nice-to-have). Otherwise 422 with mailto fallback.
-10. `catch` → 500 with `error: 'Internal error'`.
+2. **Honeypot check** — `isHoneypotTripped(raw)` from `lib/html.ts`. If true, return `{ success: true }` with 200 (fake success — see decisions.md).
+3. **Rate limit** — `await checkRateLimit(request, '<routeKey>')` from `lib/rate-limit.ts`. If `!allowed`, return 429 with a user-visible error message.
+4. `isValidPayload`-style type guard: check every field's `typeof`, apply enum allowlists, return 400 on mismatch.
+5. Trim-check required fields, return 400 on empties.
+6. Field-specific validation — email regex, phone digit count (≥7), length caps via `withinLengthCaps` from `lib/html.ts`.
+7. **Derive recommendation server-side** if applicable (proposal → `scoreAnswers`; assessment → `getRecommendedTier`). Never trust client-supplied derived results.
+8. Read `process.env.RESEND_API_KEY`; if missing, return `{ success: false, fallback: 'mailto' }` with 422.
+9. **Send via `sendPairedMail`** from `lib/mail.ts` — internal + customer in parallel, success = internal OK.
+10. On success → `{ success: true }`. On failure → 422 with mailto fallback.
+11. `catch` → 500 with `error: 'Internal error'`.
+
+The defensive stack (honeypot, rate limit, type guard, format check, length cap) is cheap; run them before touching Resend so we never pay for an email the abuser was going to spam.
+
+## Forms — anti-abuse wiring
+
+Every form includes `<Honeypot />` from `components/ui/Honeypot.tsx`. Two usage patterns:
+
+- **Uncontrolled forms** (ContactForm, QuoteForm): include `<Honeypot />` inside the `<form>` — the field value flows through `FormData`. In the POST body: `website_confirm: String(data.website_confirm || '')`.
+- **Controlled forms** (ProposalForm, ExpeditionAssessment): create a `const honeypotRef = useRef<HTMLInputElement>(null)`, pass to `<Honeypot ref={honeypotRef} />`, read `honeypotRef.current?.value || ''` at submit time.
+
+The component positions itself off-screen (`absolute left-[-9999px]`) rather than `display: none` because some bots skip hidden fields. `tabIndex={-1}` + `autoComplete="off"` keep keyboard users and password managers out.
+
+## Server-side recommendation derivation
+
+Form routes that produce a "recommendation" (proposal → program+tier; assessment → tier) **must derive it server-side** from the validated answers, not trust a client-supplied one. Client can still compute its own recommendation for instant UX. The shared deterministic functions are:
+
+- `lib/proposal-engine.ts#scoreAnswers(answers)` — returns `{ program, tier, scores }`
+- `lib/expedition-recommendation.ts#getRecommendedTier(q2, q3, q4)` — returns a `TierResult`
+
+Both are pure; both accept validated inputs; both are imported by the client (for preview) and the server (for email). If you add a new form with a computed recommendation, create a shared lib module, not inline logic.
 
 ## Email templates
 
@@ -106,5 +127,17 @@ Every route in `app/api/*/route.ts` follows this skeleton:
 
 ## Env and secrets
 
-- `RESEND_API_KEY` is the only runtime secret. Fail open to `mailto:` fallback if missing — never throw.
+- `RESEND_API_KEY` — transactional email. Fail open to `mailto:` fallback if missing; never throw.
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — per-IP rate limiting. Fail open (no limiter) if either is missing so local dev works. Production deploys MUST have both set.
 - Never commit `.env.local`. `.env.example` documents the variables.
+
+## Dev commands
+
+```bash
+npm run dev     # next dev on :3000 / :3001
+npm run build   # production build — run before merging
+npm run lint    # eslint flat config in eslint.config.mjs
+npx tsc --noEmit  # type check
+```
+
+`npm audit` is clean as of Next 16.2.4.

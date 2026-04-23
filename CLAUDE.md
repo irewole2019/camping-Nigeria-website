@@ -10,7 +10,7 @@ The site is the main acquisition surface: it books individuals into trips (via M
 
 ## Stack
 
-- **Next.js 16.1.6** App Router, **React 19.2**, **TypeScript 5.7**
+- **Next.js 16.2.4** App Router, **React 19.2**, **TypeScript 5.7**
 - **Tailwind v4** with `@theme inline` CSS-defined tokens — **no `tailwind.config.js`**. Brand tokens live in `app/globals.css`.
 - **Framer Motion 12** for reveals, staggered children, masked H2 animations
 - **lucide-react** for icons (no emojis in UI)
@@ -31,7 +31,7 @@ Public pages (all App Router `page.tsx`):
 - `/contact` — contact form → `/api/contact`
 - `/privacy-policy`, `/terms`
 
-API routes (all in `app/api/*/route.ts`): `contact`, `gear-quote`, `proposal`, `assessment-lead`. Each validates with an `isValidPayload` type guard, escapes every user field with `lib/html.ts#escapeHtml`, strips CRLF from subjects, and sends **two branded HTML emails per submit** — an internal notification to `hello@campingnigeria.com` and a customer confirmation to the submitter. Falls back to opening a pre-filled `mailto:` if `RESEND_API_KEY` is missing.
+API routes (all in `app/api/*/route.ts`): `contact`, `gear-quote`, `proposal`, `assessment-lead`. Each runs the full defensive stack before Resend: honeypot (`website_confirm`) → per-IP rate limit (Upstash, 5/hr/route) → type-guard validation with enum allowlists → format checks (email regex, phone digits) → length caps → server-side recommendation derivation (proposal + assessment) → escape-html on every user field in the template → send both emails via `lib/mail.ts#sendPairedMail`. Internal notification to `hello@campingnigeria.com`, customer confirmation to the submitter. Falls back to opening a pre-filled `mailto:` if `RESEND_API_KEY` is missing.
 
 ## External services
 
@@ -72,10 +72,12 @@ Use as `bg-brand-dark`, `text-brand-accent-readable`, etc.
 
 ```bash
 npm install
-npm run dev    # localhost:3000 (or :3001 if 3000 is taken)
-npm run build  # production build — run before merging
-npm run lint   # eslint
+npm run dev       # localhost:3000 (or :3001 if 3000 is taken)
+npm run build     # production build — run before merging
+npm run lint      # eslint
+npm test          # vitest run (44 pure-function tests)
+npm run test:watch # vitest watch mode
 npx tsc --noEmit  # type check
 ```
 
-Needs `.env.local` with `RESEND_API_KEY=...` for email delivery in dev. Without it, forms fall back to `mailto:` drafts.
+Needs `.env.local` with `RESEND_API_KEY` for email delivery. For production, also set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` to enable per-IP rate limiting (fails open without them — fine for local dev, not fine for prod). See `.env.example` for the full list.

@@ -58,9 +58,6 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en-NG" className={`${helveticaNow.variable} ${agrandir.variable} scroll-smooth`}>
-      <head>
-        <link rel="preconnect" href="https://images.unsplash.com" />
-      </head>
       <body className="font-sans antialiased bg-brand-light text-brand-dark">
         <a
           href="#main-content"

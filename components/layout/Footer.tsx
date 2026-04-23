@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Instagram, Facebook, Mail, Phone, MessageCircle } from 'lucide-react'
-import { LOGO_URL, CONTACT, SITE_URL } from '@/lib/constants'
+import { LOGO_URL, CONTACT } from '@/lib/constants'
 
 const quickLinks = [
   { label: 'Schools', href: '/schools' },
@@ -138,7 +138,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm">
-          &copy; 2026 Camping Nigeria. All rights reserved.
+          &copy; {new Date().getFullYear()} Camping Nigeria. All rights reserved.
         </div>
       </div>
     </footer>

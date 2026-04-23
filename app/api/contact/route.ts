@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
-import { escapeHtml } from '@/lib/html'
+import { escapeHtml, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { sendPairedMail } from '@/lib/mail'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
@@ -177,35 +179,26 @@ function buildCustomerEmail(data: ContactPayload): string {
 
 // ─── Route Handler ──────────────────────────────────────────────────────────
 
-async function sendResendEmail(
-  resendKey: string,
-  from: string,
-  to: string[],
-  subject: string,
-  payload: { text?: string; html?: string },
-  replyTo?: string
-) {
-  return fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from,
-      to,
-      reply_to: replyTo,
-      subject,
-      ...payload,
-    }),
-  })
-}
-
 export async function POST(request: Request) {
   try {
     const raw: unknown = await request.json().catch(() => null)
     if (!raw || typeof raw !== 'object') {
       return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
+    }
+    // Honeypot — pretend to succeed so bots don't learn they were caught
+    if (isHoneypotTripped(raw)) {
+      return NextResponse.json({ success: true })
+    }
+    // Per-IP rate limit (fails open when Upstash isn't configured)
+    const rate = await checkRateLimit(request, 'contact')
+    if (!rate.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many submissions. Please try again in a bit or email hello@campingnigeria.com.',
+        },
+        { status: 429 },
+      )
     }
     const r = raw as Record<string, unknown>
     if (
@@ -221,43 +214,43 @@ export async function POST(request: Request) {
     if (!data.fullName.trim() || !data.email.trim() || !data.subject.trim() || !data.message.trim()) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 })
     }
-
-    const safeHeader = (s: string) => s.replace(/[\r\n]/g, ' ').trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      return NextResponse.json({ success: false, error: 'Invalid email' }, { status: 400 })
+    }
+    if (
+      !withinLengthCaps([
+        [data.fullName, MAX_LENGTHS.name],
+        [data.email, MAX_LENGTHS.email],
+        [data.subject, MAX_LENGTHS.subject],
+        [data.message, MAX_LENGTHS.longText],
+      ])
+    ) {
+      return NextResponse.json({ success: false, error: 'Field too long' }, { status: 400 })
+    }
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
       return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
     }
 
-    const [internalRes, customerRes] = await Promise.all([
-      sendResendEmail(
-        resendKey,
-        'Camping Nigeria <hello@campingnigeria.com>',
-        [RECIPIENT],
-        safeHeader(`Contact: ${data.subject} — ${data.fullName}`),
-        { html: buildInternalEmail(data) },
-        data.email
-      ),
-      sendResendEmail(
-        resendKey,
-        'Camping Nigeria <hello@campingnigeria.com>',
-        [data.email],
-        `We've received your message — Camping Nigeria`,
-        { html: buildCustomerEmail(data) }
-      ),
-    ])
+    const result = await sendPairedMail(resendKey, {
+      from: 'Camping Nigeria <hello@campingnigeria.com>',
+      internal: {
+        to: RECIPIENT,
+        subject: `Contact: ${data.subject} — ${data.fullName}`,
+        html: buildInternalEmail(data),
+        replyTo: data.email,
+      },
+      customer: {
+        to: data.email,
+        subject: `We've received your message — Camping Nigeria`,
+        html: buildCustomerEmail(data),
+      },
+    })
 
-    if (internalRes.ok && customerRes.ok) {
+    if (result.ok) {
       return NextResponse.json({ success: true })
     }
-
-    if (!internalRes.ok) console.error('Internal email failed:', await internalRes.text())
-    if (!customerRes.ok) console.error('Customer email failed:', await customerRes.text())
-
-    if (internalRes.ok) {
-      return NextResponse.json({ success: true })
-    }
-
     return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
   } catch (error) {
     console.error('Contact API error:', error)

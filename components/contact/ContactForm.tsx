@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Honeypot from '@/components/ui/Honeypot'
 
 // text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
 const inputBase =
@@ -73,6 +74,7 @@ export default function ContactForm() {
           email: String(data.email),
           subject: String(data.subject),
           message: String(data.message),
+          website_confirm: String(data.website_confirm || ''),
         }),
       })
 
@@ -143,6 +145,8 @@ export default function ContactForm() {
           {submitError}
         </div>
       )}
+
+      <Honeypot />
 
       {/* Full Name */}
       <div>

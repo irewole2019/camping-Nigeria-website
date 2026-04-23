@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Section from '@/components/ui/Section'
+import Honeypot from '@/components/ui/Honeypot'
 import { premiumEase } from '@/lib/animation'
 
 // text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
@@ -40,8 +41,20 @@ export default function QuoteForm() {
   const [sending, setSending] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [errors, setErrors] = useState<FormErrors>({})
-  const [minEndDate, setMinEndDate] = useState<string>(todayISO())
-  const today = todayISO()
+  // Initialize date minimums client-side only. Server-rendered HTML omits the
+  // `min` attribute; once we're on the client, fill it with today in the
+  // browser's own timezone. Prevents SSR/client mismatch near midnight.
+  const [today, setToday] = useState<string>('')
+  const [minEndDate, setMinEndDate] = useState<string>('')
+
+  useEffect(() => {
+    // Legitimate post-hydration state init — SSR doesn't know the browser's
+    // local date, so we start empty and fill after hydration.
+    const t = todayISO()
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(t)
+    setMinEndDate(t)
+  }, [])
 
   function validate(data: Record<string, FormDataEntryValue>): FormErrors {
     const newErrors: FormErrors = {}
@@ -98,6 +111,7 @@ export default function QuoteForm() {
           organization: String(data.organization || ''),
           equipment: String(data.equipment),
           rentalDates,
+          website_confirm: String(data.website_confirm || ''),
         }),
       })
 
@@ -193,6 +207,8 @@ export default function QuoteForm() {
                 {submitError}
               </div>
             )}
+
+            <Honeypot />
 
             {/* Full Name */}
             <div>

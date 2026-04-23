@@ -490,4 +490,3 @@ export const LEADERSHIP_DEVELOPMENT: ProgramData = {
   ],
 }
 
-export const ALL_PROGRAMS = [ON_CAMPUS_CAMPS, NATURE_CRAFT, LEADERSHIP_DEVELOPMENT] as const

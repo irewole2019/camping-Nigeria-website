@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
@@ -12,6 +12,7 @@ import {
   type ContactInfo,
   type ProposalResult as ProposalResultData,
 } from '@/lib/proposal-engine'
+import Honeypot from '@/components/ui/Honeypot'
 import ProposalResultView from './ProposalResult'
 
 // ─── Shared Styles ──────────────────────────────────────────────────────────
@@ -144,6 +145,7 @@ export default function ProposalForm() {
   const [result, setResult] = useState<ProposalResultData | null>(null)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const honeypotRef = useRef<HTMLInputElement>(null)
 
   const isQuestionStep = step < QUESTIONS.length
   const isContactStep = step === QUESTIONS.length
@@ -221,7 +223,11 @@ export default function ProposalForm() {
       const res = await fetch('/api/proposal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: fullAnswers, contact: fullContact, result: { programTitle: result.program.title, programSlug: result.program.slug, tierName: result.tier.name, tierTag: result.tier.tag, tierDuration: result.tier.duration, tierIncludes: result.tier.includes } }),
+        body: JSON.stringify({
+          answers: fullAnswers,
+          contact: fullContact,
+          website_confirm: honeypotRef.current?.value || '',
+        }),
       })
       if (res.ok) {
         setSent(true)
@@ -262,6 +268,8 @@ export default function ProposalForm() {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <Honeypot ref={honeypotRef} />
+
       {/* Progress bar */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-2">

@@ -55,6 +55,49 @@ export interface ProposalResult {
   scores: { camps: number; nature: number; leadership: number }
 }
 
+// ─── Answer Allowlists (for server-side validation) ─────────────────────────
+
+const VALID_SCHOOL_TYPES: readonly SchoolType[] = ['primary', 'secondary', 'mixed', 'university']
+const VALID_CLASS_LEVELS: readonly ClassLevel[] = ['primary-1-3', 'primary-4-6', 'jss-1-3', 'ss-1-3', 'mixed']
+const VALID_GROUP_SIZES: readonly GroupSize[] = ['under-40', '40-80', '80-150', '150+']
+const VALID_GOALS: readonly PrimaryGoal[] = ['team-bonding', 'eco-creativity', 'leadership', 'celebration']
+const VALID_PARTICIPANT_TYPES: readonly ParticipantType[] = ['general', 'leaders', 'mix']
+const VALID_DURATIONS: readonly Duration[] = ['half-day', 'full-day', '2-days']
+const VALID_VENUES: readonly Venue[] = ['on-campus', 'off-campus', 'either']
+const VALID_ACTIVITIES: readonly Activity[] = [
+  'camping-tents',
+  'adire-crafts',
+  'sports-games',
+  'leadership-challenges',
+  'eco-nature',
+  'bonfire-stories',
+  'journaling',
+]
+
+/**
+ * Validates a raw payload against the full ProposalAnswers shape, including
+ * allowlists for every enum field. Used by the API to reject fabricated keys.
+ */
+export function isValidAnswers(raw: unknown): raw is ProposalAnswers {
+  if (!raw || typeof raw !== 'object') return false
+  const a = raw as Record<string, unknown>
+
+  const inList = <T extends string>(v: unknown, list: readonly T[]): v is T =>
+    typeof v === 'string' && (list as readonly string[]).includes(v)
+
+  if (!inList(a.schoolType, VALID_SCHOOL_TYPES)) return false
+  if (!inList(a.classLevel, VALID_CLASS_LEVELS)) return false
+  if (!inList(a.groupSize, VALID_GROUP_SIZES)) return false
+  if (!inList(a.primaryGoal, VALID_GOALS)) return false
+  if (!inList(a.participantType, VALID_PARTICIPANT_TYPES)) return false
+  if (!inList(a.duration, VALID_DURATIONS)) return false
+  if (!inList(a.venue, VALID_VENUES)) return false
+  if (!Array.isArray(a.activities)) return false
+  if (!a.activities.every((v) => inList(v, VALID_ACTIVITIES))) return false
+
+  return true
+}
+
 // ─── Scoring Tables ─────────────────────────────────────────────────────────
 
 type Scores = [camps: number, nature: number, leadership: number]
@@ -174,8 +217,11 @@ function selectTier(
 
   // tiers are always ordered: entry [0], mid [1], premium [2]
   if (program.slug === 'on-campus-camps') {
-    if (duration === '2-days' || groupSize === '150+') return tiers[2] // Summit
-    if (duration === 'full-day' || groupSize === '80-150') return tiers[1] // Trail
+    // campsEligible guarantees duration === '2-days' here, so duration can't
+    // differentiate tiers. Use groupSize instead — matches the pattern of
+    // nature-craft and leadership-development.
+    if (groupSize === '150+') return tiers[2] // Summit
+    if (groupSize === '80-150' || groupSize === '40-80') return tiers[1] // Trail
     return tiers[0] // Spark
   }
 

@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server'
 import { CALENDAR_BOOKING_URL } from '@/lib/constants'
-import { escapeHtml } from '@/lib/html'
+import { escapeHtml, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { sendPairedMail } from '@/lib/mail'
+import {
+  getRecommendedTier,
+  isValidAnswerKey,
+  type AnswerKey,
+} from '@/lib/expedition-recommendation'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const FROM = 'Camping Nigeria <assessment@campingnigeria.com>'
@@ -12,12 +19,11 @@ interface AssessmentLeadPayload {
   email: string
   school: string
   answers: {
-    q1?: string
-    q2?: string
-    q3?: string
-    q4?: string
+    q1?: AnswerKey
+    q2?: AnswerKey
+    q3?: AnswerKey
+    q4?: AnswerKey
   }
-  recommended: string
 }
 
 // ─── Answer labels ──────────────────────────────────────────────────────────
@@ -66,12 +72,12 @@ function formatAnswer(questionKey: string, letter: string | undefined): string {
 
 // ─── Internal notification (branded HTML) ───────────────────────────────────
 
-function buildInternalEmail(payload: AssessmentLeadPayload): string {
+function buildInternalEmail(payload: AssessmentLeadPayload, recommendedName: string): string {
   const { answers } = payload
   const name = escapeHtml(payload.name)
   const email = escapeHtml(payload.email)
   const school = escapeHtml(payload.school)
-  const recommended = escapeHtml(payload.recommended)
+  const recommended = escapeHtml(recommendedName)
   const firstName = escapeHtml(payload.name.split(' ')[0])
 
   const responseRows = QUESTIONS.map(
@@ -159,10 +165,10 @@ function buildInternalEmail(payload: AssessmentLeadPayload): string {
 
 // ─── Customer confirmation (branded HTML) ───────────────────────────────────
 
-function buildCustomerEmail(payload: AssessmentLeadPayload): string {
+function buildCustomerEmail(payload: AssessmentLeadPayload, recommendedName: string): string {
   const firstName = escapeHtml(payload.name.split(' ')[0])
   const school = escapeHtml(payload.school)
-  const recommended = escapeHtml(payload.recommended)
+  const recommended = escapeHtml(recommendedName)
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -262,36 +268,7 @@ function buildCustomerEmail(payload: AssessmentLeadPayload): string {
 </html>`
 }
 
-// ─── Resend helper ──────────────────────────────────────────────────────────
-
-async function sendResendEmail(
-  resendKey: string,
-  to: string[],
-  subject: string,
-  html: string,
-  replyTo?: string
-) {
-  return fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: FROM,
-      to,
-      reply_to: replyTo,
-      subject,
-      html,
-    }),
-  })
-}
-
 // ─── Route handler ──────────────────────────────────────────────────────────
-
-function safeHeader(s: string): string {
-  return s.replace(/[\r\n]/g, ' ').trim()
-}
 
 export async function POST(request: Request) {
   try {
@@ -299,26 +276,70 @@ export async function POST(request: Request) {
     if (!raw || typeof raw !== 'object') {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
+    // Honeypot — pretend to succeed so bots don't learn they were caught
+    if (isHoneypotTripped(raw)) {
+      return NextResponse.json({ success: true })
+    }
+    // Per-IP rate limit (fails open when Upstash isn't configured)
+    const rate = await checkRateLimit(request, 'assessment-lead')
+    if (!rate.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many submissions. Please try again in a bit or email hello@campingnigeria.com.',
+        },
+        { status: 429 },
+      )
+    }
     const r = raw as Record<string, unknown>
     if (
       typeof r.name !== 'string' ||
       typeof r.email !== 'string' ||
       typeof r.school !== 'string' ||
-      typeof r.recommended !== 'string' ||
       !r.answers ||
       typeof r.answers !== 'object'
     ) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
-    const body = raw as AssessmentLeadPayload
-    const { name, email, school, recommended } = body
 
-    if (!name.trim() || !email.trim() || !school.trim() || !recommended.trim()) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    // Every answer key must be A/B/C/D (or absent). Rejects fabricated values.
+    const rawAnswers = r.answers as Record<string, unknown>
+    const answers: AssessmentLeadPayload['answers'] = {}
+    for (const key of ['q1', 'q2', 'q3', 'q4'] as const) {
+      const v = rawAnswers[key]
+      if (v === undefined) continue
+      if (!isValidAnswerKey(v)) {
+        return NextResponse.json({ error: 'Invalid answer value' }, { status: 400 })
+      }
+      answers[key] = v
     }
+
+    const body: AssessmentLeadPayload = {
+      name: r.name,
+      email: r.email,
+      school: r.school,
+      answers,
+    }
+
+    if (!body.name.trim() || !body.school.trim()) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
+    }
+    if (
+      !withinLengthCaps([
+        [body.name, MAX_LENGTHS.name],
+        [body.email, MAX_LENGTHS.email],
+        [body.school, MAX_LENGTHS.schoolName],
+      ])
+    ) {
+      return NextResponse.json({ error: 'Field too long' }, { status: 400 })
+    }
+
+    // Derive the recommendation server-side — never trust the client to tell
+    // us which tier it was shown.
+    const tier = getRecommendedTier(answers.q2, answers.q3, answers.q4)
+    const recommended = tier.name
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
@@ -328,30 +349,22 @@ export async function POST(request: Request) {
       )
     }
 
-    const [internalRes, customerRes] = await Promise.all([
-      sendResendEmail(
-        resendKey,
-        [RECIPIENT],
-        safeHeader(`New Expedition Assessment Lead — ${name} from ${school}`),
-        buildInternalEmail(body),
-        email
-      ),
-      sendResendEmail(
-        resendKey,
-        [email],
-        'Your Camping Nigeria Expedition Recommendation',
-        buildCustomerEmail(body)
-      ),
-    ])
+    const mailResult = await sendPairedMail(resendKey, {
+      from: FROM,
+      internal: {
+        to: RECIPIENT,
+        subject: `New Expedition Assessment Lead — ${body.name} from ${body.school}`,
+        html: buildInternalEmail(body, recommended),
+        replyTo: body.email,
+      },
+      customer: {
+        to: body.email,
+        subject: 'Your Camping Nigeria Expedition Recommendation',
+        html: buildCustomerEmail(body, recommended),
+      },
+    })
 
-    if (internalRes.ok && customerRes.ok) {
-      return NextResponse.json({ success: true })
-    }
-
-    if (!internalRes.ok) console.error('Internal email failed:', await internalRes.text())
-    if (!customerRes.ok) console.error('Customer email failed:', await customerRes.text())
-
-    if (internalRes.ok) {
+    if (mailResult.ok) {
       return NextResponse.json({ success: true })
     }
 

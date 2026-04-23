@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
-import { escapeHtml, safeUrl } from '@/lib/html'
+import { escapeHtml, safeUrl, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
+import { checkRateLimit } from '@/lib/rate-limit'
+import { sendPairedMail } from '@/lib/mail'
+import {
+  isValidAnswers,
+  scoreAnswers,
+  type ProposalAnswers,
+  type ProposalResult,
+} from '@/lib/proposal-engine'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
 
 interface ProposalPayload {
-  answers: Record<string, string | string[]>
+  answers: ProposalAnswers
   contact: {
     contactName: string
     role: string
@@ -13,14 +21,6 @@ interface ProposalPayload {
     email: string
     phone: string
     website: string
-  }
-  result: {
-    programTitle: string
-    programSlug: string
-    tierName: string
-    tierTag: string
-    tierDuration: string
-    tierIncludes: string[]
   }
 }
 
@@ -59,7 +59,7 @@ const OPTION_LABELS: Record<string, string> = {
   journaling: 'Journaling & reflection',
 }
 
-const QUESTION_ORDER = [
+const QUESTION_ORDER: { key: keyof ProposalAnswers; label: string }[] = [
   { key: 'schoolType', label: 'School type' },
   { key: 'classLevel', label: 'Class level' },
   { key: 'groupSize', label: 'Group size' },
@@ -81,8 +81,8 @@ function formatLabel(value: string | string[]): string {
 
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
 
-function buildInternalEmail(body: ProposalPayload): string {
-  const { answers, contact, result } = body
+function buildInternalEmail(body: ProposalPayload, result: ProposalResult): string {
+  const { answers, contact } = body
 
   const schoolName = escapeHtml(contact.schoolName)
   const contactName = escapeHtml(contact.contactName)
@@ -92,10 +92,10 @@ function buildInternalEmail(body: ProposalPayload): string {
   const websiteHref = safeUrl(contact.website)
   const websiteDisplay = escapeHtml(contact.website)
   const firstName = escapeHtml(contact.contactName.split(' ')[0])
-  const programTitle = escapeHtml(result.programTitle)
-  const tierName = escapeHtml(result.tierName)
-  const tierTag = escapeHtml(result.tierTag)
-  const tierDuration = escapeHtml(result.tierDuration)
+  const programTitle = escapeHtml(result.program.title)
+  const tierName = escapeHtml(result.tier.name)
+  const tierTag = escapeHtml(result.tier.tag)
+  const tierDuration = escapeHtml(result.tier.duration)
 
   const responseRows = QUESTION_ORDER
     .filter(({ key }) => answers[key] !== undefined)
@@ -198,22 +198,21 @@ function buildInternalEmail(body: ProposalPayload): string {
 
 // ─── Customer Confirmation (branded HTML) ───────────────────────────────────
 
-function buildCustomerEmail(body: ProposalPayload): string {
-  const { contact, result } = body
+function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): string {
+  const { contact } = body
 
-  // Constrain programSlug to known slugs to prevent open-redirect or path injection
-  const SAFE_SLUGS = new Set(['on-campus-camps', 'nature-craft', 'leadership-development'])
-  const safeSlug = SAFE_SLUGS.has(result.programSlug) ? result.programSlug : ''
-  const programUrl = safeSlug ? `${SITE_URL}/schools/programs/${safeSlug}` : `${SITE_URL}/schools`
+  // Program slugs are derived from the server-side recommendation engine,
+  // which only returns known programs — safe for URL construction.
+  const programUrl = `${SITE_URL}/schools/programs/${result.program.slug}`
 
   const firstName = escapeHtml(contact.contactName.split(' ')[0])
   const schoolName = escapeHtml(contact.schoolName)
-  const programTitle = escapeHtml(result.programTitle)
-  const tierName = escapeHtml(result.tierName)
-  const tierTag = escapeHtml(result.tierTag)
-  const tierDuration = escapeHtml(result.tierDuration)
+  const programTitle = escapeHtml(result.program.title)
+  const tierName = escapeHtml(result.tier.name)
+  const tierTag = escapeHtml(result.tier.tag)
+  const tierDuration = escapeHtml(result.tier.duration)
 
-  const includesList = result.tierIncludes
+  const includesList = result.tier.includes
     .map(
       (item) =>
         `<tr><td style="padding:4px 0;font-size:14px;color:#3d3d3d;"><span style="color:#e6b325;margin-right:8px;">&#10003;</span>${escapeHtml(item)}</td></tr>`
@@ -327,110 +326,88 @@ function buildCustomerEmail(body: ProposalPayload): string {
 
 // ─── Route Handler ──────────────────────────────────────────────────────────
 
-async function sendResendEmail(
-  resendKey: string,
-  from: string,
-  to: string[],
-  subject: string,
-  payload: { text?: string; html?: string },
-  replyTo?: string
-) {
-  return fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from,
-      to,
-      reply_to: replyTo,
-      subject,
-      ...payload,
-    }),
-  })
-}
-
 function isValidPayload(body: unknown): body is ProposalPayload {
   if (!body || typeof body !== 'object') return false
   const b = body as Record<string, unknown>
 
-  if (!b.answers || typeof b.answers !== 'object') return false
+  if (!isValidAnswers(b.answers)) return false
 
   const contact = b.contact as Record<string, unknown> | undefined
   if (!contact || typeof contact !== 'object') return false
   if (typeof contact.contactName !== 'string' || !contact.contactName.trim()) return false
-  if (typeof contact.email !== 'string' || !contact.email.trim()) return false
+  if (typeof contact.email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) return false
   if (typeof contact.schoolName !== 'string' || !contact.schoolName.trim()) return false
   if (typeof contact.role !== 'string') return false
-  if (typeof contact.phone !== 'string') return false
+  if (typeof contact.phone !== 'string' || contact.phone.replace(/\D/g, '').length < 7) return false
   if (typeof contact.website !== 'string') return false
 
-  const result = b.result as Record<string, unknown> | undefined
-  if (!result || typeof result !== 'object') return false
-  if (typeof result.programTitle !== 'string' || !result.programTitle.trim()) return false
-  if (typeof result.programSlug !== 'string') return false
-  if (typeof result.tierName !== 'string' || !result.tierName.trim()) return false
-  if (typeof result.tierTag !== 'string') return false
-  if (typeof result.tierDuration !== 'string') return false
-  if (!Array.isArray(result.tierIncludes) || !result.tierIncludes.every((s) => typeof s === 'string')) return false
+  if (
+    !withinLengthCaps([
+      [contact.contactName, MAX_LENGTHS.name],
+      [contact.email, MAX_LENGTHS.email],
+      [contact.phone, MAX_LENGTHS.phone],
+      [contact.schoolName, MAX_LENGTHS.schoolName],
+      [contact.role, MAX_LENGTHS.role],
+      [contact.website, MAX_LENGTHS.website],
+    ])
+  ) {
+    return false
+  }
 
   return true
-}
-
-// Strip CRLF from header values to prevent header injection in email subjects
-function safeHeader(s: string): string {
-  return s.replace(/[\r\n]/g, ' ').trim()
 }
 
 export async function POST(request: Request) {
   try {
     const rawBody: unknown = await request.json().catch(() => null)
+    // Honeypot — pretend to succeed so bots don't learn they were caught
+    if (isHoneypotTripped(rawBody)) {
+      return NextResponse.json({ success: true })
+    }
+    // Per-IP rate limit (fails open when Upstash isn't configured)
+    const rate = await checkRateLimit(request, 'proposal')
+    if (!rate.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many submissions. Please try again in a bit or email hello@campingnigeria.com.',
+        },
+        { status: 429 },
+      )
+    }
     if (!isValidPayload(rawBody)) {
       return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })
     }
     const body: ProposalPayload = rawBody
     const { contact } = body
 
+    // Derive the recommendation server-side — never trust the client to tell
+    // us what program/tier it was shown.
+    const result = scoreAnswers(body.answers)
+
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
       return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
     }
 
-    // Send both emails in parallel
-    const [internalRes, customerRes] = await Promise.all([
-      // 1. Branded notification to team
-      sendResendEmail(
-        resendKey,
-        'Camping Nigeria <proposals@campingnigeria.com>',
-        [RECIPIENT],
-        safeHeader(`New School Proposal Request — ${contact.schoolName}`),
-        { html: buildInternalEmail(body) },
-        contact.email
-      ),
-      // 2. Branded confirmation to customer
-      sendResendEmail(
-        resendKey,
-        'Camping Nigeria <proposals@campingnigeria.com>',
-        [contact.email],
-        safeHeader(`Your Programme Recommendation — ${body.result.programTitle}`),
-        { html: buildCustomerEmail(body) }
-      ),
-    ])
+    const mailResult = await sendPairedMail(resendKey, {
+      from: 'Camping Nigeria <proposals@campingnigeria.com>',
+      internal: {
+        to: RECIPIENT,
+        subject: `New School Proposal Request — ${contact.schoolName}`,
+        html: buildInternalEmail(body, result),
+        replyTo: contact.email,
+      },
+      customer: {
+        to: contact.email,
+        subject: `Your Programme Recommendation — ${result.program.title}`,
+        html: buildCustomerEmail(body, result),
+      },
+    })
 
-    if (internalRes.ok && customerRes.ok) {
+    if (mailResult.ok) {
       return NextResponse.json({ success: true })
     }
-
-    // Log failures but still consider partial success
-    if (!internalRes.ok) console.error('Internal email failed:', await internalRes.text())
-    if (!customerRes.ok) console.error('Customer email failed:', await customerRes.text())
-
-    // If at least the internal one went through, call it success
-    if (internalRes.ok) {
-      return NextResponse.json({ success: true })
-    }
-
     return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
   } catch (error) {
     console.error('Proposal API error:', error)
