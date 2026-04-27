@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-04-23
+Last updated: 2026-04-27
 
 ## Company
 
@@ -32,15 +32,18 @@ Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close,
 - "See the full offer breakdown" → downloads `public/pdf/CampingNigeria_DoE_Offer_download.pdf`
 - **4-question assessment** — the tier-recommendation logic lives in [lib/expedition-recommendation.ts](../lib/expedition-recommendation.ts) and is shared between the client (instant preview) and the API (trusted derivation for outbound email). Q2 tunes summary prefix, **Q3 weaves group size into the tier summary copy**, Q4 selects the tier.
 
-### Lead-capture forms (all branded, all via Resend via `lib/mail.ts`)
-| Route | Form file | API route | Recipient |
-|---|---|---|---|
-| `/contact` | `components/contact/ContactForm.tsx` | `app/api/contact/route.ts` | `hello@campingnigeria.com` |
-| `/gear-rental` | `components/gear-rental/QuoteForm.tsx` | `app/api/gear-quote/route.ts` | `hello@campingnigeria.com` |
-| `/schools/proposal` | `components/proposal/ProposalForm.tsx` | `app/api/proposal/route.ts` | `hello@campingnigeria.com` |
-| `/schools/international-award` | `components/schools/international-award/ExpeditionAssessment.tsx` | `app/api/assessment-lead/route.ts` | `hello@campingnigeria.com` |
+### Lead-capture forms
 
-All 4 routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Every route runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
+| Route | Form file | Endpoint | Recipient |
+|---|---|---|---|
+| `/contact` | `components/contact/ContactForm.tsx` | `app/api/contact/route.ts` (Resend) | `hello@campingnigeria.com` |
+| `/schools/proposal` | `components/proposal/ProposalForm.tsx` | `app/api/proposal/route.ts` (Resend) | `hello@campingnigeria.com` |
+| `/schools/international-award` | `components/schools/international-award/ExpeditionAssessment.tsx` | `app/api/assessment-lead/route.ts` (Resend) | `hello@campingnigeria.com` |
+| `/gear-rental` | `components/gear-rental/QuoteForm.tsx` | **External** — POST to `https://quote.campingnigeria.com/api/submit-quote` | Quote tool handles persistence + email |
+
+The 3 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
+
+The gear-rental form is different (Phase 2 quote tool integration) — see the dedicated section below.
 
 ### Security + anti-abuse
 - **Honeypot field** (`website_confirm`) on all 4 forms. Server returns fake success (`{ success: true }` with 200) when tripped so bots don't learn they were caught.
@@ -61,14 +64,33 @@ All 4 routes send **two** emails (internal + customer confirmation) via `sendPai
   - `tests/proposal-engine.test.ts` — `isValidAnswers`, program selection, `campsEligible` guard, tier selection (including restored on-campus-camps groupSize-based tiering)
   - `tests/expedition-recommendation.test.ts` — `isValidAnswerKey`, `getRecommendedTier` (Q4 drives tier, Q2 tunes prefix, Q3 surfaces group-size copy)
 
-### Gear rental form specifics
-- **Phone number required** (WhatsApp preferred label) — validated client + server
-- **Date pickers** for rental dates (`min={today}` on start, end `min` tracks start) — `today` and `minEndDate` are initialised in a `useEffect` instead of during render, so the SSR-rendered `min=""` and the client value can't disagree near midnight.
-- Combined into `"14 March 2026 – 17 March 2026"` string before POST so API + email templates stay unchanged.
+### Gear rental — Phase 2 quote-tool integration
+
+The `/gear-rental` form is the customer-facing entry point for a separate quote tool deployed at `quote.campingnigeria.com`. The website project handles the form UI; the quote tool handles persistence, pricing, review queue, and customer emails.
+
+**Form behaviour:**
+- **Equipment selector** is structured, not free-text — a collapsible category list backed by a published Google Sheets CSV (`NEXT_PUBLIC_SHEETS_ITEMS_URL`, items tab, `gid=0`).
+  - Live config: 13 items across 7 categories (`tents`, `blankets`, `mats`, `pads`, `pillows`, `bicycles`, `hammocks`).
+  - Tents lead (primary product), then sleep gear (`pads`, `mats`, `pillows`, `blankets`), then everything else alphabetical.
+  - Tents start expanded; other categories start collapsed. A "{N} selected" pill on collapsed headers shows what's inside.
+  - The customer never sees prices — `lib/quote-config.ts#loadQuoteItems` reads only `id`, `name`, `category`, `available_qty` from the CSV (the `base_price_naira` column is intentionally ignored).
+- **Required fields:** name, email, phone (WhatsApp-preferred), rental start/end dates, delivery zone (Abuja/Lagos/Other), and at least one item with quantity > 0 (skipped if the CSV failed to load — message field carries the request instead).
+- **Optional fields:** organisation/school, message.
+- **Submit** does a direct browser POST to `https://quote.campingnigeria.com/api/submit-quote` with `{ customer, delivery_zone, rental_start, rental_end, items, message }`.
+- **On success** (`{ success: true, reference: 'CNQ-2026-XXXX' }`): redirect to `/gear-rental/submitted?ref=...&email=...&name=...`. The confirmation page is a server component reading `searchParams`.
+- **On failure or network error:** amber banner with retry copy. No mailto fallback.
+- **Equipment list unavailable** (CSV unreachable / env var missing): the equipment section is hidden and an amber notice tells the user to describe their needs in the message field.
+
+**What the website does NOT do for gear-rental:**
+- No internal-notification or customer-confirmation email — the quote tool sends those (the quote-tool's `Send Quote` action triggers the priced email).
+- No honeypot enforcement, no per-IP rate limiting — the quote-tool runs its own anti-abuse stack. The honeypot input is still rendered (cheap insurance, ignored at submit time).
+- No `/api/gear-quote` route — deleted in Phase 2.
+
+**Operational dependency:** the website is only useful if the quote tool is live AND its CORS allows `https://www.campingnigeria.com`. Apex `campingnigeria.com` 307-redirects to www at the Vercel edge, so www is the only origin browsers actually use.
 
 ### SEO
 - **Per-page metadata** via `lib/seo.ts#buildPageMetadata` — canonical, keywords, Open Graph (1200×630, `en_NG`), Twitter (`summary_large_image`). Used on all 14 routes.
-- **Dynamic OG + Twitter images** (`app/opengraph-image.tsx`, `app/twitter-image.tsx`) via `next/og` — branded gradient + gold pill.
+- **Per-route dynamic OG + Twitter cards** — every major page has its own `opengraph-image.tsx` + `twitter-image.tsx` pair (10 pages × 2 = 20 route files). Each calls a shared renderer at [lib/og-image.tsx](../lib/og-image.tsx) that composites the page's hero photo behind a forest-green gradient overlay with a gold-pill eyebrow + share-optimised headline. Homepage card reads "Adventure Made Simple". WebP heroes render fine through Satori — no JPG fallbacks needed.
 - **Structured data** (`lib/structured-data.ts`, rendered via `components/seo/JsonLd.tsx`):
   - `Organization` + `LocalBusiness` hybrid (global) with `PostalAddress` (198 Damboa Close, PW, Kubwa, Abuja, FCT, NG), `priceRange`, `areaServed: Nigeria`, `sameAs` (IG/FB), `contactPoint`
   - `WebSite` with publisher reference to the org `@id`
@@ -133,3 +155,5 @@ Worked through the full code-review punch list plus a follow-up review:
     - `<image:image>` entries added to 10 of 14 sitemap URLs
     - Estimated new score: ~95/100; remaining gap is content-strategy (no blog) not technical.
 21. ✅ **Address corrected sitewide** — "Lagos, Nigeria" was wrong; company is based at 198 Damboa Close, PW, Kubwa, Abuja. Added `CONTACT.address` constant as the single source of truth. Fixed contact page, privacy policy, LocalBusiness schema, and CLAUDE.md.
+22. ✅ **Phase 2 quote-tool integration** (gear-rental) — replaced free-text equipment textarea with a structured selector backed by a published Google Sheets CSV; collapsible categories with tents leading; new required Delivery Zone select and rental-duration display; direct browser POST to `quote.campingnigeria.com/api/submit-quote`; new `/gear-rental/submitted` confirmation page reading URL params; deleted `app/api/gear-quote/` route entirely (anti-abuse and email now upstream in the quote tool). Required setting `NEXT_PUBLIC_SHEETS_ITEMS_URL` in Vercel — without it the form falls back to a message-only flow.
+23. ✅ **Dynamic per-route OG/Twitter cards** — extended the existing `next/og` setup to 10 pages, each with its own hero photo behind the brand frame. Shared renderer at `lib/og-image.tsx` keeps the visual language consistent (forest-green overlay + gold eyebrow pill + white serif headline). Homepage now reads "Adventure Made Simple" instead of the schools-leaning copy. Route-segment metadata (`runtime`, `size`, `contentType`, `alt`) is inlined in every file because Next parses those statically and rejects imports/re-exports.

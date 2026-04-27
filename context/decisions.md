@@ -279,3 +279,56 @@ The registered address is declared once in [lib/constants.ts](../lib/constants.t
 `today` and `minEndDate` start as empty strings and are set to `todayISO()` inside a `useEffect`. The effect is marked with a single `eslint-disable-next-line react-hooks/set-state-in-effect` comment.
 
 **Why:** SSR can't know the browser's local timezone, so rendering a `min="2026-04-22"` on the server and `min="2026-04-23"` on the client near midnight produces a hydration mismatch. Empty string on both sides, filled after hydration, is correct. The eslint rule is new in react-hooks 7 and doesn't have a recommended escape for legitimate post-hydration init — the disable comment is documented in-place.
+
+---
+
+## Gear-rental form POSTs direct to the quote tool, not proxied through `/api/`
+
+`components/gear-rental/QuoteForm.tsx` does a direct browser `fetch()` to `https://quote.campingnigeria.com/api/submit-quote`. The previous `app/api/gear-quote/route.ts` was deleted — there is no website-side proxy.
+
+**Why:**
+- The quote tool owns the canonical record (Supabase row, reference number `CNQ-2026-XXXX`, pricing math, review queue, send-quote action). Proxying through the website would only relay the payload, while still leaving the quote tool as the source of truth and the place that needs anti-abuse + email infrastructure. Two layers of validation for one record is duplication, not defence-in-depth.
+- The honeypot + Upstash rate-limit + Resend stack still lives on the 3 internal routes (contact, proposal, assessment-lead). The quote tool runs equivalents of those upstream — the website just routes the customer's payload there and shows the response.
+- Direct POST keeps the network path one hop shorter and removes a class of website-deploy-causes-quote-failure regressions.
+
+**Tradeoff acknowledged:** the website honeypot input is now rendered but never read at submit. We left it in place as cheap insurance; if a future change wants to remove it for cleanliness, that's fine. The substantive anti-abuse is upstream.
+
+---
+
+## Per-route `opengraph-image.tsx` + `twitter-image.tsx` files using a shared renderer
+
+Each major page (`/`, `/schools`, `/schools/international-award`, the 3 program pages, `/individuals`, `/organizations`, `/gear-rental`, `/about`) has its own `opengraph-image.tsx` and `twitter-image.tsx` pair. Each one calls `renderHeroOgImage()` from [lib/og-image.tsx](../lib/og-image.tsx), which composites the page's hero photo behind a forest-green gradient overlay with the brand pill + share-optimised headline.
+
+**Why per-route files instead of a single dynamic API route:**
+- It's the App Router file convention. Next picks them up automatically and wires them into the page's metadata — no manual `openGraph.images` override needed.
+- Each social platform fetches `/<route>/opengraph-image` directly, so the URL is stable and crawlable without the indirection of a query-paramed API route.
+- Per-route copy (eyebrow + headline + subtitle) is co-located with the route file, which is where you'd look to change it.
+
+**Why share a renderer instead of duplicating ImageResponse JSX 20 times:** the actual rendering is 100+ lines (gradient overlay, layout, typography). Duplicating that across 20 route files would mean every visual tweak is a 20-file change. The renderer is a single import; only the page-specific config (hero path + 3 strings) is per-file.
+
+---
+
+## Route-segment metadata exports must be **inline literals**, not imports or re-exports
+
+In every `opengraph-image.tsx` and `twitter-image.tsx`, `runtime`, `size`, `contentType`, and `alt` are declared as inline literals:
+
+```tsx
+export const runtime = 'edge'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+export const alt = '...'
+```
+
+We initially tried importing them from `lib/og-image.tsx` (`export const runtime = OG_RUNTIME`) and re-exporting them from a sibling file (`export { default, runtime, size, contentType, alt } from './opengraph-image'`). Both fail.
+
+**Why:** Next.js parses route-segment config from the **source AST**, not the resolved module graph. Imported constants are unresolved at compile time (`Next.js can't recognize the exported \`runtime\` field in route. It needs to be a static string`), and re-exports also fail (`It mustn't be reexported`). Only literals work. The renderer function can still be shared by import — only the config exports have this constraint.
+
+**The trap to avoid:** when adding a new OG/Twitter route, copy a working file as the template and only change the four config strings + the `renderHeroOgImage()` call. Don't try to DRY up the metadata block — it has to stay inline by file.
+
+---
+
+## `loadQuoteItems` reads only `id`, `name`, `category`, `available_qty` from the items CSV
+
+The published Google Sheets CSV at `NEXT_PUBLIC_SHEETS_ITEMS_URL` has columns `id, name, category, base_price_naira, available_qty`. The parser in `lib/quote-config.ts` uses `headers.indexOf('available_qty')` etc. to pick columns by header name, and **deliberately ignores `base_price_naira`**.
+
+**Why:** Pricing is the quote tool's job, not the customer's. The whole point of the quote-tool architecture is that a human reviews each request and adjusts quantities before pricing is computed and sent. If we surfaced prices in the form, customers would price-anchor against listed values that don't include delivery, group discounts, or rental-duration breaks — and the quote-tool team would spend time correcting expectations instead of operating. Reading only what the form needs is the minimum-disclosure path that keeps the contract clean.

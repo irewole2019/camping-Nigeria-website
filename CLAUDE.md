@@ -27,11 +27,13 @@ Public pages (all App Router `page.tsx`):
 - `/schools/international-award` — full DoE page with 4-question assessment → `/api/assessment-lead`
 - `/schools/programs/{nature-craft,leadership-development,on-campus-camps}` — three school sub-programs
 - `/schools/proposal` — deterministic smart form (8 questions, `proposal-engine.ts` picks a program) → `/api/proposal`
-- `/gear-rental` — equipment rental page + quote form → `/api/gear-quote`
+- `/gear-rental` — equipment rental page + structured quote form → POSTs **direct to `quote.campingnigeria.com/api/submit-quote`** (separate project). Confirmation page at `/gear-rental/submitted`. The website project no longer has a `/api/gear-quote` route — pricing, persistence, and email all live in the quote tool.
 - `/contact` — contact form → `/api/contact`
 - `/privacy-policy`, `/terms`
 
-API routes (all in `app/api/*/route.ts`): `contact`, `gear-quote`, `proposal`, `assessment-lead`. Each runs the full defensive stack before Resend: honeypot (`website_confirm`) → per-IP rate limit (Upstash, 5/hr/route) → type-guard validation with enum allowlists → format checks (email regex, phone digits) → length caps → server-side recommendation derivation (proposal + assessment) → escape-html on every user field in the template → send both emails via `lib/mail.ts#sendPairedMail`. Internal notification to `hello@campingnigeria.com`, customer confirmation to the submitter. Falls back to opening a pre-filled `mailto:` if `RESEND_API_KEY` is missing.
+Internal API routes (in `app/api/*/route.ts`): `contact`, `proposal`, `assessment-lead`. Each runs the full defensive stack before Resend: honeypot (`website_confirm`) → per-IP rate limit (Upstash, 5/hr/route) → type-guard validation with enum allowlists → format checks (email regex, phone digits) → length caps → server-side recommendation derivation (proposal + assessment) → escape-html on every user field in the template → send both emails via `lib/mail.ts#sendPairedMail`. Internal notification to `hello@campingnigeria.com`, customer confirmation to the submitter. Falls back to opening a pre-filled `mailto:` if `RESEND_API_KEY` is missing.
+
+The gear-rental form does **not** use this stack — it talks straight to the quote tool. The website hosts the form UI + the live-CSV equipment selector + the confirmation page; everything else is upstream. See [context/state.md](context/state.md) for the Phase 2 quote-tool integration details.
 
 ## External services
 
@@ -81,4 +83,4 @@ npm run test:watch # vitest watch mode
 npx tsc --noEmit  # type check
 ```
 
-Needs `.env.local` with `RESEND_API_KEY` for email delivery. For production, also set `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` to enable per-IP rate limiting (fails open without them — fine for local dev, not fine for prod). See `.env.example` for the full list.
+Needs `.env.local` with `RESEND_API_KEY` for email delivery, `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` for per-IP rate limiting (rate limit fails open in dev without them, fails *closed* in prod), and `NEXT_PUBLIC_SHEETS_ITEMS_URL` for the gear-rental equipment selector to populate (without it, the form falls back to a message-only flow with an amber notice). All three plus the optional SEO env vars are documented in `.env.example`.

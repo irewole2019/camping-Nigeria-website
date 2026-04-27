@@ -7,7 +7,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **Pages**: `app/<route>/page.tsx` (App Router)
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
 - **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `home/`, `shared/`, `ui/`, `layout/`)
-- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `program-data.ts`, `utils.ts`
+- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - `public/pdf/...`
@@ -162,8 +162,35 @@ export default function Page() {
 - Every page gets a `BreadcrumbList`. Pages with rich content (FAQ, programmes, services) additionally get `FaqJsonLd` / `ServiceJsonLd`.
 - Organization + WebSite JSON-LD are emitted once in `app/layout.tsx` — don't re-emit per page.
 - Address, phone, socials flow from `CONTACT` in `lib/constants.ts`. **Never hardcode the company address** — use `CONTACT.address.formatted` (or the structured fields for schema).
-- Dynamic OG/Twitter images live at `app/opengraph-image.tsx` and `app/twitter-image.tsx` and are served under `/opengraph-image` / `/twitter-image`. Keep them edge-runtime-compatible (no custom fonts without extra setup).
 - Sitemap (`app/sitemap.ts`): add new pages to `ROUTES` with `changeFrequency`, `priority`, and an `image` URL if there's a primary hero/feature image.
+
+### OG + Twitter cards (per-route)
+
+Every major page has a pair of route-segment files: `app/<route>/opengraph-image.tsx` and `app/<route>/twitter-image.tsx`. Both call the shared renderer at `lib/og-image.tsx#renderHeroOgImage`, which composites the page's hero photo behind a forest-green gradient overlay with the gold-pill eyebrow + headline + subtitle.
+
+Template for a new route's OG (or Twitter) file — copy verbatim, change only the 4 config strings + the renderer args:
+
+```tsx
+import { renderHeroOgImage } from '@/lib/og-image'
+
+export const runtime = 'edge'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+export const alt = 'Camping Nigeria <Page> — <share headline>'
+
+export default function Image() {
+  return renderHeroOgImage({
+    hero: '/images/<feature>/hero.webp',
+    eyebrow: '<Short Label>',
+    title: '<Share-optimised headline>',
+    subtitle: '<One-line supporting copy>',
+  })
+}
+```
+
+**Critical constraint:** `runtime`, `size`, `contentType`, and `alt` must be **inline literals** — Next parses route-segment config from the source AST and rejects imported constants or re-exports. The renderer function is the only shareable part. See decisions.md for the full explanation.
+
+**Pairing:** the OG and Twitter files for a given route are usually byte-identical (same hero, same copy, same dimensions). Both are needed because Next does not auto-mirror — Twitter cards default to the OG image only as a fallback when twitter-image is absent at the route level, but for predictable rendering across crawlers we explicitly emit both.
 
 ## Env and secrets
 
