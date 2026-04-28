@@ -2,7 +2,7 @@
 
 **Camping Nigeria** | *A Camping-Themed Children's Day Experience*
 
-**Saturday, 30 May 2026** — 10:00 AM to 4:00 PM | Team on site from 8:00 AM
+**Saturday, 30 May 2026** — 9:00 AM to 5:00 PM (gates open at 9; activities 10–4; pickup window 4–5) | Team on site from 8:00 AM
 
 *Internal Action Plan | For CEO and Core Team Review — Adventure made simple.*
 
@@ -14,7 +14,7 @@
 
 | | | |
 |---|---|---|
-| **DATE** — Sat, 30 May 2026 | **EVENT WINDOW** — 10 AM – 4 PM (Team on site 8:00 AM) | **HEADCOUNT** — 80 kids (Cap: 100 with waitlist) |
+| **DATE** — Sat, 30 May 2026 | **EVENT WINDOW** — 9 AM – 5 PM (gates 9, activities 10–4, pickup 4–5; team on site 8 AM) | **HEADCOUNT** — 80 kids (Cap: 100 with waitlist) |
 | **AGE RANGE** — 4–12 (Split: 4-7 and 8-12 bands) | **TICKET PRICE** — ₦70k – ₦100k (Per child) | **REVENUE TARGET** — ₦5.6M – ₦8M (At 80 kids × avg ₦85k) |
 
 ---

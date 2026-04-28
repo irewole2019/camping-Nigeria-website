@@ -10,10 +10,10 @@ export const EVENT_DESCRIPTION =
   "A one-day camping-themed Children's Day camp in Abuja for kids ages 4 to 12. Tents, house teams, creative stations, outdoor games, kid-friendly food, and keepsake souvenirs."
 
 // 30 May 2026, Saturday — Africa/Lagos is UTC+1, no DST
-export const EVENT_START_ISO = '2026-05-30T10:00:00+01:00'
-export const EVENT_END_ISO = '2026-05-30T16:00:00+01:00'
+export const EVENT_START_ISO = '2026-05-30T09:00:00+01:00'
+export const EVENT_END_ISO = '2026-05-30T17:00:00+01:00'
 export const EVENT_DATE_LABEL = 'Saturday, 30 May 2026'
-export const EVENT_TIME_LABEL = '10:00 AM – 4:00 PM'
+export const EVENT_TIME_LABEL = '9:00 AM – 5:00 PM'
 
 export const VENUE_CITY = 'Abuja'
 export const VENUE_REGION = 'FCT'
@@ -32,19 +32,23 @@ export const EVENT_PATH = '/events/base-camp-kids'
 export const REGISTERED_PATH = '/events/base-camp-kids/registered'
 
 /**
- * Image registry — placeholders pulled from the schools library until
- * post-event Base Camp Kids photos are shot. Swap these paths and the
- * page hero, positioning split, homepage banner, OG card, and sitemap
- * image all update together.
+ * Image registry — generated via openai/gpt-image-2 on inference.sh.
+ * Source prompts live in scripts/generate-base-camp-kids-images.mjs;
+ * re-run with `node scripts/generate-base-camp-kids-images.mjs --only=<name>`
+ * to iterate on any single asset. Swap the paths below to roll in real
+ * event photography after 30 May 2026.
  */
-export const HERO_IMAGE = '/images/schools/why-outdoor-learning.webp'
-export const HERO_IMAGE_ALT = 'Children gathered at an outdoor camping event'
+export const HERO_IMAGE = '/images/events/base-camp-kids/hero.webp'
+export const HERO_IMAGE_ALT =
+  'Children running between forest-green tents at a Children\'s Day camp in the Abuja savanna at golden hour'
 
-export const POSITIONING_IMAGE = '/images/schools/program-eco-awareness.webp'
-export const POSITIONING_IMAGE_ALT = 'Kids doing nature craft activities outdoors'
+export const POSITIONING_IMAGE = '/images/events/base-camp-kids/positioning.webp'
+export const POSITIONING_IMAGE_ALT =
+  'Top-down view of hands tie-dyeing an indigo and gold Adire bandana on a wooden trestle table'
 
-export const HOMEPAGE_BANNER_IMAGE = '/images/schools/program-campus-camps.webp'
-export const HOMEPAGE_BANNER_IMAGE_ALT = 'Children participating in an on-campus camp activity'
+export const HOMEPAGE_BANNER_IMAGE = '/images/events/base-camp-kids/homepage-banner.webp'
+export const HOMEPAGE_BANNER_IMAGE_ALT =
+  'Forest-green camp tents with cream and gold flags beside a wooden welcome arch and mocktail bar in the Abuja savanna'
 
 /**
  * Early-bird total for N children. First child full price, each additional
@@ -72,17 +76,18 @@ export interface ScheduleEntry {
 }
 
 export const SCHEDULE: ScheduleEntry[] = [
-  { time: '10:00 AM', block: 'Arrival, check-in, wristbands, photo consent confirmed, house assignment' },
-  { time: '10:30 AM', block: 'Opening circle, camp rules, house chants and slogan making' },
-  { time: '10:45 AM', block: 'Rotation 1 — tent pitch race and camp skills' },
-  { time: '11:45 AM', block: 'Rest in tents — small chops and mocktail bar' },
-  { time: '12:45 PM', block: 'Rotation 2 — Ngozi Akande arts and craft circuit' },
-  { time: '1:45 PM',  block: 'Main meal service by house' },
-  { time: '2:30 PM',  block: 'Rotation 3 — outdoor games (relay races and tug of war)' },
-  { time: '3:30 PM',  block: 'Campfire circle storytelling and house awards' },
-  { time: '3:40 PM',  block: 'T-shirt reveal, certificate ceremony, group photo' },
-  { time: '3:55 PM',  block: 'Closing circle and goodie bags' },
-  { time: '4:00 PM',  block: 'Parent pickup begins' },
+  { time: '9:00 AM',         block: 'Gates open — early drop-off welcomed' },
+  { time: '10:00 AM',        block: 'Arrival, check-in, wristbands, photo consent confirmed, house assignment' },
+  { time: '10:30 AM',        block: 'Opening circle, camp rules, house chants and slogan making' },
+  { time: '10:45 AM',        block: 'Rotation 1 — tent pitch race and camp skills' },
+  { time: '11:45 AM',        block: 'Rest in tents — small chops and mocktail bar' },
+  { time: '12:45 PM',        block: 'Rotation 2 — Ngozi Akande arts and craft circuit' },
+  { time: '1:45 PM',         block: 'Main meal service by house' },
+  { time: '2:30 PM',         block: 'Rotation 3 — outdoor games (relay races and tug of war)' },
+  { time: '3:30 PM',         block: 'Campfire circle storytelling and house awards' },
+  { time: '3:40 PM',         block: 'T-shirt reveal, certificate ceremony, group photo' },
+  { time: '3:55 PM',         block: 'Closing circle and goodie bags' },
+  { time: '4:00 – 5:00 PM',  block: 'Parent pickup window' },
 ]
 
 export interface FaqEntry {
@@ -166,21 +171,21 @@ export const SOUVENIRS: SouvenirEntry[] = [
     name: 'Camp Certificates',
     description:
       'Printed Junior Camper certificates on branded paper, signed by the Program Director, personalised with each child’s first name and house.',
-    image: '/images/schools/program-leadership.webp',
-    imageAlt: 'Placeholder — printed certificate held by a young camper',
+    image: '/images/events/base-camp-kids/souvenir-certificate.webp',
+    imageAlt: 'Junior Camper certificate with a forest-green border and gold foil seal beside dried savanna grass and a wooden name tag',
   },
   {
     name: 'Branded Water Bottles',
     description:
       'Reusable Camping Nigeria water bottles in the goodie bag, with a name sticker for each child so nothing gets mixed up on the day.',
-    image: '/images/individuals/gallery-6.webp',
-    imageAlt: 'Placeholder — branded water bottle on a wooden surface',
+    image: '/images/events/base-camp-kids/souvenir-water-bottle.webp',
+    imageAlt: 'Matte forest-green stainless-steel water bottle with a brushed gold cap on a weathered wooden picnic table',
   },
   {
     name: 'Branded Goodie Bags',
     description:
       'Each child leaves with a Camping Nigeria goodie bag carrying their decorated T-shirt, certificate, mini journal, and house pin.',
-    image: '/images/individuals/expect-quality-equipment.webp',
-    imageAlt: 'Placeholder — branded goodie bags arranged on a table',
+    image: '/images/events/base-camp-kids/souvenir-goodie-bag.webp',
+    imageAlt: 'Three cotton drawstring goodie bags in cream, forest green, and warm gold lined up under dappled tree shade',
   },
 ]

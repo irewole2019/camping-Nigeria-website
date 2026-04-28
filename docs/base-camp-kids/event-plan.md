@@ -115,10 +115,11 @@ We have built a library of 18 activity ideas across five categories. The event r
 
 Three program lengths to choose from. All include a snack moment, a main meal, and quiet-corner availability throughout.
 
-#### Full-Day Version (Arrival: 8:00 AM | Events: 10:00 to 4:00 PM, default)
+#### Full-Day Version (Team on site: 8:00 AM | Gates open: 9:00 AM | Activities: 10:00–4:00 PM | Pickup window: 4:00–5:00 PM)
 
 | **Time** | **Activity Block** |
 |----|----|
+| **9:00 AM** | Gates open — early drop-off welcomed |
 | **10:00 AM** | Arrival, check-in, wristbands, photo consent confirmed, house assignment |
 | **10:30 AM** | Opening circle, camp rules, house chants and slogan making |
 | **10:45 AM** | Rotation 1 (1 hour): Learn how to pitch tent and Camp skills (Tent pitch race) |
@@ -129,7 +130,7 @@ Three program lengths to choose from. All include a snack moment, a main meal, a
 | **3:30 PM** | Campfire circle storytelling and house awards |
 | **3:40 PM** | T-shirt reveal, certificate ceremony, group photo |
 | **3:55 PM** | Closing circle, goodie bags |
-| **4:00 PM** | Parent pickup begins |
+| **4:00 – 5:00 PM** | Parent pickup window |
 
 ## 3. Operations and Execution (A to Z Action Plan)
 
@@ -258,7 +259,7 @@ Tents. Tug of war. Adire. Trail mix. Face paint. A real mocktail bar. Your child
 
 **DATE:** Saturday, 30 May 2026
 
-**TIME:** 10:00 AM to 4:00 PM
+**TIME:** 9:00 AM to 5:00 PM (gates open 9 AM; activities 10 AM – 4 PM; pickup window 4–5 PM)
 
 **WHERE:** \[Insert Venue\]
 
@@ -573,7 +574,7 @@ These are the decisions only you can approve. For each one we have listed our re
 | **Budget scenario** | Standard (80-100 kids). Balanced cost, full experience. |  |
 | **Target age group** | 4 to 12, split into two age bands for activity rotations. |  |
 | **Headcount cap** | 80 children. 100 with waitlist. |  |
-| **Event length** | Full day: 10:00 AM to 4:00 PM. |  |
+| **Event length** | Public window: 9:00 AM to 5:00 PM (gates 9, activities 10–4, pickup 4–5). |  |
 | **Main meal choice** | Jollof rice + grilled chicken + plantain. Vegetarian option available. |  |
 | **Signature souvenir** | Nature-stamped camp T-shirt + 'Junior Camper' certificate. |  |
 | **Media consent approach** | Opt-in on registration. Blue wristband for opt-out children. |  |

@@ -64,7 +64,7 @@ Before we write a single caption, we lock the seven foundational pieces of the c
 
 **1.1 Offer Definition**
 
-Base Camp Kids is a one-day premium outdoor experience for children aged 4 to 12, delivered by Camping Nigeria at a private outdoor field in Abuja on Saturday, 30 May 2026, from 10 AM to 4 PM.
+Base Camp Kids is a one-day premium outdoor experience for children aged 4 to 12, delivered by Camping Nigeria at a private outdoor field in Abuja on Saturday, 30 May 2026, from 9 AM to 5 PM (gates open at 9, structured activities 10 AM – 4 PM, pickup window 4–5 PM).
 
 30 seats. No more. No less. The cap is not a capacity limit, it is a quality decision. A 30-child cohort means real staff-to-child ratios, real house teams, and real attention to every family. At an average ticket of ₦85,000, this generates ₦2.55M in revenue for a single Saturday of execution.
 

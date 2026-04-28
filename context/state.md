@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-04-27
+Last updated: 2026-04-28
 
 ## Company
 
@@ -27,14 +27,15 @@ Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close,
 - **On-Campus Camps** — `/schools/programs/on-campus-camps` (2-day only)
 
 ### Events
-- **Base Camp Kids** — `/events/base-camp-kids` — one-day Children's Day camp activation, Saturday 30 May 2026, Abuja, ages 4–12, 30-seat hard cap.
+- **Base Camp Kids** — `/events/base-camp-kids` — one-day Children's Day camp activation, **Saturday 30 May 2026, 9:00 AM – 5:00 PM**, Abuja, ages 4–12, 30-seat hard cap.
   - Pricing: ₦100,000 early-bird (online) / ₦150,000 walk-in. 10% sibling discount on every additional child (per-sibling ₦90,000), computed server-side via `computeRegistrationTotal` in [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts).
-  - Flow: registration form → Resend paired email (internal + customer confirmation) → manual invoice → payment locks the seat. **No payment processor** — deliberate v1 choice; Paystack/Stripe to be added once volume justifies the integration cost.
-  - API: `app/api/event-registration/route.ts` runs the same defensive stack as the other 3 Resend routes (honeypot → IP rate limit `event-registration` 5/hr/route → type-guard → email regex → phone digit count → length caps → server-derived total → paired send). Children array capped at 6 per registration; ages strictly 4–12.
+  - Flow: registration form → Resend paired email (internal + customer confirmation) → Sheets append → **manual invoice → payment locks the seat (Paystack integration is the next session — see [docs/base-camp-kids/paystack-integration-plan.md](../docs/base-camp-kids/paystack-integration-plan.md))**.
+  - API: `app/api/event-registration/route.ts` runs the same defensive stack as the other 3 Resend routes (honeypot → IP rate limit `event-registration` 5/hr/route → type-guard → email regex → phone digit count → length caps → server-derived total → paired send → Sheets append). Children array capped at 6 per registration; ages strictly 4–12.
+  - Sheets recording: `GOOGLE_SHEETS_REGISTRATION_WEBHOOK_URL` points at an Apps Script Web App ([docs/base-camp-kids/apps-script.gs](../docs/base-camp-kids/apps-script.gs)) that appends a row per registration. Sheet schema lives in [lib/event-records.ts](../lib/event-records.ts). When unset, registration still sends emails — the Sheet step is skipped and logged.
   - Confirmation page: `/events/base-camp-kids/registered` reads `?name&email&kids&total` from `searchParams` (server component), shows a 3-step "what happens next" list.
-  - Source-of-truth file [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts) feeds the page render, the schema, the email templates, and the confirmation page — single point of edit for date/price/seat-cap/schedule/FAQs/souvenirs.
-  - Schema: `Event` with embedded `Offer` (NGN 100,000, `LimitedAvailability`), `audience` 4–12, `maximumAttendeeCapacity: 30`, plus `BreadcrumbList` and `FAQPage`. New `buildEventJsonLd` helper in [lib/structured-data.ts](../lib/structured-data.ts).
-  - OG/Twitter cards reuse `/images/schools/hero.webp` (no event-specific photo until after the event runs).
+  - Source-of-truth file [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts) feeds the page render, the schema, the email templates, the confirmation page, and the Sheet row — single point of edit for date/time/price/seat-cap/schedule/FAQs/souvenirs/image registry.
+  - Schema: `Event` with embedded `Offer` (NGN 100,000, `LimitedAvailability`), `audience` 4–12, `maximumAttendeeCapacity: 30`, plus `BreadcrumbList` and `FAQPage`. `buildEventJsonLd` helper in [lib/structured-data.ts](../lib/structured-data.ts).
+  - **Image registry:** AI-generated marketing imagery in [public/images/events/base-camp-kids/](../public/images/events/base-camp-kids/) — hero (2048×1152), positioning (1280×960), homepage banner (2048×1152), and three souvenir tiles (1024² each). Generated via `openai/gpt-image-2@latest` on inference.sh; prompts and re-run script live in [scripts/generate-base-camp-kids-images.mjs](../scripts/generate-base-camp-kids-images.mjs). OG/Twitter cards now use the event hero (was schools/hero.webp). Swap these paths to roll in real event photography after 30 May 2026.
 
 ### Duke of Edinburgh (international award)
 - `/schools/international-award` with 7 sections: hero, award, expedition tiers, our role, what we provide, assessment, FAQ
@@ -126,7 +127,7 @@ The `/gear-rental` form is the customer-facing entry point for a separate quote 
 
 ## In progress
 
-Nothing as of this session.
+- **Paystack payment integration for Base Camp Kids registration** — handoff plan at [docs/base-camp-kids/paystack-integration-plan.md](../docs/base-camp-kids/paystack-integration-plan.md). Resume tomorrow from there. Architecture decisions still open: inline-vs-redirect, when to fire confirmation email, sheet status field shape.
 
 ## Next (tracked TODOs)
 
@@ -168,3 +169,6 @@ Worked through the full code-review punch list plus a follow-up review:
 21. ✅ **Address corrected sitewide** — "Lagos, Nigeria" was wrong; company is based at 198 Damboa Close, PW, Kubwa, Abuja. Added `CONTACT.address` constant as the single source of truth. Fixed contact page, privacy policy, LocalBusiness schema, and CLAUDE.md.
 22. ✅ **Phase 2 quote-tool integration** (gear-rental) — replaced free-text equipment textarea with a structured selector backed by a published Google Sheets CSV; collapsible categories with tents leading; new required Delivery Zone select and rental-duration display; direct browser POST to `quote.campingnigeria.com/api/submit-quote`; new `/gear-rental/submitted` confirmation page reading URL params; deleted `app/api/gear-quote/` route entirely (anti-abuse and email now upstream in the quote tool). Required setting `NEXT_PUBLIC_SHEETS_ITEMS_URL` in Vercel — without it the form falls back to a message-only flow.
 23. ✅ **Dynamic per-route OG/Twitter cards** — extended the existing `next/og` setup to 10 pages, each with its own hero photo behind the brand frame. Shared renderer at `lib/og-image.tsx` keeps the visual language consistent (forest-green overlay + gold eyebrow pill + white serif headline). Homepage now reads "Adventure Made Simple" instead of the schools-leaning copy. Route-segment metadata (`runtime`, `size`, `contentType`, `alt`) is inlined in every file because Next parses those statically and rejects imports/re-exports.
+24. ✅ **Base Camp Kids end-to-end** — event page, registration form with sibling pricing engine, paired-email API with the full defensive stack, Sheets append via Apps Script Web App, confirmation page, structured data (`Event` + `Offer`), navbar link, homepage banner block, sitemap entry. Single source of truth in [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts). v1 is invoice-on-payment (no processor); Paystack is the next session.
+25. ✅ **AI image generation pipeline for Base Camp Kids** — six marketing assets (hero, positioning, homepage banner, three souvenir tiles) generated via `openai/gpt-image-2@latest` on inference.sh. Re-runnable script at [scripts/generate-base-camp-kids-images.mjs](../scripts/generate-base-camp-kids-images.mjs) uses async submit + polling (the `wait: true` param times out at the proxy for high-quality 2K renders). All outputs land in [public/images/events/base-camp-kids/](../public/images/events/base-camp-kids/) and are referenced by the source-of-truth file. Brand palette (forest green, gold, cream) and Abuja savanna setting baked into prompts; composition rule is "no synthetic kid faces" — kids appear from behind, in motion blur, or hands-only close-ups.
+26. ✅ **Event time bumped to 9:00 AM – 5:00 PM** — was 10:00 AM – 4:00 PM. Bookend-only change: schedule blocks stayed put, added a "9:00 AM gates open" entry and a "4:00 – 5:00 PM parent pickup window" entry. All consumers (page hero, JSON-LD `Event.startDate`/`endDate`, confirmation email) read from `EVENT_TIME_LABEL` / `EVENT_START_ISO` / `EVENT_END_ISO`, so the change was a one-file edit.

@@ -327,6 +327,34 @@ We initially tried importing them from `lib/og-image.tsx` (`export const runtime
 
 ---
 
+## Base Camp Kids: `lib/events/base-camp-kids.ts` is the single source of truth
+
+Date, time, ISO timestamps, price, seat cap, schedule, FAQs, souvenirs, and image registry all live in one file. The event page (`app/events/base-camp-kids/page.tsx`), the registration API (`app/api/event-registration/route.ts`), the email templates, the confirmation page, the structured-data builder (`lib/structured-data.ts#buildEventJsonLd`), the homepage banner, the navbar link, the sitemap entry, and the Sheets row schema (`lib/event-records.ts`) all read from these constants.
+
+**Why:** The event copy changes more than the rest of the site. Date and time can shift, price tiers can move, the schedule was edited three times before launch, the souvenir list grew. Without a single file every consumer reads from, an "update the time" task becomes "find every component that hardcoded `'10:00 AM – 4:00 PM'`". Today's bump from 10–4 to 9–5 was a 4-line edit because of this discipline; with hardcoded strings it would have been 8+ files and a guarantee of one being missed.
+
+---
+
+## Base Camp Kids schedule: bookend-expand, don't redesign, when the event window changes
+
+When the event window grew from 6 hours to 8 hours (10–4 → 9–5), the existing 11 activity blocks stayed at their original timestamps. We added a `9:00 AM — Gates open / early drop-off` entry at the top and replaced `4:00 PM — Parent pickup begins` with `4:00 – 5:00 PM — Parent pickup window`.
+
+**Why:** The schedule was carefully sequenced — rotation timings, meal service window, energy-management quiet zones. Stretching the activity blocks to fill 8 hours would have introduced gaps that drag for kids and add staff exposure without programming benefit. Treating the new bookends as *gate-open* and *pickup-window* communicates flexibility to parents without unsettling a programme that already works.
+
+---
+
+## Marketing imagery: AI-generated via inference.sh, not stock or human shoot
+
+The six Base Camp Kids marketing assets (hero, positioning, homepage banner, three souvenir tiles) are generated via `openai/gpt-image-2@latest` on inference.sh. The re-runnable script with prompts lives in [scripts/generate-base-camp-kids-images.mjs](../scripts/generate-base-camp-kids-images.mjs).
+
+**Why AI over stock:** Stock photos either depict generic outdoor camps that read American/European, or they cost more than a custom shoot for usage rights at marketing scale. Stock also can't match the brand palette (forest-green tents with gold pennants on Abuja savanna grass) without obvious post-production.
+
+**Why AI over a human shoot:** The event hasn't run yet — there's nothing real to photograph until 30 May 2026. Pre-event shoots with a hired crew, child models, and a permitted location would cost more than a dozen events' worth of website rendering. The plan is to swap these AI assets for real event photography after the inaugural run.
+
+**Composition rule — "no synthetic kid faces":** AI-generated faces of identifiable children read uncanny and risk audience distrust on a kid-facing marketing surface. The prompts compose around children — backs turned, motion blur, hands-only close-ups, distant figures — so the scenes read as "joyful camp" without any identifiable AI-generated child face front-and-centre. Souvenir tiles are still-life only.
+
+---
+
 ## `loadQuoteItems` reads only `id`, `name`, `category`, `available_qty` from the items CSV
 
 The published Google Sheets CSV at `NEXT_PUBLIC_SHEETS_ITEMS_URL` has columns `id, name, category, base_price_naira, available_qty`. The parser in `lib/quote-config.ts` uses `headers.indexOf('available_qty')` etc. to pick columns by header name, and **deliberately ignores `base_price_naira`**.
