@@ -52,7 +52,7 @@ export default function Hero() {
                 animate={{ y: '0%' }}
                 transition={{ duration: 1, ease: premiumEase, delay: 0.25 }}
               >
-                Base Camp <span className="italic text-brand-accent-readable">Kids</span>
+                Base Camp <span className="text-brand-accent-readable">Kids</span>
               </motion.h1>
             </div>
 
