@@ -44,7 +44,7 @@ const ONLY = onlyFlag ? onlyFlag.slice(7) : null
 
 const JOBS = [
   {
-    name: 'hero',
+    name: 'hero-v2',
     width: 2048,
     height: 1152,
     prompt:
@@ -58,7 +58,7 @@ const JOBS = [
       'Top-down close-up of small brown hands working on a tie-dye Adire bandana on a rustic wooden trestle table at an outdoor camp in Abuja. Indigo and gold dye in small ceramic pots, twine, gloves, a stack of folded cream T-shirts at the edge of frame, a few scattered acacia leaves. Soft diffused daylight, warm earthy palette of forest green, gold, and cream. No faces visible — only forearms and hands. Documentary product photography, premium colour grading. No text, no logos.',
   },
   {
-    name: 'homepage-banner',
+    name: 'homepage-banner-v2',
     width: 2048,
     height: 1152,
     prompt:

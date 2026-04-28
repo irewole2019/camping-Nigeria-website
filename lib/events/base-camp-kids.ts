@@ -38,7 +38,7 @@ export const REGISTERED_PATH = '/events/base-camp-kids/registered'
  * to iterate on any single asset. Swap the paths below to roll in real
  * event photography after 30 May 2026.
  */
-export const HERO_IMAGE = '/images/events/base-camp-kids/hero.webp'
+export const HERO_IMAGE = '/images/events/base-camp-kids/hero-v2.webp'
 export const HERO_IMAGE_ALT =
   'Children running between forest-green tents at a Children\'s Day camp in the Abuja savanna at golden hour'
 
@@ -46,7 +46,7 @@ export const POSITIONING_IMAGE = '/images/events/base-camp-kids/positioning.webp
 export const POSITIONING_IMAGE_ALT =
   'Top-down view of hands tie-dyeing an indigo and gold Adire bandana on a wooden trestle table'
 
-export const HOMEPAGE_BANNER_IMAGE = '/images/events/base-camp-kids/homepage-banner.webp'
+export const HOMEPAGE_BANNER_IMAGE = '/images/events/base-camp-kids/homepage-banner-v2.webp'
 export const HOMEPAGE_BANNER_IMAGE_ALT =
   'Forest-green camp tents with cream and gold flags beside a wooden welcome arch and mocktail bar in the Abuja savanna'
 
