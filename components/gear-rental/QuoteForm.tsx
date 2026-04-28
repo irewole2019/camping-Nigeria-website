@@ -15,6 +15,9 @@ const ITEMS_CSV_URL = process.env.NEXT_PUBLIC_SHEETS_ITEMS_URL
 const DELIVERY_ZONES = ['Abuja', 'Lagos', 'Other'] as const
 type DeliveryZone = (typeof DELIVERY_ZONES)[number]
 
+const DEFAULT_PICKUP_TIME = '12:00'
+const DEFAULT_DROPOFF_TIME = '12:00'
+
 // text-base on mobile (16px) prevents iOS Safari auto-zoom on focus.
 const inputBase =
   'w-full rounded-lg border border-brand-dark/15 bg-white px-4 py-3 font-sans text-base sm:text-sm text-brand-dark placeholder:text-brand-dark/40 outline-none transition-colors duration-200 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/20'
@@ -29,16 +32,41 @@ function todayISO(): string {
   return `${y}-${m}-${d}`
 }
 
-function rentalDurationText(start: string, end: string): string | null {
-  if (!start || !end) return null
-  const startDate = new Date(`${start}T00:00:00`)
-  const endDate = new Date(`${end}T00:00:00`)
-  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return null
-  if (endDate < startDate) return null
-  const ms = endDate.getTime() - startDate.getTime()
-  const nights = Math.round(ms / (1000 * 60 * 60 * 24))
-  const days = nights + 1
-  return `${days} day${days === 1 ? '' : 's'} (${nights} night${nights === 1 ? '' : 's'})`
+function formatTime12(time24: string): string {
+  if (!/^\d{2}:\d{2}$/.test(time24)) return ''
+  const [h, m] = time24.split(':').map(Number)
+  const period = h < 12 ? 'am' : 'pm'
+  const h12 = h % 12 || 12
+  return m === 0 ? `${h12}${period}` : `${h12}:${String(m).padStart(2, '0')}${period}`
+}
+
+function formatDateShort(dateStr: string): string {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
+
+/**
+ * Camping convention: rental days run noon-to-noon. We compute days as
+ *   max(1, ceil(elapsed_hours / 24))
+ * which gives 1 day for noon-to-noon, 1 day for a same-day daytime rental,
+ * 2 days for a 25-hour rental, etc. Same rule the quote tool runs server-side.
+ */
+function formatRentalRange(
+  startDate: string,
+  pickupTime: string,
+  endDate: string,
+  dropoffTime: string,
+): string | null {
+  if (!startDate || !endDate || !pickupTime || !dropoffTime) return null
+  const startMs = new Date(`${startDate}T${pickupTime}:00`).getTime()
+  const endMs = new Date(`${endDate}T${dropoffTime}:00`).getTime()
+  if (Number.isNaN(startMs) || Number.isNaN(endMs)) return null
+  if (endMs <= startMs) return null
+  const elapsedH = (endMs - startMs) / (1000 * 60 * 60)
+  const days = Math.max(1, Math.ceil(elapsedH / 24))
+  return `${days} day${days === 1 ? '' : 's'} (${formatDateShort(startDate)} ${formatTime12(pickupTime)} → ${formatDateShort(endDate)} ${formatTime12(dropoffTime)})`
 }
 
 interface FormErrors {
@@ -60,6 +88,8 @@ export default function QuoteForm() {
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [pickupTime, setPickupTime] = useState(DEFAULT_PICKUP_TIME)
+  const [dropoffTime, setDropoffTime] = useState(DEFAULT_DROPOFF_TIME)
   const [today, setToday] = useState('')
   const [minEndDate, setMinEndDate] = useState('')
 
@@ -119,7 +149,9 @@ export default function QuoteForm() {
     phone: string
     deliveryZone: string
     startDate: string
+    pickupTime: string
     endDate: string
+    dropoffTime: string
     selected: ReturnType<typeof selectedItems>
   }): FormErrors {
     const next: FormErrors = {}
@@ -135,9 +167,14 @@ export default function QuoteForm() {
       next.phone = 'Please enter a valid phone number.'
     }
     if (!data.startDate || !data.endDate) {
-      next.rentalDates = 'Please pick both a start and end date.'
+      next.rentalDates = 'Please pick both pickup and dropoff dates.'
     } else if (data.endDate < data.startDate) {
-      next.rentalDates = 'End date must be on or after the start date.'
+      next.rentalDates = 'Dropoff must be on or after pickup.'
+    } else if (
+      data.startDate === data.endDate &&
+      data.pickupTime >= data.dropoffTime
+    ) {
+      next.rentalDates = 'For same-day rentals, dropoff must be after pickup.'
     }
     if (!DELIVERY_ZONES.includes(data.deliveryZone as DeliveryZone)) {
       next.deliveryZone = 'Please select a delivery zone.'
@@ -160,6 +197,8 @@ export default function QuoteForm() {
     const deliveryZone = String(fd.get('deliveryZone') || '')
     const startDateVal = String(fd.get('startDate') || '')
     const endDateVal = String(fd.get('endDate') || '')
+    const pickupTimeVal = String(fd.get('pickupTime') || DEFAULT_PICKUP_TIME)
+    const dropoffTimeVal = String(fd.get('dropoffTime') || DEFAULT_DROPOFF_TIME)
 
     const selected = selectedItems()
     const validationErrors = validate({
@@ -168,7 +207,9 @@ export default function QuoteForm() {
       phone,
       deliveryZone,
       startDate: startDateVal,
+      pickupTime: pickupTimeVal,
       endDate: endDateVal,
+      dropoffTime: dropoffTimeVal,
       selected,
     })
 
@@ -195,6 +236,8 @@ export default function QuoteForm() {
           delivery_zone: deliveryZone,
           rental_start: startDateVal,
           rental_end: endDateVal,
+          pickup_time: pickupTimeVal,
+          dropoff_time: dropoffTimeVal,
           items: selected,
           message,
         }),
@@ -224,7 +267,7 @@ export default function QuoteForm() {
     }
   }
 
-  const duration = rentalDurationText(startDate, endDate)
+  const duration = formatRentalRange(startDate, pickupTime, endDate, dropoffTime)
 
   return (
     <Section className="bg-white">
@@ -373,48 +416,78 @@ export default function QuoteForm() {
             />
           ) : null}
 
-          {/* Rental Dates */}
+          {/* Pickup + Dropoff (date + time pairs) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="startDate" className={labelBase}>
-                Rental Start Date <span className="text-brand-accent">*</span>
-              </label>
-              <input
-                id="startDate"
-                name="startDate"
-                type="date"
-                required
-                min={today}
-                value={startDate}
-                aria-required="true"
-                aria-invalid={!!errors.rentalDates}
-                aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
-                onChange={(e) => {
-                  const v = e.target.value
-                  setStartDate(v)
-                  setMinEndDate(v || today)
-                  if (endDate && v && endDate < v) setEndDate('')
-                }}
-                className={inputBase}
-              />
+              <p className={labelBase}>
+                Pickup <span className="text-brand-accent">*</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  required
+                  min={today}
+                  value={startDate}
+                  aria-label="Pickup date"
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setStartDate(v)
+                    setMinEndDate(v || today)
+                    if (endDate && v && endDate < v) setEndDate('')
+                  }}
+                  className={inputBase}
+                />
+                <input
+                  id="pickupTime"
+                  name="pickupTime"
+                  type="time"
+                  required
+                  value={pickupTime}
+                  aria-label="Pickup time"
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  onChange={(e) => setPickupTime(e.target.value || DEFAULT_PICKUP_TIME)}
+                  className={inputBase}
+                />
+              </div>
             </div>
             <div>
-              <label htmlFor="endDate" className={labelBase}>
-                Rental End Date <span className="text-brand-accent">*</span>
-              </label>
-              <input
-                id="endDate"
-                name="endDate"
-                type="date"
-                required
-                min={minEndDate}
-                value={endDate}
-                aria-required="true"
-                aria-invalid={!!errors.rentalDates}
-                aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
-                onChange={(e) => setEndDate(e.target.value)}
-                className={inputBase}
-              />
+              <p className={labelBase}>
+                Dropoff <span className="text-brand-accent">*</span>
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  id="endDate"
+                  name="endDate"
+                  type="date"
+                  required
+                  min={minEndDate}
+                  value={endDate}
+                  aria-label="Dropoff date"
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  aria-describedby={errors.rentalDates ? 'rentalDates-error' : undefined}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className={inputBase}
+                />
+                <input
+                  id="dropoffTime"
+                  name="dropoffTime"
+                  type="time"
+                  required
+                  value={dropoffTime}
+                  aria-label="Dropoff time"
+                  aria-required="true"
+                  aria-invalid={!!errors.rentalDates}
+                  onChange={(e) => setDropoffTime(e.target.value || DEFAULT_DROPOFF_TIME)}
+                  className={inputBase}
+                />
+              </div>
             </div>
             {errors.rentalDates && (
               <p
@@ -426,10 +499,13 @@ export default function QuoteForm() {
               </p>
             )}
             {duration && !errors.rentalDates && (
-              <p className="sm:col-span-2 -mt-2 text-sm text-brand-dark/60 font-sans">
+              <p className="sm:col-span-2 -mt-2 text-sm text-brand-dark/70 font-sans">
                 Duration: {duration}
               </p>
             )}
+            <p className="sm:col-span-2 -mt-2 text-xs text-brand-dark/50 font-sans leading-relaxed">
+              Rentals run noon-to-noon by default — adjust the times if you need a same-day or off-noon hire. Time picker shows 24h or 12h depending on your device.
+            </p>
           </div>
 
           {/* Delivery Zone */}

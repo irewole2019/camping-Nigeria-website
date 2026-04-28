@@ -360,3 +360,22 @@ The six Base Camp Kids marketing assets (hero, positioning, homepage banner, thr
 The published Google Sheets CSV at `NEXT_PUBLIC_SHEETS_ITEMS_URL` has columns `id, name, category, base_price_naira, available_qty`. The parser in `lib/quote-config.ts` uses `headers.indexOf('available_qty')` etc. to pick columns by header name, and **deliberately ignores `base_price_naira`**.
 
 **Why:** Pricing is the quote tool's job, not the customer's. The whole point of the quote-tool architecture is that a human reviews each request and adjusts quantities before pricing is computed and sent. If we surfaced prices in the form, customers would price-anchor against listed values that don't include delivery, group discounts, or rental-duration breaks — and the quote-tool team would spend time correcting expectations instead of operating. Reading only what the form needs is the minimum-disclosure path that keeps the contract clean.
+
+---
+
+## Camping rentals are noon-to-noon: `rental_days = max(1, ceil(elapsed_hours / 24))`
+
+The gear-rental form takes a pickup date+time and a dropoff date+time, both defaulting to `12:00`. Day count is computed as `max(1, ceil(elapsed_hours / 24))` on both sides — server (the quote tool's source of truth) and client (the inline preview in the form). Three canonical cases:
+
+- **Noon-to-noon:** 30 Apr 12pm → 1 May 12pm = 24h elapsed = **1 day**
+- **Slightly less than 24h:** 30 Apr 2pm → 1 May 10am = 20h elapsed → ceil(20/24) = **1 day**
+- **Same-day rental:** 30 Apr 9am → 30 Apr 5pm = 8h → ceil(8/24) = **1 day** (the `max(1, …)` floor keeps zero-hour edge cases sane)
+
+**Why this rule and not the obvious "nights stayed + 1":**
+- The old "nights + 1" formula gave `3 days (2 nights)` for any 26→28 trip regardless of whether you came home before noon or after — fine for hotels, wrong for camping where the gear physically goes back at noon.
+- A simple `ceil(elapsed_hours / 24)` is the least surprising rule for the three real-world cases the team handles: the canonical overnight rental, the day-late return, and the daytime activation. Each gets exactly 1 day. The "rounded up to noon" part is implicit in customers picking 12:00 by default; if they pick 2pm, they're already thinking about times, and the math just works.
+- `max(1, …)` is there for the degenerate case where elapsed_hours = 0 (same date, same time, browser glitch, whatever). A "0 day rental" is incoherent — clamp to 1.
+
+**Why the time fields are additive in the API contract:** the quote tool validates them with `^\d{2}:\d{2}$` and treats null/missing as "use the legacy date-only calc". This means the website can ship the time inputs without lockstep with the quote tool, and historical quotes (saved before times existed) keep their already-computed `rental_days` instead of silently recalculating. Backwards compatibility is what made this a no-brainer to roll out incrementally.
+
+**Why the client also computes the duration (when the server is the source of truth):** customer trust. The form's inline "3 days (26 Apr 12pm → 29 Apr 12pm)" preview lets the user verify the pricing premise before they submit. If the team sees a different `rental_days` server-side, that's a bug to find — but the same rule on both sides means the customer is never surprised by the priced quote a few hours later.
