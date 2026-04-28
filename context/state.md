@@ -26,6 +26,16 @@ Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close,
 - **Leadership Development** — `/schools/programs/leadership-development` (uses "CLASS" label, not "Ages")
 - **On-Campus Camps** — `/schools/programs/on-campus-camps` (2-day only)
 
+### Events
+- **Base Camp Kids** — `/events/base-camp-kids` — one-day Children's Day camp activation, Saturday 30 May 2026, Abuja, ages 4–12, 30-seat hard cap.
+  - Pricing: ₦100,000 early-bird (online) / ₦150,000 walk-in. 10% sibling discount on every additional child (per-sibling ₦90,000), computed server-side via `computeRegistrationTotal` in [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts).
+  - Flow: registration form → Resend paired email (internal + customer confirmation) → manual invoice → payment locks the seat. **No payment processor** — deliberate v1 choice; Paystack/Stripe to be added once volume justifies the integration cost.
+  - API: `app/api/event-registration/route.ts` runs the same defensive stack as the other 3 Resend routes (honeypot → IP rate limit `event-registration` 5/hr/route → type-guard → email regex → phone digit count → length caps → server-derived total → paired send). Children array capped at 6 per registration; ages strictly 4–12.
+  - Confirmation page: `/events/base-camp-kids/registered` reads `?name&email&kids&total` from `searchParams` (server component), shows a 3-step "what happens next" list.
+  - Source-of-truth file [lib/events/base-camp-kids.ts](../lib/events/base-camp-kids.ts) feeds the page render, the schema, the email templates, and the confirmation page — single point of edit for date/price/seat-cap/schedule/FAQs/souvenirs.
+  - Schema: `Event` with embedded `Offer` (NGN 100,000, `LimitedAvailability`), `audience` 4–12, `maximumAttendeeCapacity: 30`, plus `BreadcrumbList` and `FAQPage`. New `buildEventJsonLd` helper in [lib/structured-data.ts](../lib/structured-data.ts).
+  - OG/Twitter cards reuse `/images/schools/hero.webp` (no event-specific photo until after the event runs).
+
 ### Duke of Edinburgh (international award)
 - `/schools/international-award` with 7 sections: hero, award, expedition tiers, our role, what we provide, assessment, FAQ
 - **Pricing (current):** Base Camp ₦3M / Trail Ready ₦5M / Summit Partner ₦8M — all **"for up to 60 students"**, with a shared note "Additional students from ₦50,000 each — max group of 100"
@@ -40,6 +50,7 @@ Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close,
 | `/schools/proposal` | `components/proposal/ProposalForm.tsx` | `app/api/proposal/route.ts` (Resend) | `hello@campingnigeria.com` |
 | `/schools/international-award` | `components/schools/international-award/ExpeditionAssessment.tsx` | `app/api/assessment-lead/route.ts` (Resend) | `hello@campingnigeria.com` |
 | `/gear-rental` | `components/gear-rental/QuoteForm.tsx` | **External** — POST to `https://quote.campingnigeria.com/api/submit-quote` | Quote tool handles persistence + email |
+| `/events/base-camp-kids` | `components/events/base-camp-kids/RegistrationForm.tsx` | `app/api/event-registration/route.ts` (Resend) | `hello@campingnigeria.com` |
 
 The 3 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
 

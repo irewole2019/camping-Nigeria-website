@@ -31,6 +31,40 @@ export interface ServiceJsonLdInput {
   offers?: ServiceOffer[]
 }
 
+export interface EventJsonLdInput {
+  name: string
+  description: string
+  /** Page path that hosts the event, e.g. '/events/base-camp-kids' */
+  path: string
+  /** ISO 8601 with timezone, e.g. '2026-05-30T10:00:00+01:00' */
+  startDate: string
+  /** ISO 8601 with timezone */
+  endDate: string
+  /** Locality (city) and region for the venue */
+  location: {
+    name?: string
+    locality: string
+    region: string
+    country: string
+  }
+  /** Single ticket offer — uses Offer not AggregateOffer because all attendees pay the same advertised early-bird price */
+  offer: {
+    price: number
+    priceCurrency: 'NGN'
+    /** schema.org URL — InStock, SoldOut, LimitedAvailability */
+    availability: 'https://schema.org/InStock' | 'https://schema.org/SoldOut' | 'https://schema.org/LimitedAvailability'
+    /** ISO date when registration opened, e.g. '2026-04-01T00:00:00+01:00' */
+    validFrom?: string
+  }
+  /** schema.org URL */
+  eventStatus?: 'https://schema.org/EventScheduled' | 'https://schema.org/EventPostponed' | 'https://schema.org/EventCancelled' | 'https://schema.org/EventRescheduled'
+  maximumAttendeeCapacity?: number
+  /** Audience suggested age range (years) */
+  audience?: { suggestedMinAge?: number; suggestedMaxAge?: number }
+  /** Absolute URL to a representative image for rich results */
+  image?: string
+}
+
 const ORG_ID = `${SITE_URL}/#organization`
 
 function toAbsoluteUrl(path: string): string {
@@ -196,4 +230,58 @@ export function buildServiceJsonLd(input: ServiceJsonLdInput) {
   }
 
   return base
+}
+
+// ─── Event ──────────────────────────────────────────────────────────────────
+
+/**
+ * Event schema with embedded Offer. Designed for activations like Base Camp
+ * Kids — fixed date, single ticket price advertised on the page, capped seats.
+ *
+ * `availability` flips to SoldOut once the seat counter is hit. Keep
+ * `eventAttendanceMode: OfflineEventAttendanceMode` for in-person events; an
+ * online or hybrid mode would need a different builder.
+ */
+export function buildEventJsonLd(input: EventJsonLdInput) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: input.name,
+    description: input.description,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    eventStatus: input.eventStatus ?? 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    url: toAbsoluteUrl(input.path),
+    location: {
+      '@type': 'Place',
+      name: input.location.name ?? `${input.location.locality}, ${input.location.country}`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: input.location.locality,
+        addressRegion: input.location.region,
+        addressCountry: input.location.country,
+      },
+    },
+    organizer: { '@id': ORG_ID },
+    offers: {
+      '@type': 'Offer',
+      price: input.offer.price,
+      priceCurrency: input.offer.priceCurrency,
+      availability: input.offer.availability,
+      url: toAbsoluteUrl(input.path),
+      ...(input.offer.validFrom ? { validFrom: input.offer.validFrom } : {}),
+    },
+    ...(input.maximumAttendeeCapacity ? { maximumAttendeeCapacity: input.maximumAttendeeCapacity } : {}),
+    ...(input.audience
+      ? {
+          audience: {
+            '@type': 'PeopleAudience',
+            ...(input.audience.suggestedMinAge ? { suggestedMinAge: input.audience.suggestedMinAge } : {}),
+            ...(input.audience.suggestedMaxAge ? { suggestedMaxAge: input.audience.suggestedMaxAge } : {}),
+          },
+        }
+      : {}),
+    ...(input.image ? { image: input.image } : {}),
+  }
 }

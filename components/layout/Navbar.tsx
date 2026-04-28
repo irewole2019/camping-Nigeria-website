@@ -12,20 +12,18 @@ const NAV_LINKS = [
   { label: 'Individuals', href: '/individuals' },
   { label: 'Organizations', href: '/organizations' },
   { label: 'Gear Rental', href: '/gear-rental' },
+  { label: 'Base Camp Kids', href: '/events/base-camp-kids', highlight: true as const },
 ]
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
-
   const toggleButtonRef = useRef<HTMLButtonElement>(null)
   const firstLinkRef = useRef<HTMLAnchorElement>(null)
-
 
   // ------- Focus management for mobile menu -------
   useEffect(() => {
     if (mobileOpen) {
-      // Focus the first link when the menu opens
       requestAnimationFrame(() => {
         firstLinkRef.current?.focus()
       })
@@ -54,10 +52,9 @@ export default function Navbar() {
 
   return (
     <header
-      className={cn(
-        'absolute top-0 left-0 right-0 z-50',
-        'bg-transparent'
-      )}
+      // Mobile: fixed (stays in viewport on scroll). Desktop (md+): absolute
+      // (sits at top of page, scrolls away with content).
+      className="fixed md:absolute top-0 left-0 right-0 z-50 bg-brand-dark border-b border-white/10"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -79,8 +76,16 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 tracking-wide"
+                className={cn(
+                  'text-sm font-medium tracking-wide transition-colors duration-200 inline-flex items-center gap-2',
+                  link.highlight
+                    ? 'text-brand-accent hover:text-white'
+                    : 'text-white/85 hover:text-white',
+                )}
               >
+                {link.highlight && (
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent animate-pulse" aria-hidden="true" />
+                )}
                 {link.label}
               </Link>
             ))}
@@ -125,7 +130,7 @@ export default function Navbar() {
       >
         <nav
           aria-label="Mobile navigation"
-          className="bg-brand-dark/95 backdrop-blur-sm border-t border-white/10 px-4 pt-3 pb-5 flex flex-col gap-1"
+          className="bg-brand-dark/95 backdrop-blur-md border-t border-white/10 px-4 pt-3 pb-5 flex flex-col gap-1"
         >
           {NAV_LINKS.map((link, index) => (
             <Link
@@ -133,8 +138,16 @@ export default function Navbar() {
               href={link.href}
               ref={index === 0 ? firstLinkRef : undefined}
               onClick={closeMobileMenu}
-              className="text-white/80 hover:text-white font-medium py-3 border-b border-white/5 tracking-wide transition-colors duration-200"
+              className={cn(
+                'font-medium py-3 border-b border-white/5 tracking-wide transition-colors duration-200 inline-flex items-center gap-2',
+                link.highlight
+                  ? 'text-brand-accent hover:text-white'
+                  : 'text-white/85 hover:text-white',
+              )}
             >
+              {link.highlight && (
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent" aria-hidden="true" />
+              )}
               {link.label}
             </Link>
           ))}

@@ -85,6 +85,12 @@ const ROUTES: RouteEntry[] = [
     image: `${SITE_URL}/images/about/hero.webp`,
   },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.6 },
+  {
+    path: '/events/base-camp-kids',
+    changeFrequency: 'weekly',
+    priority: 0.85,
+    image: `${SITE_URL}/images/schools/why-outdoor-learning.webp`,
+  },
   { path: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
 ]
