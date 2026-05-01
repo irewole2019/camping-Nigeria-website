@@ -8,6 +8,8 @@ import { premiumEase } from '@/lib/animation'
 import {
   EVENT_DATE_LABEL,
   EVENT_TIME_LABEL,
+  EVENT_ANNOUNCEMENT,
+  VENUE_NAME,
   VENUE_CITY,
   SEAT_CAP,
   MIN_AGE,
@@ -57,13 +59,23 @@ export default function Hero() {
             </div>
 
             <motion.p
+              className="font-serif italic text-lg sm:text-xl text-brand-dark/85 leading-snug mb-7 max-w-lg"
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: premiumEase, delay: 0.4 }}
+            >
+              {EVENT_ANNOUNCEMENT}
+            </motion.p>
+
+            <motion.p
               className="font-sans text-base sm:text-lg text-brand-dark/75 leading-relaxed mb-10 lg:mb-12 max-w-lg"
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: premiumEase, delay: 0.5 }}
+              transition={{ duration: 0.9, ease: premiumEase, delay: 0.55 }}
             >
-              A camping-themed Children’s Day for kids ages {MIN_AGE} to {MAX_AGE}.
-              Tents, house teams, outdoor games, kid-friendly food, and souvenirs they keep.
+              A camping-themed Children’s Day at {VENUE_NAME}, {VENUE_CITY},
+              for kids ages {MIN_AGE} to {MAX_AGE}. Tents, house teams, outdoor games,
+              kid-friendly food, and souvenirs they keep.
             </motion.p>
 
             {/* Magazine-style spec strip */}

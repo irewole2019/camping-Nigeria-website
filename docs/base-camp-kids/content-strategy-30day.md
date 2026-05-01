@@ -1,10 +1,12 @@
-**CAMPING NIGERIA**
+**CAMPING NIGERIA × DISCOVERY HAVEN**
 
 **Base Camp Kids**
 
 30-Day Content Strategy and Campaign Plan
 
-*Campaign window: 1 May to 30 May 2026 | Event: Saturday, 30 May 2026 | Abuja*
+*Campaign window: 1 May to 30 May 2026 | Event: Saturday, 30 May 2026 | Durumi Recreational Park, Durumi, Abuja | Ages 6–12*
+
+*Public announcement: "Abuja, are you ready? Camping Nigeria × Discovery Haven."*
 
 > **Core thesis:** Abuja parents have outgrown generic Children's Day. The 2026 generation of children deserves an experience built for them, not recycled entertainment.
 >
@@ -64,7 +66,7 @@ Before we write a single caption, we lock the seven foundational pieces of the c
 
 **1.1 Offer Definition**
 
-Base Camp Kids is a one-day premium outdoor experience for children aged 4 to 12, delivered by Camping Nigeria at a private outdoor field in Abuja on Saturday, 30 May 2026, from 9 AM to 5 PM (gates open at 9, structured activities 10 AM – 4 PM, pickup window 4–5 PM).
+Base Camp Kids is a one-day premium outdoor experience for children aged 6 to 12, delivered by Camping Nigeria in partnership with Discovery Haven at Durumi Recreational Park, Durumi, Abuja on Saturday, 30 May 2026, from 9 AM to 5 PM (gates open at 9, structured activities 10 AM – 4 PM, pickup window 4–5 PM). The seven locked activities for the day: tent pitch race, scavenger hunt, arts and crafts workshop, relay race, tug of war, campfire storytelling, and a wonder wall that runs ambient through the day. The public announcement line is "Abuja, are you ready? Camping Nigeria × Discovery Haven."
 
 30 seats. No more. No less. The cap is not a capacity limit, it is a quality decision. A 30-child cohort means real staff-to-child ratios, real house teams, and real attention to every family. At an average ticket of ₦85,000, this generates ₦2.55M in revenue for a single Saturday of execution.
 
@@ -76,13 +78,13 @@ Base Camp Kids is a one-day premium outdoor experience for children aged 4 to 12
 
 - A Camping Nigeria branded water bottle, house lanyard, and enamel house pin.
 
-- A full day of structured outdoor activity: tent pitching, inter-house games, art, and campfire closing.
+- A full day of structured outdoor activity: tent pitch race, scavenger hunt, arts and crafts workshop, relay race, tug of war, wonder wall, and campfire storytelling.
 
 - Professional photography and video, delivered to parents within 72 hours.
 
 **Who this is not for**
 
-Parents looking for a cheap Children's Day outing. Parents whose priority is a bouncy castle and a clown. Families outside Abuja who cannot physically travel on 30 May. Children under 4 or over 12. This is deliberate. Trying to convert those segments weakens positioning and attracts the wrong kind of complaint.
+Parents looking for a cheap Children's Day outing. Parents whose priority is a bouncy castle and a clown. Families outside Abuja who cannot physically travel on 30 May. Children under 6 or over 12. This is deliberate. Trying to convert those segments weakens positioning and attracts the wrong kind of complaint.
 
 **Positioning statement (for internal use)**
 
@@ -100,7 +102,7 @@ The offer is narrow and the niche has to match it. We are not selling to Abuja p
 |:---|:---|
 | Geography | Abuja metro. Primary catchment: Maitama, Asokoro, Wuse, Guzape, Gwarinpa, Jabi, Katampe, Apo, Life Camp. |
 | Household | Dual-income. Combined household income roughly ₦15M+ per year. At least one parent in a corporate, professional, or entrepreneurial role with disposable budget for child enrichment. |
-| Children | 1 to 3 children between ages 4 and 12. Enrolled in mid-to-top-tier private schools (examples: Whiteplains, Regent, Lead-British, Children's International School, Abuja Preparatory, LeadForte, Nigerian Turkish International College). |
+| Children | 1 to 3 children between ages 6 and 12. Enrolled in mid-to-top-tier private schools (examples: Whiteplains, Regent, Lead-British, Children's International School, Abuja Preparatory, LeadForte, Nigerian Turkish International College). |
 | Parenting style | Intentional. Already spending on enrichment: music lessons, coding, tennis, swimming, art classes, international holidays. Actively seeks structured, skill-building experiences over passive entertainment. |
 | Decision maker | Predominantly the mother, often influenced by or decided jointly with the father. The mother is the primary researcher, booker, and WhatsApp-group sharer. |
 | Sophistication | High. She has booked both great experiences and bad ones. She knows the difference between a professional operator and a thrown-together event. She reads captions carefully, checks reviews, asks about staff ratios, and wants to see the team on camera before she pays. |
@@ -247,7 +249,7 @@ Safety objection (the silent gate). Trust building. Evidence that Base Camp Kids
 
 - Photo set: past programme footage from Vivian Fowler, Regent Primary, Springhall, Doveland.
 
-- Static: '1 adult per 8 kids (ages 4-7). 1 per 10 (ages 8-12). Here is what that ratio actually means on the day.'
+- Static: '1 adult per 8 kids (ages 6-8). 1 per 10 (ages 9-12). Here is what that ratio actually means on the day.'
 
 **Pillar 3. Skills Your Child Will Build (Outcome Value)**
 

@@ -8,6 +8,7 @@ import { premiumEase } from '@/lib/animation'
 import {
   EVENT_PATH,
   EVENT_DATE_LABEL,
+  EVENT_ANNOUNCEMENT,
   VENUE_CITY,
   SEAT_CAP,
   EARLY_BIRD_PRICE,
@@ -55,10 +56,10 @@ export default function EventBanner() {
               transition={{ duration: 0.7, ease: premiumEase }}
             >
               <span className="block w-6 h-px bg-brand-accent" aria-hidden="true" />
-              Children’s Day · 2026
+              Children’s Day · Abuja · 2026
             </motion.p>
 
-            <div className="overflow-hidden mb-5">
+            <div className="overflow-hidden mb-3">
               <motion.h2
                 id="event-banner-heading"
                 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-brand-dark text-balance leading-tight"
@@ -67,9 +68,19 @@ export default function EventBanner() {
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: premiumEase, delay: 0.1 }}
               >
-                Base Camp Kids — a real camp adventure for kids 4 to 12.
+                Base Camp Kids — a real camp adventure for kids 6 to 12.
               </motion.h2>
             </div>
+
+            <motion.p
+              className="font-serif italic text-base md:text-lg text-brand-dark/85 mb-5"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: premiumEase, delay: 0.15 }}
+            >
+              {EVENT_ANNOUNCEMENT}
+            </motion.p>
 
             <motion.p
               className="font-sans text-base md:text-lg text-brand-dark/75 leading-relaxed mb-8"

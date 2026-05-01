@@ -25,6 +25,7 @@ import {
   SEAT_CAP,
   MIN_AGE,
   MAX_AGE,
+  VENUE_NAME,
   VENUE_CITY,
   VENUE_REGION,
   VENUE_COUNTRY,
@@ -38,7 +39,7 @@ import {
 export const metadata = buildPageMetadata({
   title: `${EVENT_TITLE} — Children's Day in Abuja | Camping Nigeria`,
   description:
-    "A camping-themed Children's Day in Abuja on Saturday 30 May 2026. Tents, house teams, outdoor games, and souvenirs for kids ages 4 to 12. Limited to 30 seats.",
+    "A camping-themed Children's Day at Durumi Recreational Park, Abuja, on Saturday 30 May 2026. Tents, house teams, outdoor games, and souvenirs for kids ages 6 to 12. Limited to 30 seats.",
   path: EVENT_PATH,
   keywords: [
     "Children's Day Abuja",
@@ -70,7 +71,7 @@ export default function BaseCampKidsPage() {
           startDate: EVENT_START_ISO,
           endDate: EVENT_END_ISO,
           location: {
-            name: `Base Camp Kids venue, ${VENUE_CITY}`,
+            name: VENUE_NAME,
             locality: VENUE_CITY,
             region: VENUE_REGION,
             country: VENUE_COUNTRY,
@@ -184,7 +185,7 @@ export default function BaseCampKidsPage() {
           </div>
 
           <dl className="grid sm:grid-cols-3 gap-6 sm:gap-10">
-            <Trust label="Staff to child" value="1:8 / 1:10" hint="ages 4–7 / 8–12" />
+            <Trust label="Staff to child" value="1:8 / 1:10" hint="ages 6–8 / 9–12" />
             <Trust label="On-site" value="First aider" hint="branded vest, full kit" />
             <Trust label="Sign-out" value="Wristband match" hint="no code, no pickup" />
           </dl>

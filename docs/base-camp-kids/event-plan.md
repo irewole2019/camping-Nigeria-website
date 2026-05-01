@@ -1,16 +1,18 @@
-**CAMPING NIGERIA**
+**CAMPING NIGERIA × DISCOVERY HAVEN**
 
 **Base Camp Kids**
 
 *A Camping-Themed Children's Day Experience*
 
-**Saturday, 30 May 2026**
+**Saturday, 30 May 2026 · Durumi Recreational Park, Durumi, Abuja · Ages 6–12**
+
+*Public announcement line: "Abuja, are you ready? Camping Nigeria × Discovery Haven."*
 
 Execution Plan for CEO Review
 
-Version 1.0 | Internal Working Document
+Version 1.1 | Internal Working Document
 
-Prepared 21 April 2026
+Prepared 21 April 2026 · Updated 30 April 2026 (age band locked to 6–12; venue confirmed; activity slate frozen to seven items)
 
 ## 1. Event Overview
 
@@ -60,7 +62,9 @@ The event is deliberately designed to look like a scaled-down version of our 2-D
 
 ## 2. Program Design and Activity Ideas
 
-We have built a library of 18 activity ideas across five categories. The event rotates children through a subset of these based on the chosen program length. Each activity below includes age fit, materials, staffing, time, and a wow-factor score. Activities were selected to balance high energy with calm corners, and creativity with movement.
+> **Locked activity slate (v1.1):** the seven items committed to the public website are **tent pitch race, relay race, tug of war, scavenger hunt, campfire storytelling, arts and crafts workshop, and the wonder wall**. The library below is the broader menu we draw from for staffing/material planning — anything outside the seven is internal R&D, not a parent-facing promise.
+
+We have built a library of activity ideas across five categories. The event rotates children through a subset of these based on the chosen program length. Each activity below includes age fit, materials, staffing, time, and a wow-factor score. Activities were selected to balance high energy with calm corners, and creativity with movement.
 
 *We will use our standard 4-house system to structure participation. Suggested houses: Forest, River, Mountain, Flame. Each child is assigned a house on arrival and moves with their house group through stations.*
 
@@ -74,42 +78,43 @@ We have built a library of 18 activity ideas across five categories. The event r
 |----|----|----|----|----|:--:|
 | **Inter-House Relay Races** | 6 to 12 | Batons, cones, whistles, bibs (house colours) | 1 facilitator + 1 safety marshal | 20 min | **5/5** |
 | **Obstacle Camp Challenge** | 7 to 12 | Tunnels, hula hoops, cones, low bars, soft mats | 2 facilitators | 20 min | **5/5** |
-| **Tug of War (house vs house)** | 8 to 12 (younger with adult help) | Heavy-duty rope, chalk lines, gloves | 1 facilitator + 2 spotters | 1 hour | **5/5** |
-| **Parachute Games** | 4 to 10 | Large coloured parachute, soft balls | 1 facilitator | 15 min | **4/5** |
+| **Tug of War (house vs house)** | 6 to 12 (younger end paired with adult anchor) | Heavy-duty rope, chalk lines, gloves | 1 facilitator + 2 spotters | 1 hour | **5/5** |
+| **Parachute Games** | 6 to 10 | Large coloured parachute, soft balls | 1 facilitator | 15 min | **4/5** |
 
 #### B. Creative and Craft (Souvenir-Friendly)
 
 | **Activity** | **Age Fit** | **Materials** | **Staffing** | **Time** | **Wow** |
 |----|----|----|----|----|:--:|
-| **Nature-Stamped T-Shirt Station (main souvenir)** | 4 to 12 | Plain T-shirts, fabric paint, leaf stencils, cardboard inserts, aprons | 2 facilitators + 1 helper | 20 min per wave | **5/5** |
-| **Mini Adire Bandana Station** | 6 to 12 | White bandana squares, fabric dye, rubber bands, gloves, drying rack | 1 lead + 1 helper | 25 min | **5/5** |
-| **Ngozi Akande Arts Workshop** | 4 to 12 | Canvas, acrylic, paper towels, brushes etc. | 1 facilitator | 1 hour | **5/5** |
-| **Friendship Bead Bracelets** | 5 to 12 | Elastic string, letter beads, colour beads, trays | 1 facilitator | 15 min | **4/5** |
+| **Nature-Stamped T-Shirt Station (main souvenir, runs inside Arts & Crafts Workshop)** | 6 to 12 | Plain T-shirts, fabric paint, leaf stencils, cardboard inserts, aprons | 2 facilitators + 1 helper | 20 min per wave | **5/5** |
+| **Mini Adire Bandana Station (runs inside Arts & Crafts Workshop)** | 6 to 12 | White bandana squares, fabric dye, rubber bands, gloves, drying rack | 1 lead + 1 helper | 25 min | **5/5** |
+| **Arts & Crafts Workshop (locked rotation, lead by Ngozi Akande)** | 6 to 12 | Canvas, acrylic, paper towels, brushes, plus T-shirt and bandana sub-stations | 1 facilitator + 2 helpers | 1 hour | **5/5** |
+| **Friendship Bead Bracelets** | 6 to 12 | Elastic string, letter beads, colour beads, trays | 1 facilitator | 15 min | **4/5** |
 
 #### C. Camp Experience Activities
 
 | **Activity** | **Age Fit** | **Materials** | **Staffing** | **Time** | **Wow** |
 |----|----|----|----|----|:--:|
-| **Tent Pitch Race** | 7 to 12 | 2 to 4 pop-up tents, pegs, timer | 1 facilitator + 1 safety lead | 1 hour | **5/5** |
-| **Trail Mix Camp Kitchen** | 4 to 12 | Snack ingredients (nuts*, raisins, cornflakes, chocolate chips), scoops, zip bags, gloves | 2 facilitators (food handling) | 10 min | **4/5** |
-| **Lost Explorer Scavenger Hunt** | 6 to 12 | Printed clue cards, small hidden tokens, house checklist, prize chest | 2 marshals patrolling route | 30 min | **5/5** |
-| **Campfire Circle Storytelling** | 4 to 12 | Battery-powered LED campfire, log seats or mats, wireless mic | 1 storyteller + 1 support | 20 min | **4/5** |
+| **Tent Pitch Race (locked rotation)** | 6 to 12 | 2 to 4 pop-up tents, pegs, timer | 1 facilitator + 1 safety lead | 45 min | **5/5** |
+| **Scavenger Hunt (locked rotation)** | 6 to 12 | Printed clue cards, small hidden tokens, house checklist, prize chest | 2 marshals patrolling route | 45 min | **5/5** |
+| **Trail Mix Camp Kitchen** | 6 to 12 | Snack ingredients (nuts*, raisins, cornflakes, chocolate chips), scoops, zip bags, gloves | 2 facilitators (food handling) | 10 min | **4/5** |
+| **Campfire Storytelling (locked moment)** | 6 to 12 | Battery-powered LED campfire, log seats or mats, wireless mic | 1 storyteller + 1 support | 20 min | **4/5** |
 
 #### D. Calm and Quiet Corner
 
 | **Activity** | **Age Fit** | **Materials** | **Staffing** | **Time** | **Wow** |
 |----|----|----|----|----|:--:|
-| **Nature Journaling & Leaf Pressing** | 5 to 12 | Mini journals, colour pencils, leaves, flower petals, wax paper | 1 facilitator | flexible, 10 to 20 min | **3/5** |
-| **Face Painting Corner** | 4 to 12 | Non-toxic face paints, brushes, mirrors, wipes | 1 professional painter | 5 to 7 min per child | **4/5** |
-| **Story Tent Reading Den** | 4 to 9 | Large tent, floor cushions, camp-themed picture books, soft lantern | 1 reader or volunteer | flexible | **3/5** |
+| **Nature Journaling & Leaf Pressing** | 6 to 12 | Mini journals, colour pencils, leaves, flower petals, wax paper | 1 facilitator | flexible, 10 to 20 min | **3/5** |
+| **Face Painting Corner** | 6 to 12 | Non-toxic face paints, brushes, mirrors, wipes | 1 professional painter | 5 to 7 min per child | **4/5** |
+| **Story Tent Reading Den** | 6 to 9 | Large tent, floor cushions, camp-themed picture books, soft lantern | 1 reader or volunteer | flexible | **3/5** |
 | **Kid-Friendly Mocktail Bar** | all ages | Fruit juices, sparkling water, fruit slices, umbrellas, biodegradable cups, ice | 2 mixologist-style servers | self-serve flow | **5/5** |
 
 #### E. Mini Learning Moments
 
 | **Activity** | **Age Fit** | **Materials** | **Staffing** | **Time** | **Wow** |
 |----|----|----|----|----|:--:|
+| **Wonder Wall (locked, ambient — open all day)** | 6 to 12 | Large pledge / wonder board, sticky notes, markers, stickers, "I wonder…" prompt cards | 1 facilitator (rotates with quiet zone) | drop-in, ambient | **4/5** |
 | **Climate Pledge Wall** | 6 to 12 | Large pledge board, sticky notes, markers, stickers | 1 facilitator | 5 min drop-in | **3/5** |
-| **Stargazer Wonder Tent (daytime)** | 4 to 10 | Blackout tent, glow stars, projector torch, cushions | 1 guide | 5 min per group | **4/5** |
+| **Stargazer Wonder Tent (daytime)** | 6 to 10 | Blackout tent, glow stars, projector torch, cushions | 1 guide | 5 min per group | **4/5** |
 
 ### Schedule
 
@@ -119,15 +124,16 @@ Three program lengths to choose from. All include a snack moment, a main meal, a
 
 | **Time** | **Activity Block** |
 |----|----|
-| **9:00 AM** | Gates open — early drop-off welcomed |
+| **9:00 AM** | Gates open — early drop-off welcomed. Wonder wall opens. |
 | **10:00 AM** | Arrival, check-in, wristbands, photo consent confirmed, house assignment |
 | **10:30 AM** | Opening circle, camp rules, house chants and slogan making |
-| **10:45 AM** | Rotation 1 (1 hour): Learn how to pitch tent and Camp skills (Tent pitch race) |
-| **11:45 AM** | Rest in tents (Small chops: puff-puff etc. + Mocktail bar) |
-| **12:45 PM** | Rotation 2 (1 hour): Craft circuit (Ngozi Akande Arts) |
+| **10:45 AM** | **Rotation 1 (45 min): Tent pitch race and camp skills** |
+| **11:30 AM** | **Rotation 2 (45 min): Scavenger hunt** |
+| **12:15 PM** | Rest in tents (small chops, mocktail bar, wonder wall open) |
+| **12:45 PM** | **Rotation 3 (1 hour): Arts and crafts workshop** (T-shirt nature stamp + Adire mini-bandana sub-stations) |
 | **1:45 PM** | Main meal service by house |
-| **2:30 PM** | Rotation 3 (1 hour min): Outdoor games (Inter-house relay and Tug of war) |
-| **3:30 PM** | Campfire circle storytelling and house awards |
+| **2:30 PM** | **Rotation 4 (1 hour): Outdoor games — relay race and tug of war** |
+| **3:30 PM** | **Campfire storytelling** and house awards |
 | **3:40 PM** | T-shirt reveal, certificate ceremony, group photo |
 | **3:55 PM** | Closing circle, goodie bags |
 | **4:00 – 5:00 PM** | Parent pickup window |
@@ -168,7 +174,7 @@ Every task below has an owner, a deadline, and a clear output. The CEO should on
 
 ### Staffing Plan
 
-For 80 children, we recommend a core team of 16 to 18 people. Ratio target: 1 adult to 8 children for ages 4 to 7, 1 to 10 for ages 8 to 12.
+For 80 children, we recommend a core team of 16 to 18 people. Ratio target: 1 adult to 8 children for ages 6 to 8, 1 to 10 for ages 9 to 12.
 
 | **Role** | **Responsibility** | **Count** |
 |----|----|:--:|
@@ -251,19 +257,19 @@ Every message below is ready to copy, paste, and send. The tone follows Camping 
 
 #### Version 1: Fun and Experience-Driven
 
-**HEADLINE:** *Base Camp Kids is Coming. Are You Ready?*
+**HEADLINE:** *Abuja, are you ready? Camping Nigeria × Discovery Haven.*
 
-**SUBHEAD:** A Camping-Themed Children's Day Adventure by Camping Nigeria.
+**SUBHEAD:** Base Camp Kids — a Camping-Themed Children's Day Adventure.
 
-Tents. Tug of war. Adire. Trail mix. Face paint. A real mocktail bar. Your child's best Saturday of the year starts here.
+Tents. Tug of war. Scavenger hunt. Wonder wall. Campfire stories. Arts and crafts. A real mocktail bar. Your child's best Saturday of the year starts here.
 
 **DATE:** Saturday, 30 May 2026
 
 **TIME:** 9:00 AM to 5:00 PM (gates open 9 AM; activities 10 AM – 4 PM; pickup window 4–5 PM)
 
-**WHERE:** \[Insert Venue\]
+**WHERE:** Durumi Recreational Park, Durumi, Abuja
 
-**AGES:** 4 to 12 years
+**AGES:** 6 to 12 years
 
 **INCLUDES:** Camp T-shirt, certificate, lunch, and unforgettable memories.
 
@@ -277,9 +283,9 @@ Tents. Tug of war. Adire. Trail mix. Face paint. A real mocktail bar. Your child
 
 **SUBHEAD:** Hosted by Camping Nigeria, the country's leading outdoor experience specialist.
 
-Base Camp Kids is a fully supervised one-day camp adventure for children ages 4 to 12. First-aid trained staff. Structured activities. Clear pickup procedures. A professional team that has delivered programs at Vivian Fowler, Regent Primary, Springhall Secondary, and Doveland.
+Base Camp Kids is a fully supervised one-day camp adventure for children ages 6 to 12, hosted at Durumi Recreational Park, Abuja. First-aid trained staff. Structured activities. Clear pickup procedures. A professional team that has delivered programs at Vivian Fowler, Regent Primary, Springhall Secondary, and Doveland. Delivered in partnership with Discovery Haven.
 
-**STAFF RATIOS:** 1 adult to 8 children (ages 4 to 7), 1 to 10 (ages 8 to 12).
+**STAFF RATIOS:** 1 adult to 8 children (ages 6 to 8), 1 to 10 (ages 9 to 12).
 
 **SAFETY:** On-site first aider, wristband check-in and check-out, full allergy and medical records.
 
@@ -289,7 +295,7 @@ Base Camp Kids is a fully supervised one-day camp adventure for children ages 4 
 
 ### B. WhatsApp / SMS Invite Message
 
-*Hi \[Parent Name\], Camping Nigeria is hosting Base Camp Kids, our Children's Day camp adventure, on Saturday 30 May, 10am to 4pm. Kids ages 4 to 12 enjoy tents, crafts, games, lunch, and a camp T-shirt to take home. Fully supervised by our trained team. Tap here to register: \[link\]. Spaces are limited. Any questions, just reply here.*
+*Hi \[Parent Name\], Camping Nigeria × Discovery Haven is hosting Base Camp Kids, our Children's Day camp adventure, on Saturday 30 May, 10am to 4pm at Durumi Recreational Park, Abuja. Kids ages 6 to 12 enjoy tent pitching, scavenger hunt, tug of war, relay race, arts and crafts, the wonder wall, campfire storytelling, lunch, and a camp T-shirt to take home. Fully supervised by our trained team. Tap here to register: \[link\]. Spaces are limited. Any questions, just reply here.*
 
 ### C. Photo and Video Consent Text
 
@@ -333,7 +339,7 @@ Please tick one option below when you register:
 
 #### 1. Is the event supervised the whole time?
 
-Yes. Every house group has a dedicated house leader who stays with the group all day. Our staff-to-child ratios are 1 to 8 for under 8s and 1 to 10 for 8 to 12.
+Yes. Every house group has a dedicated house leader who stays with the group all day. Our staff-to-child ratios are 1 to 8 for ages 6 to 8 and 1 to 10 for ages 9 to 12.
 
 #### 2. What happens if my child has an allergy?
 
@@ -570,9 +576,9 @@ These are the decisions only you can approve. For each one we have listed our re
 
 | **Decision** | **Recommended Default** | **CEO Call** |
 |----|----|----|
-| **Venue** | Outdoor field or park in Lagos or Abuja with covered fallback. Capacity 120+. |  |
+| **Venue** | **LOCKED — Durumi Recreational Park, Durumi, Abuja.** Covered fallback to be confirmed with venue. |  |
 | **Budget scenario** | Standard (80-100 kids). Balanced cost, full experience. |  |
-| **Target age group** | 4 to 12, split into two age bands for activity rotations. |  |
+| **Target age group** | **LOCKED — 6 to 12, split into two age bands (6–8, 9–12) for activity rotations.** |  |
 | **Headcount cap** | 80 children. 100 with waitlist. |  |
 | **Event length** | Public window: 9:00 AM to 5:00 PM (gates 9, activities 10–4, pickup 4–5). |  |
 | **Main meal choice** | Jollof rice + grilled chicken + plantain. Vegetarian option available. |  |

@@ -6,8 +6,9 @@
 
 export const EVENT_TITLE = 'Base Camp Kids'
 export const EVENT_TAGLINE = "A Camping-Themed Children's Day Adventure"
+export const EVENT_ANNOUNCEMENT = 'Abuja, are you ready? Camping Nigeria × Discovery Haven'
 export const EVENT_DESCRIPTION =
-  "A one-day camping-themed Children's Day camp in Abuja for kids ages 4 to 12. Tents, house teams, creative stations, outdoor games, kid-friendly food, and keepsake souvenirs."
+  "A one-day camping-themed Children's Day camp at Durumi Recreational Park, Abuja, for kids ages 6 to 12. Tents, house teams, creative stations, outdoor games, kid-friendly food, and keepsake souvenirs."
 
 // 30 May 2026, Saturday — Africa/Lagos is UTC+1, no DST
 export const EVENT_START_ISO = '2026-05-30T09:00:00+01:00'
@@ -15,16 +16,18 @@ export const EVENT_END_ISO = '2026-05-30T17:00:00+01:00'
 export const EVENT_DATE_LABEL = 'Saturday, 30 May 2026'
 export const EVENT_TIME_LABEL = '9:00 AM – 5:00 PM'
 
+export const VENUE_NAME = 'Durumi Recreational Park'
+export const VENUE_STREET = 'Durumi'
 export const VENUE_CITY = 'Abuja'
 export const VENUE_REGION = 'FCT'
 export const VENUE_COUNTRY = 'NG'
-export const VENUE_LABEL = 'Abuja — exact location shared with confirmed registrants'
+export const VENUE_LABEL = 'Durumi Recreational Park, Durumi, Abuja'
 
 export const SEAT_CAP = 30
 export const EARLY_BIRD_PRICE = 100_000
 export const WALK_IN_PRICE = 150_000
 export const SIBLING_DISCOUNT_RATE = 0.1
-export const MIN_AGE = 4
+export const MIN_AGE = 6
 export const MAX_AGE = 12
 export const MAX_CHILDREN_PER_REGISTRATION = 6
 
@@ -80,15 +83,26 @@ export const SCHEDULE: ScheduleEntry[] = [
   { time: '10:00 AM',        block: 'Arrival, check-in, wristbands, photo consent confirmed, house assignment' },
   { time: '10:30 AM',        block: 'Opening circle, camp rules, house chants and slogan making' },
   { time: '10:45 AM',        block: 'Rotation 1 — tent pitch race and camp skills' },
-  { time: '11:45 AM',        block: 'Rest in tents — small chops and mocktail bar' },
-  { time: '12:45 PM',        block: 'Rotation 2 — Ngozi Akande arts and craft circuit' },
+  { time: '11:30 AM',        block: 'Rotation 2 — scavenger hunt' },
+  { time: '12:15 PM',        block: 'Rest in tents — small chops, mocktail bar, wonder wall open' },
+  { time: '12:45 PM',        block: 'Rotation 3 — arts and crafts workshop' },
   { time: '1:45 PM',         block: 'Main meal service by house' },
-  { time: '2:30 PM',         block: 'Rotation 3 — outdoor games (relay races and tug of war)' },
-  { time: '3:30 PM',         block: 'Campfire circle storytelling and house awards' },
+  { time: '2:30 PM',         block: 'Rotation 4 — outdoor games (relay race and tug of war)' },
+  { time: '3:30 PM',         block: 'Campfire storytelling and house awards' },
   { time: '3:40 PM',         block: 'T-shirt reveal, certificate ceremony, group photo' },
   { time: '3:55 PM',         block: 'Closing circle and goodie bags' },
   { time: '4:00 – 5:00 PM',  block: 'Parent pickup window' },
 ]
+
+export const CAMP_ACTIVITIES: readonly string[] = [
+  'Tent pitch race',
+  'Relay race',
+  'Tug of war',
+  'Scavenger hunt',
+  'Campfire storytelling',
+  'Arts and crafts workshop',
+  'Wonder wall',
+] as const
 
 export interface FaqEntry {
   question: string
