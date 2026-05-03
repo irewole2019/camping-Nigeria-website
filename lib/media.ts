@@ -75,7 +75,7 @@ export const SCHOOLS_WHY_OUTDOOR_LEARNING = {
 export const SCHOOLS_PROGRAMS = [
   {
     src: '/images/schools/program-campus-camps.webp',
-    alt: '2-Day On-Campus Camps',
+    alt: 'Multi-day On-Campus Camps',
   },
   {
     src: '/images/schools/program-eco-awareness.webp',

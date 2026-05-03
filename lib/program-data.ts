@@ -41,11 +41,11 @@ export interface ProgramData {
   tiers: PackageTier[]
 }
 
-// ─── 2-Day On-Campus Camps ──────────────────────────────────────────────────
+// ─── Multi-day On-Campus Camps ──────────────────────────────────────────────
 
 export const ON_CAMPUS_CAMPS: ProgramData = {
   slug: 'on-campus-camps',
-  title: '2-Day On-Campus Camps',
+  title: 'Multi-day On-Campus Camps',
   subtitle: 'Immersive outdoor experiences delivered right at your school gates.',
   overview:
     'A school-based immersive camp experience that transforms familiar campus grounds into a safe, exciting environment for adventure, learning, teamwork, and personal growth. Combining camping culture, outdoor recreation, life skills, eco-awareness, and creative activities — without requiring long-distance travel.',
@@ -58,12 +58,12 @@ export const ON_CAMPUS_CAMPS: ProgramData = {
     'International schools',
   ],
   formats: [
-    { label: 'Overnight Camp', detail: 'A true 2-day on-campus camping experience with sleeping tents.' },
-    { label: 'Extended Day Camp', detail: 'Two full days on campus without overnight stay.' },
-    { label: 'Hybrid Camp', detail: 'Day 1 full day and evening, Day 2 morning continuation.' },
+    { label: 'Overnight Camp', detail: 'An on-campus camping experience with sleeping tents.' },
+    { label: 'Extended Day Camp', detail: 'Full days on campus without overnight stay.' },
+    { label: 'Hybrid Camp', detail: 'Full days plus evening camp life, with morning continuation if multi-day.' },
   ],
   stats: [
-    { label: 'Duration', value: '2 Days' },
+    { label: 'Duration', value: '1+ days' },
     { label: 'Ages', value: '6 – 17' },
     { label: 'Group Size', value: '40 – 150+' },
     { label: 'Formats', value: '3 Options' },
@@ -135,7 +135,7 @@ export const ON_CAMPUS_CAMPS: ProgramData = {
     },
   ],
   schedule: {
-    label: 'Sample 2-Day Overnight Schedule',
+    label: 'Sample Overnight Schedule',
     items: [
       { time: '9:00 AM', activity: 'Arrival, registration, house assignment' },
       { time: '10:00 AM', activity: 'Opening circle and orientation' },
@@ -161,9 +161,9 @@ export const ON_CAMPUS_CAMPS: ProgramData = {
     {
       name: 'Spark',
       tag: 'Introduction',
-      duration: '2 days · day camp',
+      duration: '1+ days · day camp',
       includes: [
-        'Two full days on campus, no overnight',
+        'Full days on campus, no overnight',
         'Orientation and house system',
         'Eco-awareness, sports, and creative session',
         'Closing awards',
@@ -173,10 +173,10 @@ export const ON_CAMPUS_CAMPS: ProgramData = {
     {
       name: 'Trail',
       tag: 'Most Popular',
-      duration: '2 days · hybrid',
+      duration: '1+ days · hybrid',
       includes: [
-        'Day 1 full day plus evening campfire',
-        'Day 2 morning continuation',
+        'Full days plus evening campfire',
+        'Morning continuation when multi-day',
         'Tent setup and camp skills',
         'Outdoor challenges, sports, and eco-learning',
         'Reflection sessions and keepsake materials',
@@ -186,7 +186,7 @@ export const ON_CAMPUS_CAMPS: ProgramData = {
     {
       name: 'Summit',
       tag: 'Signature',
-      duration: '2 days · overnight',
+      duration: '1+ days · overnight',
       includes: [
         'Full overnight camping experience',
         'Tent sleeping and morning routine',

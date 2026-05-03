@@ -20,7 +20,7 @@ Prepared 21 April 2026 · Updated 30 April 2026 (age band locked to 6–12; venu
 
 Base Camp Kids is a one-day camping-themed Children's Day activation by Camping Nigeria. It transforms a safe outdoor field into a bustling kid's camp with tents, house teams, creative stations, outdoor games, kid-friendly food, and keepsake souvenirs. The tone is bubbly, safe, and well-organized, staying true to the Camping Nigeria promise: Adventure made simple.
 
-The event is deliberately designed to look like a scaled-down version of our 2-Day On-Campus Camp signature product. That means every family who attends leaves with a clear taste of what our full school programs deliver. Children's Day becomes both a celebration and a low-pressure sales showcase.
+The event is deliberately designed to look like a scaled-down version of our Multi-day On-Campus Camps signature product. That means every family who attends leaves with a clear taste of what our full school programs deliver. Children's Day becomes both a celebration and a low-pressure sales showcase.
 
 ### Objectives
 

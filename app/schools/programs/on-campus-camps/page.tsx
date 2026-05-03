@@ -16,9 +16,9 @@ import { buildBreadcrumbJsonLd, buildServiceJsonLd } from '@/lib/structured-data
 const data = ON_CAMPUS_CAMPS
 
 export const metadata = buildPageMetadata({
-  title: '2-Day On-Campus Camps | Camping Nigeria',
+  title: 'Multi-day On-Campus Camps | Camping Nigeria',
   description:
-    'Immersive 2-day camp experiences delivered right at your school gates — adventure, teamwork, and growth without long-distance travel.',
+    'Immersive multi-day camp experiences delivered right at your school gates — adventure, teamwork, and growth without long-distance travel.',
   path: '/schools/programs/on-campus-camps',
 })
 
@@ -30,7 +30,7 @@ export default function OnCampusCampsPage() {
         data={buildBreadcrumbJsonLd([
           { name: 'Home', path: '/' },
           { name: 'Schools', path: '/schools' },
-          { name: '2-Day On-Campus Camps', path: '/schools/programs/on-campus-camps' },
+          { name: 'Multi-day On-Campus Camps', path: '/schools/programs/on-campus-camps' },
         ])}
       />
       <JsonLd

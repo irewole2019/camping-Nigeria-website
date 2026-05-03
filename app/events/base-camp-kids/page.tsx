@@ -115,7 +115,7 @@ export default function BaseCampKidsPage() {
             </h2>
             <p className="font-sans text-base md:text-lg text-brand-dark/75 leading-relaxed">
               Most kids’ Children’s Day events end with face paint and a balloon. Base Camp Kids is
-              built like a scaled-down version of our 2-day school camps — actual tents, actual
+              built like a scaled-down version of our multi-day school camps — actual tents, actual
               house teams, real craft stations, real outdoor games. Kids leave with a T-shirt they
               made, a certificate, and the feeling of having done something. Parents leave knowing
               exactly who is watching their child and how.

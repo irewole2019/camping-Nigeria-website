@@ -11,7 +11,7 @@ import { SCHOOLS_PROGRAMS } from '@/lib/media'
 
 const programs = [
   {
-    title: '2-Day On-Campus Camps',
+    title: 'Multi-day On-Campus Camps',
     subtitle: 'Immersive outdoor experiences delivered right at your school gates.',
     image: SCHOOLS_PROGRAMS[0].src,
     href: '/schools/programs/on-campus-camps',
@@ -136,7 +136,7 @@ export default function OurSchoolPrograms() {
           transition={{ duration: 0.8, ease: premiumEase, delay: 0.25 }}
         >
           We design structured outdoor programs tailored to Nigerian primary and secondary schools.
-          From 2-day on-campus camps to nature &amp; craft and leadership modules, every experience is
+          From multi-day on-campus camps to nature &amp; craft and leadership modules, every experience is
           planned with safety, structure, and developmental outcomes in mind.
         </motion.p>
       </div>

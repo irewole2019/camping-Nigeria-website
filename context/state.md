@@ -24,7 +24,7 @@ Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close,
 ### School programs (full sub-pages)
 - **Nature Craft** — `/schools/programs/nature-craft`
 - **Leadership Development** — `/schools/programs/leadership-development` (uses "CLASS" label, not "Ages")
-- **On-Campus Camps** — `/schools/programs/on-campus-camps` (2-day only)
+- **On-Campus Camps** — `/schools/programs/on-campus-camps` (1+ days, flexible)
 
 ### Events
 - **Base Camp Kids** — `/events/base-camp-kids` — one-day Children's Day camp activation, **Saturday 30 May 2026, 9:00 AM – 5:00 PM**, Abuja, ages 4–12, 30-seat hard cap.

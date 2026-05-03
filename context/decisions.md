@@ -355,6 +355,21 @@ The six Base Camp Kids marketing assets (hero, positioning, homepage banner, thr
 
 ---
 
+## On-Campus Camps program rename: "2-Day" → "Multi-day"
+
+`lib/program-data.ts#ON_CAMPUS_CAMPS.title` is now "Multi-day On-Campus Camps" (was "2-Day On-Campus Camps"). The Duration stat is "1+ days" (was "2 Days"). Tier durations changed from "2 days · {format}" to "1+ days · {format}". User-facing copy on the home page, the on-campus-camps marketing page, the proposal form, and the Base Camp Kids page were updated to match.
+
+**Why:** The "2-Day" framing was restrictive. Schools booking through the proposal flow can pick any window from 1 day to 3+ days, the team can deliver against any of those, and the engine already supports it via `getCampDurationOverride`. The marketing should match the product capability instead of constraining it to a single duration.
+
+**What didn't change:**
+- The `getCampDurationOverride` logic still fires for 1-day windows (overrides the displayed title to "1-Day On-Campus Camp" for specificity) and 3+ day windows (overrides the tier duration to the actual count). The 2-day no-override case still works — it shows "Multi-day On-Campus Camps · 1+ days · {format}" as the default, which is technically correct (2 is in 1+) and stays consistent with the flexible branding.
+- The `Sample Overnight Schedule` content still illustrates a 2-day flow as an example — illustrative, not constraining. Renamed from "Sample 2-Day Overnight Schedule" so the label doesn't lock readers into a specific length.
+- The previous decision below ("On-Campus Camps display title swaps based on date range — 1-Day / 2-Day / Multi-day") is still load-bearing. The 1-day specific override is still useful for naming clarity even now that "Multi-day" is the default. The 3+ day branch's title override now coincides with the default.
+
+**Why "1+ days" not a hard upper bound:** open-ended is honest. We don't have a contractual upper limit on what we'd run; the team prices longer windows during the quote conversation. "1+ days" signals the floor; everything above is conversation.
+
+---
+
 ## On-Campus Camps display title swaps based on date range — 1-Day / 2-Day / Multi-day
 
 `lib/proposal-engine.ts#getCampDurationOverride(result, scheduling)` returns an override that swaps the displayed programme title and tier duration when the customer's date range produces a non-standard day count:

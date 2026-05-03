@@ -139,7 +139,7 @@ const QUESTIONS: QuestionDef[] = [
     key: 'overnightPreference',
     question: 'If we recommend a camping experience, are you open to an overnight stay?',
     subtitle:
-      'This helps us pick the right camp format if camping suits your group. It only applies to our 2-day on-campus camps.',
+      'This helps us pick the right camp format if camping suits your group. It only applies to our on-campus camps.',
     options: [
       { value: 'day-only', label: 'Day only — no overnight, no evening' },
       { value: 'day-evening', label: 'Day + evening — no overnight' },
