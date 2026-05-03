@@ -18,14 +18,16 @@ export default function EquipmentTable({ items, quantities, onChange, error }: P
     list.push(item)
     return acc
   }, {})
-  // Tents lead (primary product), then sleep accessories (pads, pillows,
-  // blankets) directly below them. Everything else alphabetical after.
+  // Tents lead (primary product), mattresses right below (premium sleep
+  // option), then the rest of the sleep accessories (pads, mats, pillows,
+  // blankets), then everything else alphabetical.
   const SLEEP_CATEGORIES = new Set(['pads', 'mats', 'pillows', 'blankets'])
   const tier = (c: string) => {
     const lc = c.toLowerCase().trim()
     if (lc.startsWith('tent')) return 0
-    if (SLEEP_CATEGORIES.has(lc)) return 1
-    return 2
+    if (lc.startsWith('mattress')) return 1
+    if (SLEEP_CATEGORIES.has(lc)) return 2
+    return 3
   }
   const categories = Object.keys(grouped).sort((a, b) => {
     const ta = tier(a)
