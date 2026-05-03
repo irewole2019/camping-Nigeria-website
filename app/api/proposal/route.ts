@@ -7,21 +7,25 @@ import {
   scoreAnswers,
   type ProposalAnswers,
   type ProposalResult,
+  type Scheduling,
 } from '@/lib/proposal-engine'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const SITE_URL = 'https://campingnigeria.com'
 
+interface ContactPayload {
+  contactName: string
+  role: string
+  schoolName: string
+  email: string
+  phone: string
+  website: string
+}
+
 interface ProposalPayload {
   answers: ProposalAnswers
-  contact: {
-    contactName: string
-    role: string
-    schoolName: string
-    email: string
-    phone: string
-    website: string
-  }
+  contact: ContactPayload
+  scheduling: Scheduling
 }
 
 const OPTION_LABELS: Record<string, string> = {
@@ -33,10 +37,6 @@ const OPTION_LABELS: Record<string, string> = {
   'primary-4-6': 'Primary 4–6',
   'jss-1-3': 'JSS 1–3',
   'ss-1-3': 'SS 1–3',
-  'under-40': 'Under 40 students',
-  '40-80': '40–80 students',
-  '80-150': '80–150 students',
-  '150+': '150+ students',
   'team-bonding': 'Team bonding & school community',
   'eco-creativity': 'Environmental awareness & creativity',
   leadership: 'Student leadership & character development',
@@ -44,9 +44,6 @@ const OPTION_LABELS: Record<string, string> = {
   general: 'General student body',
   leaders: 'Prefects, captains, or council members',
   mix: 'A mix of both',
-  'half-day': 'Half day (3–4 hours)',
-  'full-day': 'Full day (6–8 hours)',
-  '2-days': '2 days',
   'on-campus': 'On school campus',
   'off-campus': 'Off-campus outdoor venue',
   either: 'Either works',
@@ -57,6 +54,9 @@ const OPTION_LABELS: Record<string, string> = {
   'eco-nature': 'Eco-awareness & nature walks',
   'bonfire-stories': 'Bonfire & storytelling',
   journaling: 'Journaling & reflection',
+  'day-only': 'Day only (no overnight, no evening)',
+  'day-evening': 'Day + evening (no overnight)',
+  'open-to-overnight': 'Open to overnight stay',
 }
 
 const QUESTION_ORDER: { key: keyof ProposalAnswers; label: string }[] = [
@@ -65,24 +65,51 @@ const QUESTION_ORDER: { key: keyof ProposalAnswers; label: string }[] = [
   { key: 'groupSize', label: 'Group size' },
   { key: 'primaryGoal', label: 'Primary goal' },
   { key: 'participantType', label: 'Participants' },
-  { key: 'duration', label: 'Duration' },
   { key: 'venue', label: 'Venue preference' },
   { key: 'activities', label: 'Activities of interest' },
+  { key: 'overnightPreference', label: 'Overnight preference' },
 ]
 
-function formatLabel(value: string | string[]): string {
-  // OPTION_LABELS values are trusted (static); unknown keys fall through
-  // to raw user input, so escape the output to prevent HTML injection.
+function formatLabel(value: string | string[] | number): string {
+  if (typeof value === 'number') return escapeHtml(`${value} students`)
   if (Array.isArray(value)) {
     return value.map((v) => escapeHtml(OPTION_LABELS[v] || v)).join(', ')
   }
   return escapeHtml(OPTION_LABELS[value] || value)
 }
 
+/**
+ * Format an ISO date string ("YYYY-MM-DD") for Nigerian audiences as DD/MM/YYYY.
+ * Returns empty string if the input is blank or malformed.
+ */
+function formatDate(date: string): string {
+  if (!date) return ''
+  const [y, m, d] = date.split('-')
+  if (!y || !m || !d) return ''
+  return `${d}/${m}/${y}`
+}
+
+/**
+ * Format an ISO date + time as DD/MM/YYYY · HH:MM. Returns empty string if
+ * either is blank.
+ */
+function formatDateTime(date: string, time: string): string {
+  const formatted = formatDate(date)
+  if (!formatted) return ''
+  return `${formatted} · ${time || '09:00'}`
+}
+
+function formatDateRange(scheduling: Scheduling): string | null {
+  const start = formatDateTime(scheduling.eventStartDate, scheduling.eventStartTime)
+  const end = formatDateTime(scheduling.eventEndDate, scheduling.eventEndTime)
+  if (!start || !end) return null
+  return `${start} → ${end}`
+}
+
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
 
 function buildInternalEmail(body: ProposalPayload, result: ProposalResult): string {
-  const { answers, contact } = body
+  const { answers, contact, scheduling } = body
 
   const schoolName = escapeHtml(contact.schoolName)
   const contactName = escapeHtml(contact.contactName)
@@ -96,6 +123,7 @@ function buildInternalEmail(body: ProposalPayload, result: ProposalResult): stri
   const tierName = escapeHtml(result.tier.name)
   const tierTag = escapeHtml(result.tier.tag)
   const tierDuration = escapeHtml(result.tier.duration)
+  const dateRange = formatDateRange(scheduling)
 
   const responseRows = QUESTION_ORDER
     .filter(({ key }) => answers[key] !== undefined)
@@ -114,6 +142,9 @@ function buildInternalEmail(body: ProposalPayload, result: ProposalResult): stri
     ['Email', `<a href="mailto:${email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${email}</a>`],
     ['Phone', `<a href="tel:${phone}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${phone}</a>`],
     ...(websiteHref ? [['Website', `<a href="${escapeHtml(websiteHref)}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${websiteDisplay}</a>`]] : []),
+    dateRange
+      ? ['Preferred timing', escapeHtml(dateRange)]
+      : ['Preferred timing', '<span style="color:#999;">Not specified — confirm on call</span>'],
   ]
     .map(
       ([label, value]) =>
@@ -185,7 +216,7 @@ function buildInternalEmail(body: ProposalPayload, result: ProposalResult): stri
   <!-- Footer -->
   <tr><td style="background-color:#0e3e2e;padding:16px 40px;border-radius:0 0 12px 12px;" align="center">
     <p style="margin:0;font-size:11px;color:#ffffff50;">
-      Sent from campingnigeria.com proposal form &middot; ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+      Sent from campingnigeria.com proposal form &middot; ${formatDate(new Date().toISOString().slice(0, 10))}
     </p>
   </td></tr>
 
@@ -241,7 +272,7 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
       Hi ${firstName},
     </p>
     <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#555555;">
-      Thank you for your interest in bringing outdoor learning to <strong>${schoolName}</strong>. Based on your responses, here's what we recommend:
+      Thank you for your interest in bringing outdoor learning to <strong>${schoolName}</strong>. Based on your responses, here&apos;s what we recommend:
     </p>
 
     <!-- Recommendation Card -->
@@ -254,7 +285,7 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
           <tr>
             <td style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:4px;">Package</td>
-            <td style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:4px;" align="right">Duration</td>
+            <td style="font-size:13px;color:#888;text-transform:uppercase;letter-spacing:1px;font-weight:600;padding-bottom:4px;" align="right">Format</td>
           </tr>
           <tr>
             <td style="font-size:18px;font-weight:700;color:#0e3e2e;">${tierName} <span style="font-size:12px;font-weight:600;color:#e6b325;background:#fdf8e8;padding:2px 8px;border-radius:20px;margin-left:6px;">${tierTag}</span></td>
@@ -262,7 +293,7 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
           </tr>
         </table>
         <hr style="border:none;border-top:1px solid #eee;margin:16px 0;">
-        <p style="margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#888;font-weight:600;">What's Included</p>
+        <p style="margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#888;font-weight:600;">What&apos;s Included</p>
         <table role="presentation" cellpadding="0" cellspacing="0">${includesList}</table>
       </td></tr>
     </table>
@@ -283,7 +314,7 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
         <strong style="color:#0e3e2e;">1.</strong>&nbsp;&nbsp;Our team reviews your submission and prepares a tailored proposal.
       </td></tr>
       <tr><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555;">
-        <strong style="color:#0e3e2e;">2.</strong>&nbsp;&nbsp;We'll reach out within <strong>48 hours</strong> to discuss dates, customisation, and pricing.
+        <strong style="color:#0e3e2e;">2.</strong>&nbsp;&nbsp;We&apos;ll reach out within <strong>48 hours</strong> to discuss dates, customisation, and pricing.
       </td></tr>
       <tr><td style="padding:6px 0;font-size:14px;line-height:1.6;color:#555;">
         <strong style="color:#0e3e2e;">3.</strong>&nbsp;&nbsp;Once approved, we handle all logistics so your school can focus on the students.
@@ -326,6 +357,9 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
 
 // ─── Route Handler ──────────────────────────────────────────────────────────
 
+const TIME_PATTERN = /^\d{2}:\d{2}$/
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
 function isValidPayload(body: unknown): body is ProposalPayload {
   if (!body || typeof body !== 'object') return false
   const b = body as Record<string, unknown>
@@ -353,6 +387,25 @@ function isValidPayload(body: unknown): body is ProposalPayload {
   ) {
     return false
   }
+
+  // Scheduling — all four fields required as strings (may be empty strings).
+  // If start or end date is provided, both dates must be valid and end >= start.
+  const scheduling = b.scheduling as Record<string, unknown> | undefined
+  if (!scheduling || typeof scheduling !== 'object') return false
+  for (const f of ['eventStartDate', 'eventStartTime', 'eventEndDate', 'eventEndTime'] as const) {
+    if (typeof scheduling[f] !== 'string') return false
+  }
+  const startDate = scheduling.eventStartDate as string
+  const startTime = scheduling.eventStartTime as string
+  const endDate = scheduling.eventEndDate as string
+  const endTime = scheduling.eventEndTime as string
+  if (startDate && !DATE_PATTERN.test(startDate)) return false
+  if (endDate && !DATE_PATTERN.test(endDate)) return false
+  if (startTime && !TIME_PATTERN.test(startTime)) return false
+  if (endTime && !TIME_PATTERN.test(endTime)) return false
+  if (startDate && !endDate) return false
+  if (endDate && !startDate) return false
+  if (startDate && endDate && endDate < startDate) return false
 
   return true
 }
@@ -387,11 +440,18 @@ export async function POST(request: Request) {
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
-      return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
+      console.error('[proposal] RESEND_API_KEY missing — cannot send proposal email')
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Our email service is temporarily unavailable. Please email hello@campingnigeria.com.',
+        },
+        { status: 503 },
+      )
     }
 
     const mailResult = await sendPairedMail(resendKey, {
-      from: 'Camping Nigeria <proposals@campingnigeria.com>',
+      from: 'Camping Nigeria <hello@campingnigeria.com>',
       internal: {
         to: RECIPIENT,
         subject: `New School Proposal Request — ${contact.schoolName}`,
@@ -408,7 +468,13 @@ export async function POST(request: Request) {
     if (mailResult.ok) {
       return NextResponse.json({ success: true })
     }
-    return NextResponse.json({ success: false, fallback: 'mailto' }, { status: 422 })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'We couldn’t deliver your proposal email. Please try again or email hello@campingnigeria.com.',
+      },
+      { status: 502 },
+    )
   } catch (error) {
     console.error('Proposal API error:', error)
     return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 })

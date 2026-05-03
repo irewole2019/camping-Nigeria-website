@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-04-28
+Last updated: 2026-05-02
 
 ## Company
 
@@ -71,9 +71,9 @@ The gear-rental form is different (Phase 2 quote tool integration) — see the d
 - **Length caps** on every free-text field via `MAX_LENGTHS` + `withinLengthCaps` in `lib/html.ts`.
 
 ### Tests
-- **Vitest** (`npm test` / `npm run test:watch`) — 44 tests across 3 files covering the security-critical pure functions:
+- **Vitest** (`npm test` / `npm run test:watch`) — 50 tests across 3 files covering the security-critical pure functions:
   - `tests/html.test.ts` — `escapeHtml`, `safeUrl`, `isHoneypotTripped`, `withinLengthCaps`
-  - `tests/proposal-engine.test.ts` — `isValidAnswers`, program selection, `campsEligible` guard, tier selection (including restored on-campus-camps groupSize-based tiering)
+  - `tests/proposal-engine.test.ts` — `isValidAnswers` (incl. integer-range validation on the new `groupSize: number`), `bucketGroupSize`, program selection, off-campus-disallows-camps guard, tier selection (on-campus-camps now driven by `overnightPreference`, not group size)
   - `tests/expedition-recommendation.test.ts` — `isValidAnswerKey`, `getRecommendedTier` (Q4 drives tier, Q2 tunes prefix, Q3 surfaces group-size copy)
 
 ### Gear rental — Phase 2 quote-tool integration
@@ -136,7 +136,7 @@ The `/gear-rental` form is the customer-facing entry point for a separate quote 
 
 - **Flip CSP from report-only to enforce** — currently `Content-Security-Policy-Report-Only`. Collect violations from real traffic for a week or two via browser DevTools (or wire up a report-uri endpoint), then rename the header key in `next.config.mjs` to `Content-Security-Policy`.
 - **Re-encode hero WebM smaller** — current `/videos/hero-bg.webm` is 7.97 MB, larger than the MP4 fallback (4.8 MB). A VP9 re-encode at `-crf 34`–`36` should get it under the MP4 size while preserving WebM's codec efficiency. Until then Chrome/Firefox/Edge users download ~8 MB instead of ~5 MB.
-- **Expand test coverage** — 44 pure-function tests in place. Next candidates: `lib/rate-limit.ts#getClientIp` (header parsing), route-handler integration tests hitting real payloads end-to-end.
+- **Expand test coverage** — 50 pure-function tests in place. Next candidates: `lib/rate-limit.ts#getClientIp` (header parsing), route-handler integration tests hitting real payloads end-to-end.
 
 ## Recently completed (this session)
 
@@ -175,3 +175,4 @@ Worked through the full code-review punch list plus a follow-up review:
 26. ✅ **Event time bumped to 9:00 AM – 5:00 PM** — was 10:00 AM – 4:00 PM. Bookend-only change: schedule blocks stayed put, added a "9:00 AM gates open" entry and a "4:00 – 5:00 PM parent pickup window" entry. All consumers (page hero, JSON-LD `Event.startDate`/`endDate`, confirmation email) read from `EVENT_TIME_LABEL` / `EVENT_START_ISO` / `EVENT_END_ISO`, so the change was a one-file edit.
 27. ✅ **Gear-rental pickup + dropoff times** — added `pickup_time` and `dropoff_time` inputs to `QuoteForm.tsx` (one alongside each date), both defaulting to `12:00`. Renamed the date labels from "Rental Start/End Date" to "Pickup/Dropoff" so the date+time pair reads as one concept. Replaced the `"3 days (2 nights)"` duration preview with `"3 days (26 Apr 12pm → 29 Apr 12pm)"`, computed via `max(1, ceil(elapsed_h / 24))` to mirror the quote tool's server-side rule. Same-day rentals now allowed (with a `dropoff_time > pickup_time` guard). The two new fields are additive in the API contract — quote tool accepts the payload with or without times, falling back to the legacy date-only calc when either is missing.
 28. ✅ **Quote-tool now sends an internal notification on submission** (separate session on the quote-tool side, but called out here so this doc stays accurate). Previously only the operator-triggered "Send Quote" action sent any email; now `hello@campingnigeria.com` gets a "new gear-rental request landed" message the moment a customer submits, so the team knows when to open the Review Queue without polling.
+29. ✅ **Proposal flow pivoted to a qualitative-only engine.** The free-text duration enum (`half-day` / `full-day` / `2-days`) and its DeliveryFormat successor have been retired. The engine no longer scores against duration at all — it picks a program purely from school type, class level, group size (now a free integer), goal, participants, venue, and activities. Timing is captured via an optional date+time picker at Step 6 ("rough dates fine") and travels in its own `Scheduling` payload to the team — never as a scoring signal. A new Step 9 question, "If we recommend a camping experience, are you open to an overnight stay?", drives the On-Campus Camps tier (Spark = day-only, Trail = day+evening, Summit = open to overnight). Closed two real bugs: (a) "Influence — 6 hours" being recommended against a 3+ day request is now structurally impossible because the engine never makes a duration claim; (b) `proposals@campingnigeria.com` was the from-address but isn't a verified Resend sender — switched to `hello@campingnigeria.com`. Also dropped the silent `mailto:` fallback (the form now shows an amber error banner pointing at hello@). Internal scoring guard renamed: instead of `campsEligible = duration === '2-days'`, camps is disqualified only when `venue === 'off-campus'` (camps is on-campus by program definition). Spark/Trail/Summit content rewritten in `lib/program-data.ts` so the marketing tier cards mirror the day-camp / hybrid / overnight framing. All dates throughout the site are now displayed as Nigerian DD/MM/YYYY (proposal email, gear-rental inline preview).

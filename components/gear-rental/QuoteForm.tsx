@@ -42,9 +42,9 @@ function formatTime12(time24: string): string {
 
 function formatDateShort(dateStr: string): string {
   if (!dateStr) return ''
-  const d = new Date(`${dateStr}T00:00:00`)
-  if (Number.isNaN(d.getTime())) return ''
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+  const [y, m, d] = dateStr.split('-')
+  if (!y || !m || !d) return ''
+  return `${d}/${m}/${y}`
 }
 
 /**

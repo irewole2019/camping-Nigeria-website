@@ -26,7 +26,7 @@ Public pages (all App Router `page.tsx`):
 - `/schools` — hub, includes the Duke of Edinburgh callout
 - `/schools/international-award` — full DoE page with 4-question assessment → `/api/assessment-lead`
 - `/schools/programs/{nature-craft,leadership-development,on-campus-camps}` — three school sub-programs
-- `/schools/proposal` — deterministic smart form (8 questions, `proposal-engine.ts` picks a program) → `/api/proposal`
+- `/schools/proposal` — deterministic smart form (9 questions, `proposal-engine.ts` picks a program from qualitative answers; an optional Step 6 date+time picker captures preferred timing for the team but doesn't drive scoring) → `/api/proposal`
 - `/gear-rental` — equipment rental page + structured quote form → POSTs **direct to `quote.campingnigeria.com/api/submit-quote`** (separate project). Confirmation page at `/gear-rental/submitted`. The website project no longer has a `/api/gear-quote` route — pricing, persistence, and email all live in the quote tool.
 - `/contact` — contact form → `/api/contact`
 - `/privacy-policy`, `/terms`

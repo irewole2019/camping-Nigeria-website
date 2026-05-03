@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Check, ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react'
+import { Check, ArrowLeft, ArrowRight, Send, Loader2, Home } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
 import type { ProposalResult as ProposalResultType } from '@/lib/proposal-engine'
 import type { ContactInfo } from '@/lib/proposal-engine'
@@ -12,11 +12,20 @@ interface Props {
   contact: ContactInfo
   sent: boolean
   sending: boolean
+  submitError: string | null
   onSend: () => void
   onBack: () => void
 }
 
-export default function ProposalResult({ result, contact, sent, sending, onSend, onBack }: Props) {
+export default function ProposalResult({
+  result,
+  contact,
+  sent,
+  sending,
+  submitError,
+  onSend,
+  onBack,
+}: Props) {
   const { program, tier } = result
 
   if (sent) {
@@ -36,10 +45,13 @@ export default function ProposalResult({ result, contact, sent, sending, onSend,
         <p className="font-sans text-base text-brand-dark/60 mb-2 max-w-md mx-auto">
           We&apos;ve received your request for the <strong>{program.title}</strong> ({tier.name}) programme.
         </p>
-        <p className="font-sans text-sm text-brand-dark/50 mb-10">
-          Our team will review your details and get back to you at <strong>{contact.email}</strong> within 48 hours.
+        <p className="font-sans text-sm text-brand-dark/50 mb-2">
+          A confirmation is on its way to <strong>{contact.email}</strong>, and our team will follow up within 48 hours.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <p className="font-sans text-sm text-brand-dark/50 mb-10">
+          In the meantime, feel free to explore the rest of the site.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={`/schools/programs/${program.slug}`}
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-dark text-white font-sans font-semibold text-sm rounded-lg hover:bg-brand-dark/90 active:scale-[0.98] transition-all duration-200"
@@ -51,7 +63,14 @@ export default function ProposalResult({ result, contact, sent, sending, onSend,
             href="/schools"
             className="inline-flex items-center gap-2 px-6 py-3 border border-brand-dark/15 text-brand-dark font-sans font-semibold text-sm rounded-lg hover:bg-brand-dark/[0.03] active:scale-[0.98] transition-all duration-200"
           >
-            Back to Schools
+            Browse all school programmes
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-6 py-3 text-brand-dark/60 font-sans font-semibold text-sm rounded-lg hover:text-brand-dark hover:bg-brand-dark/[0.03] transition-all duration-200"
+          >
+            <Home className="w-4 h-4" />
+            Back to home
           </Link>
         </div>
       </motion.div>
@@ -78,6 +97,19 @@ export default function ProposalResult({ result, contact, sent, sending, onSend,
         </p>
       </div>
 
+      {/* Submit error banner */}
+      {submitError && (
+        <motion.div
+          role="alert"
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: premiumEase }}
+          className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 mb-6 text-sm text-amber-900 leading-relaxed"
+        >
+          {submitError}
+        </motion.div>
+      )}
+
       {/* Recommendation card */}
       <div className="border border-brand-accent bg-brand-accent/5 rounded-2xl p-6 md:p-8 mb-6">
         <div className="flex items-start justify-between mb-6">
@@ -103,7 +135,7 @@ export default function ProposalResult({ result, contact, sent, sending, onSend,
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {tier.includes.map((item) => (
             <li key={item} className="flex items-start gap-3">
-              <Check className="w-4 h-4 text-brand-accent mt-0.5 flex-shrink-0" />
+              <Check className="w-4 h-4 text-brand-accent mt-0.5 shrink-0" />
               <span className="font-sans text-sm text-brand-dark/70">{item}</span>
             </li>
           ))}
@@ -137,7 +169,7 @@ export default function ProposalResult({ result, contact, sent, sending, onSend,
           type="button"
           onClick={onSend}
           disabled={sending}
-          className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-accent text-brand-dark font-sans font-semibold text-sm rounded-lg hover:brightness-105 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-brand-accent/20 disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-accent text-brand-dark font-sans font-semibold text-sm rounded-lg hover:brightness-105 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-brand-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {sending ? (
             <>

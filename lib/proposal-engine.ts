@@ -2,6 +2,11 @@
  * Deterministic proposal engine.
  * Takes form answers, scores them against three programs,
  * and returns the best-fit program + tier recommendation.
+ *
+ * The engine is purely qualitative — it scores against what the school
+ * wants to achieve (audience, goals, venue, activities), not against
+ * duration. Timing comes from the separate `Scheduling` payload as
+ * informational input for the team, never as a scoring signal.
  */
 
 import {
@@ -15,10 +20,8 @@ import {
 
 export type SchoolType = 'primary' | 'secondary' | 'mixed' | 'university'
 export type ClassLevel = 'primary-1-3' | 'primary-4-6' | 'jss-1-3' | 'ss-1-3' | 'mixed'
-export type GroupSize = 'under-40' | '40-80' | '80-150' | '150+'
 export type PrimaryGoal = 'team-bonding' | 'eco-creativity' | 'leadership' | 'celebration'
 export type ParticipantType = 'general' | 'leaders' | 'mix'
-export type Duration = 'half-day' | 'full-day' | '2-days'
 export type Venue = 'on-campus' | 'off-campus' | 'either'
 export type Activity =
   | 'camping-tents'
@@ -29,15 +32,30 @@ export type Activity =
   | 'bonfire-stories'
   | 'journaling'
 
+/**
+ * Drives the On-Campus Camps tier (Spark/Trail/Summit) when camps wins.
+ * Asked unconditionally on the form so the engine has the answer when it
+ * needs it. Non-camps recommendations ignore this field.
+ */
+export type OvernightPreference = 'day-only' | 'day-evening' | 'open-to-overnight'
+
+/**
+ * Internal bucket used by tier-selection logic for nature-craft and
+ * leadership-development. The form sends a raw integer `groupSize`; we
+ * bucket it server-side via `bucketGroupSize()`.
+ */
+export type GroupSizeBucket = 'under-40' | '40-80' | '80-150' | '150+'
+
 export interface ProposalAnswers {
   schoolType: SchoolType
   classLevel: ClassLevel
-  groupSize: GroupSize
+  /** Raw student count from the form. Bucketed internally for scoring. */
+  groupSize: number
   primaryGoal: PrimaryGoal
   participantType: ParticipantType
-  duration: Duration
   venue: Venue
   activities: Activity[]
+  overnightPreference: OvernightPreference
 }
 
 export interface ContactInfo {
@@ -47,6 +65,18 @@ export interface ContactInfo {
   email: string
   phone: string
   website: string
+}
+
+/**
+ * Optional scheduling input. Captured at Step 6 of the form. Never feeds
+ * the engine — purely informational for the team. Empty strings when the
+ * customer leaves the dates blank ("rough dates fine").
+ */
+export interface Scheduling {
+  eventStartDate: string  // 'YYYY-MM-DD' or ''
+  eventStartTime: string  // 'HH:MM' or ''
+  eventEndDate: string
+  eventEndTime: string
 }
 
 export interface ProposalResult {
@@ -59,10 +89,8 @@ export interface ProposalResult {
 
 const VALID_SCHOOL_TYPES: readonly SchoolType[] = ['primary', 'secondary', 'mixed', 'university']
 const VALID_CLASS_LEVELS: readonly ClassLevel[] = ['primary-1-3', 'primary-4-6', 'jss-1-3', 'ss-1-3', 'mixed']
-const VALID_GROUP_SIZES: readonly GroupSize[] = ['under-40', '40-80', '80-150', '150+']
 const VALID_GOALS: readonly PrimaryGoal[] = ['team-bonding', 'eco-creativity', 'leadership', 'celebration']
 const VALID_PARTICIPANT_TYPES: readonly ParticipantType[] = ['general', 'leaders', 'mix']
-const VALID_DURATIONS: readonly Duration[] = ['half-day', 'full-day', '2-days']
 const VALID_VENUES: readonly Venue[] = ['on-campus', 'off-campus', 'either']
 const VALID_ACTIVITIES: readonly Activity[] = [
   'camping-tents',
@@ -73,6 +101,26 @@ const VALID_ACTIVITIES: readonly Activity[] = [
   'bonfire-stories',
   'journaling',
 ]
+const VALID_OVERNIGHT_PREFERENCES: readonly OvernightPreference[] = [
+  'day-only',
+  'day-evening',
+  'open-to-overnight',
+]
+
+// Reasonable upper bound for a single school proposal; rejects fabricated
+// 1e9 values without constraining real big-school requests.
+const MAX_GROUP_SIZE = 5000
+
+/**
+ * Map a raw student count to the bucket used by tier-selection logic.
+ * Boundaries match the historical enum (Under 40 / 40–80 / 80–150 / 150+).
+ */
+export function bucketGroupSize(n: number): GroupSizeBucket {
+  if (n < 40) return 'under-40'
+  if (n < 80) return '40-80'
+  if (n < 150) return '80-150'
+  return '150+'
+}
 
 /**
  * Validates a raw payload against the full ProposalAnswers shape, including
@@ -87,13 +135,21 @@ export function isValidAnswers(raw: unknown): raw is ProposalAnswers {
 
   if (!inList(a.schoolType, VALID_SCHOOL_TYPES)) return false
   if (!inList(a.classLevel, VALID_CLASS_LEVELS)) return false
-  if (!inList(a.groupSize, VALID_GROUP_SIZES)) return false
+  if (
+    typeof a.groupSize !== 'number' ||
+    !Number.isFinite(a.groupSize) ||
+    !Number.isInteger(a.groupSize) ||
+    a.groupSize < 1 ||
+    a.groupSize > MAX_GROUP_SIZE
+  ) {
+    return false
+  }
   if (!inList(a.primaryGoal, VALID_GOALS)) return false
   if (!inList(a.participantType, VALID_PARTICIPANT_TYPES)) return false
-  if (!inList(a.duration, VALID_DURATIONS)) return false
   if (!inList(a.venue, VALID_VENUES)) return false
   if (!Array.isArray(a.activities)) return false
   if (!a.activities.every((v) => inList(v, VALID_ACTIVITIES))) return false
+  if (!inList(a.overnightPreference, VALID_OVERNIGHT_PREFERENCES)) return false
 
   return true
 }
@@ -130,12 +186,6 @@ const PARTICIPANT_SCORES: Record<ParticipantType, Scores> = {
   mix:     [1, 1, 2],
 }
 
-const DURATION_SCORES: Record<Duration, Scores> = {
-  'half-day': [0, 2, 3],
-  'full-day': [1, 4, 2],
-  '2-days':   [5, 0, 0],
-}
-
 const VENUE_SCORES: Record<Venue, Scores> = {
   'on-campus':  [3, 1, 1],
   'off-campus': [1, 3, 2],
@@ -165,7 +215,6 @@ export function scoreAnswers(answers: ProposalAnswers): ProposalResult {
   scores = addScores(scores, CLASS_LEVEL_SCORES[answers.classLevel])
   scores = addScores(scores, GOAL_SCORES[answers.primaryGoal])
   scores = addScores(scores, PARTICIPANT_SCORES[answers.participantType])
-  scores = addScores(scores, DURATION_SCORES[answers.duration])
   scores = addScores(scores, VENUE_SCORES[answers.venue])
 
   for (const activity of answers.activities) {
@@ -174,11 +223,11 @@ export function scoreAnswers(answers: ProposalAnswers): ProposalResult {
 
   const [camps, nature, leadership] = scores
 
-  // All on-campus-camps tiers are 2-day packages (see program-data.ts).
-  // If the user didn't pick a 2-day duration, camps is a content mismatch —
-  // disqualify it from winning regardless of score.
-  const campsEligible = answers.duration === '2-days'
-  const effectiveCamps = campsEligible ? camps : -Infinity
+  // On-Campus Camps is on-campus by program definition. If the school
+  // explicitly asked for off-campus, camps is incoherent regardless of how
+  // the rest of the answers score.
+  const campsAllowed = answers.venue !== 'off-campus'
+  const effectiveCamps = campsAllowed ? camps : -Infinity
 
   // Determine winning program — ties broken by goal alignment
   let program: ProgramData
@@ -190,11 +239,11 @@ export function scoreAnswers(answers: ProposalAnswers): ProposalResult {
     program = LEADERSHIP_DEVELOPMENT
   }
 
-  // Goal-based tiebreaker override (only applies when eligible)
+  // Goal-based tiebreaker override
   if (effectiveCamps === nature && nature === leadership) {
     if (answers.primaryGoal === 'leadership') program = LEADERSHIP_DEVELOPMENT
     else if (answers.primaryGoal === 'eco-creativity') program = NATURE_CRAFT
-    else program = campsEligible ? ON_CAMPUS_CAMPS : NATURE_CRAFT
+    else program = campsAllowed ? ON_CAMPUS_CAMPS : NATURE_CRAFT
   }
 
   const tier = selectTier(program, answers)
@@ -212,29 +261,33 @@ function selectTier(
   program: ProgramData,
   answers: ProposalAnswers
 ): ProgramData['tiers'][number] {
-  const { duration, groupSize, venue } = answers
   const tiers = program.tiers
+  const groupSize = bucketGroupSize(answers.groupSize)
 
   // tiers are always ordered: entry [0], mid [1], premium [2]
   if (program.slug === 'on-campus-camps') {
-    // campsEligible guarantees duration === '2-days' here, so duration can't
-    // differentiate tiers. Use groupSize instead — matches the pattern of
-    // nature-craft and leadership-development.
-    if (groupSize === '150+') return tiers[2] // Summit
-    if (groupSize === '80-150' || groupSize === '40-80') return tiers[1] // Trail
-    return tiers[0] // Spark
+    // tier follows overnight preference directly
+    if (answers.overnightPreference === 'open-to-overnight') return tiers[2] // Summit
+    if (answers.overnightPreference === 'day-evening') return tiers[1]       // Trail
+    return tiers[0]                                                          // Spark (day-only)
   }
 
   if (program.slug === 'nature-craft') {
-    if ((duration === 'full-day' && venue === 'off-campus') || groupSize === '150+') return tiers[2] // Bloom
-    if (duration === 'full-day' || groupSize === '80-150' || groupSize === '40-80') return tiers[1] // Grow
-    return tiers[0] // Seed
+    if (groupSize === '150+' || answers.venue === 'off-campus') return tiers[2] // Bloom
+    if (groupSize === '80-150' || groupSize === '40-80') return tiers[1]        // Grow
+    return tiers[0]                                                              // Seed
   }
 
   // leadership-development
-  if (duration === 'full-day' || venue === 'off-campus' || groupSize === '80-150' || groupSize === '150+') return tiers[2] // Influence
-  if (duration === 'half-day' && groupSize !== 'under-40') return tiers[1] // Lead
-  return tiers[0] // Rise
+  if (
+    groupSize === '150+' ||
+    groupSize === '80-150' ||
+    answers.venue === 'off-campus'
+  ) {
+    return tiers[2] // Influence
+  }
+  if (groupSize === '40-80') return tiers[1] // Lead
+  return tiers[0]                            // Rise
 }
 
 // ─── Email Formatting ───────────────────────────────────────────────────────
@@ -245,9 +298,9 @@ const QUESTION_LABELS: Record<string, string> = {
   groupSize: 'Group size',
   primaryGoal: 'Primary goal',
   participantType: 'Participants',
-  duration: 'Duration',
   venue: 'Venue preference',
   activities: 'Activities of interest',
+  overnightPreference: 'Overnight preference',
 }
 
 const OPTION_LABELS: Record<string, string> = {
@@ -259,10 +312,6 @@ const OPTION_LABELS: Record<string, string> = {
   'primary-4-6': 'Primary 4–6',
   'jss-1-3': 'JSS 1–3',
   'ss-1-3': 'SS 1–3',
-  'under-40': 'Under 40 students',
-  '40-80': '40–80 students',
-  '80-150': '80–150 students',
-  '150+': '150+ students',
   'team-bonding': 'Team bonding & school community',
   'eco-creativity': 'Environmental awareness & creativity',
   leadership: 'Student leadership & character development',
@@ -270,9 +319,6 @@ const OPTION_LABELS: Record<string, string> = {
   general: 'General student body',
   leaders: 'Prefects, captains, or council members',
   mix: 'A mix of both',
-  'half-day': 'Half day (3–4 hours)',
-  'full-day': 'Full day (6–8 hours)',
-  '2-days': '2 days',
   'on-campus': 'On school campus',
   'off-campus': 'Off-campus outdoor venue',
   either: 'Either works',
@@ -283,6 +329,9 @@ const OPTION_LABELS: Record<string, string> = {
   'eco-nature': 'Eco-awareness & nature walks',
   'bonfire-stories': 'Bonfire & storytelling',
   journaling: 'Journaling & reflection',
+  'day-only': 'Day only (no overnight, no evening)',
+  'day-evening': 'Day + evening (no overnight)',
+  'open-to-overnight': 'Open to overnight stay',
 }
 
 export function formatEmailBody(
@@ -294,7 +343,7 @@ export function formatEmailBody(
     'RECOMMENDED PROGRAM',
     `  Program: ${result.program.title}`,
     `  Package: ${result.tier.name} (${result.tier.tag})`,
-    `  Duration: ${result.tier.duration}`,
+    `  Format: ${result.tier.duration}`,
     '',
     'SCHOOL DETAILS',
     `  School: ${contact.schoolName}`,
@@ -307,6 +356,10 @@ export function formatEmailBody(
   ]
 
   for (const [key, label] of Object.entries(QUESTION_LABELS)) {
+    if (key === 'groupSize') {
+      lines.push(`  ${label}: ${answers.groupSize} students`)
+      continue
+    }
     const value = answers[key as keyof ProposalAnswers]
     if (Array.isArray(value)) {
       lines.push(`  ${label}: ${value.map((v) => OPTION_LABELS[v] || v).join(', ')}`)

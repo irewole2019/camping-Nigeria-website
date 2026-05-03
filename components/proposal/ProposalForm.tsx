@@ -1,15 +1,14 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
 import {
   scoreAnswers,
-  formatEmailBody,
-  formatEmailSubject,
   type ProposalAnswers,
   type ContactInfo,
+  type Scheduling,
   type ProposalResult as ProposalResultData,
 } from '@/lib/proposal-engine'
 import Honeypot from '@/components/ui/Honeypot'
@@ -23,6 +22,10 @@ const inputBase =
 
 const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 
+// School-day defaults — most school programmes run during the day.
+const DEFAULT_START_TIME = '09:00'
+const DEFAULT_END_TIME = '16:00'
+
 // ─── Question Definitions ───────────────────────────────────────────────────
 
 interface Option {
@@ -31,12 +34,17 @@ interface Option {
 }
 
 interface QuestionDef {
-  key: keyof ProposalAnswers
+  /** Either a key from ProposalAnswers, or 'eventDates' for the special
+   *  scheduling step that writes to Scheduling state instead of answers. */
+  key: keyof ProposalAnswers | 'eventDates'
   question: string
   subtitle: string
-  options: Option[]
+  type?: 'select' | 'number-select' | 'datetime-range'
+  options?: Option[]
   multi?: boolean
   maxSelect?: number
+  numberPlaceholder?: string
+  numberHint?: string
 }
 
 const QUESTIONS: QuestionDef[] = [
@@ -66,13 +74,11 @@ const QUESTIONS: QuestionDef[] = [
   {
     key: 'groupSize',
     question: 'How many students will participate?',
-    subtitle: 'Group size determines logistics, staffing, and activity stations.',
-    options: [
-      { value: 'under-40', label: 'Under 40' },
-      { value: '40-80', label: '40 – 80' },
-      { value: '80-150', label: '80 – 150' },
-      { value: '150+', label: '150+' },
-    ],
+    subtitle:
+      'A rough number is fine — we use this for staffing, logistics, and pricing. You can adjust later.',
+    type: 'number-select',
+    numberPlaceholder: 'e.g. 80',
+    numberHint: 'Enter a single number. Round up if you’re unsure.',
   },
   {
     key: 'primaryGoal',
@@ -96,14 +102,11 @@ const QUESTIONS: QuestionDef[] = [
     ],
   },
   {
-    key: 'duration',
-    question: 'How much time can you dedicate?',
-    subtitle: 'Longer experiences allow for deeper immersion and more activities.',
-    options: [
-      { value: 'half-day', label: 'Half day (3 – 4 hours)' },
-      { value: 'full-day', label: 'Full day (6 – 8 hours)' },
-      { value: '2-days', label: '2 days' },
-    ],
+    key: 'eventDates',
+    question: 'When are you thinking?',
+    subtitle:
+      'Rough dates are fine — leave blank if you’re still scoping. We’ll firm up exact timing on our call.',
+    type: 'datetime-range',
   },
   {
     key: 'venue',
@@ -131,6 +134,17 @@ const QUESTIONS: QuestionDef[] = [
       { value: 'journaling', label: 'Journaling & reflection' },
     ],
   },
+  {
+    key: 'overnightPreference',
+    question: 'If we recommend a camping experience, are you open to an overnight stay?',
+    subtitle:
+      'This helps us pick the right camp format if camping suits your group. It only applies to our 2-day on-campus camps.',
+    options: [
+      { value: 'day-only', label: 'Day only — no overnight, no evening' },
+      { value: 'day-evening', label: 'Day + evening — no overnight' },
+      { value: 'open-to-overnight', label: 'Yes — open to an overnight stay' },
+    ],
+  },
 ]
 
 const TOTAL_STEPS = QUESTIONS.length + 1 // +1 for contact info
@@ -141,11 +155,30 @@ export default function ProposalForm() {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Partial<ProposalAnswers>>({})
   const [contact, setContact] = useState<Partial<ContactInfo>>({})
+  const [scheduling, setScheduling] = useState<Scheduling>({
+    eventStartDate: '',
+    eventStartTime: DEFAULT_START_TIME,
+    eventEndDate: '',
+    eventEndTime: DEFAULT_END_TIME,
+  })
   const [contactErrors, setContactErrors] = useState<Partial<Record<keyof ContactInfo, string>>>({})
+  const [questionError, setQuestionError] = useState<string | null>(null)
   const [result, setResult] = useState<ProposalResultData | null>(null)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [today, setToday] = useState('')
   const honeypotRef = useRef<HTMLInputElement>(null)
+
+  // Initialise today's date post-hydration to avoid SSR/client mismatches.
+  useEffect(() => {
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = String(now.getMonth() + 1).padStart(2, '0')
+    const d = String(now.getDate()).padStart(2, '0')
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(`${y}-${m}-${d}`)
+  }, [])
 
   const isQuestionStep = step < QUESTIONS.length
   const isContactStep = step === QUESTIONS.length
@@ -155,8 +188,19 @@ export default function ProposalForm() {
   const canAdvance = (() => {
     if (isContactStep) return false // handled by its own submit
     if (!currentQuestion) return false
-    const val = answers[currentQuestion.key]
+    if (currentQuestion.type === 'datetime-range') {
+      // Optional. If either date is filled, both must be filled and end >= start.
+      const { eventStartDate, eventEndDate } = scheduling
+      if (!eventStartDate && !eventEndDate) return true
+      if (!eventStartDate || !eventEndDate) return false
+      return eventEndDate >= eventStartDate
+    }
+    if (currentQuestion.key === 'eventDates') return true
+    const val = answers[currentQuestion.key as keyof ProposalAnswers]
     if (currentQuestion.multi) return Array.isArray(val) && val.length > 0
+    if (currentQuestion.type === 'number-select') {
+      return typeof val === 'number' && val > 0
+    }
     return val !== undefined
   })()
 
@@ -174,14 +218,46 @@ export default function ProposalForm() {
     })
   }
 
+  function setNumberAnswer(key: keyof ProposalAnswers, raw: string) {
+    if (raw === '') {
+      setAnswers((prev) => {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+      return
+    }
+    const n = parseInt(raw, 10)
+    if (!Number.isFinite(n) || n < 1) return
+    setAnswers((prev) => ({ ...prev, [key]: n }))
+    if (questionError) setQuestionError(null)
+  }
+
   function handleNext() {
-    if (!canAdvance) return
-    // Auto-advance for single-select (skip the "Next" click)
+    if (!canAdvance) {
+      if (currentQuestion?.type === 'number-select') {
+        setQuestionError('Please enter a number greater than zero.')
+      } else if (currentQuestion?.type === 'datetime-range') {
+        const { eventStartDate, eventEndDate } = scheduling
+        if (eventStartDate && !eventEndDate) {
+          setQuestionError('Please pick an end date too, or clear both fields to skip.')
+        } else if (!eventStartDate && eventEndDate) {
+          setQuestionError('Please pick a start date too, or clear both fields to skip.')
+        } else if (eventStartDate && eventEndDate && eventEndDate < eventStartDate) {
+          setQuestionError('End date must be on or after the start date.')
+        }
+      }
+      return
+    }
+    setQuestionError(null)
     setStep((s) => s + 1)
   }
 
   function handleBack() {
-    if (step > 0) setStep((s) => s - 1)
+    if (step > 0) {
+      setStep((s) => s - 1)
+      setQuestionError(null)
+    }
   }
 
   function handleSingleSelect(key: keyof ProposalAnswers, value: string) {
@@ -199,7 +275,11 @@ export default function ProposalForm() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
       errs.email = 'Please enter a valid email.'
     }
-    if (!contact.phone?.trim()) errs.phone = 'Phone number is required.'
+    if (!contact.phone?.trim()) {
+      errs.phone = 'Phone number is required.'
+    } else if (contact.phone.replace(/\D/g, '').length < 7) {
+      errs.phone = 'Please enter a valid phone number.'
+    }
     setContactErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -215,9 +295,28 @@ export default function ProposalForm() {
   async function handleSendProposal() {
     if (!result) return
     setSending(true)
+    setSubmitError(null)
 
-    const fullContact = contact as ContactInfo
+    const fullContact: ContactInfo = {
+      contactName: contact.contactName || '',
+      role: contact.role || '',
+      schoolName: contact.schoolName || '',
+      email: contact.email || '',
+      phone: contact.phone || '',
+      website: contact.website || '',
+    }
     const fullAnswers = answers as ProposalAnswers
+    // Strip times when dates are blank — server expects empty strings for both.
+    const fullScheduling: Scheduling = {
+      eventStartDate: scheduling.eventStartDate,
+      eventStartTime: scheduling.eventStartDate
+        ? scheduling.eventStartTime || DEFAULT_START_TIME
+        : '',
+      eventEndDate: scheduling.eventEndDate,
+      eventEndTime: scheduling.eventEndDate
+        ? scheduling.eventEndTime || DEFAULT_END_TIME
+        : '',
+    }
 
     try {
       const res = await fetch('/api/proposal', {
@@ -226,24 +325,22 @@ export default function ProposalForm() {
         body: JSON.stringify({
           answers: fullAnswers,
           contact: fullContact,
+          scheduling: fullScheduling,
           website_confirm: honeypotRef.current?.value || '',
         }),
       })
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}))
+      if (res.ok && data?.success) {
         setSent(true)
-      } else {
-        // Fallback to mailto
-        const subject = formatEmailSubject(fullContact)
-        const body = formatEmailBody(fullAnswers, fullContact, result)
-        window.location.href = `mailto:hello@campingnigeria.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-        setSent(true)
+        return
       }
+      setSubmitError(
+        'We couldn’t send your proposal request. Please try again, or email hello@campingnigeria.com directly and we’ll take it from there.',
+      )
     } catch {
-      // Fallback to mailto
-      const subject = formatEmailSubject(contact as ContactInfo)
-      const body = formatEmailBody(fullAnswers, contact as ContactInfo, result)
-      window.location.href = `mailto:hello@campingnigeria.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-      setSent(true)
+      setSubmitError(
+        'We couldn’t reach the server. Please check your connection and try again, or email hello@campingnigeria.com.',
+      )
     } finally {
       setSending(false)
     }
@@ -258,6 +355,7 @@ export default function ProposalForm() {
         contact={contact as ContactInfo}
         sent={sent}
         sending={sending}
+        submitError={submitError}
         onSend={handleSendProposal}
         onBack={() => { setResult(null); setStep(QUESTIONS.length) }}
       />
@@ -307,46 +405,173 @@ export default function ProposalForm() {
               {currentQuestion.subtitle}
             </p>
 
-            {/* Options */}
-            <div className="space-y-3">
-              {currentQuestion.options.map((opt) => {
-                const val = answers[currentQuestion.key]
-                const isSelected = currentQuestion.multi
-                  ? Array.isArray(val) && (val as string[]).includes(opt.value)
-                  : val === opt.value
+            {/* Number input */}
+            {currentQuestion.type === 'number-select' && (
+              <div>
+                <input
+                  type="number"
+                  min={1}
+                  inputMode="numeric"
+                  value={
+                    typeof answers[currentQuestion.key as keyof ProposalAnswers] === 'number'
+                      ? (answers[currentQuestion.key as keyof ProposalAnswers] as number)
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setNumberAnswer(currentQuestion.key as keyof ProposalAnswers, e.target.value)
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && canAdvance) {
+                      e.preventDefault()
+                      handleNext()
+                    }
+                  }}
+                  placeholder={currentQuestion.numberPlaceholder}
+                  className={inputBase + ' max-w-xs'}
+                  aria-label={currentQuestion.question}
+                  aria-invalid={!!questionError}
+                  aria-describedby={questionError ? 'question-error' : 'number-hint'}
+                />
+                {currentQuestion.numberHint && (
+                  <p id="number-hint" className="mt-2 font-sans text-xs text-brand-dark/50">
+                    {currentQuestion.numberHint}
+                  </p>
+                )}
+                {questionError && (
+                  <p id="question-error" className="mt-2 text-sm text-red-600" role="alert">
+                    {questionError}
+                  </p>
+                )}
+              </div>
+            )}
 
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => {
-                      if (currentQuestion.multi) {
-                        selectOption(currentQuestion.key, opt.value, true, currentQuestion.maxSelect)
-                      } else {
-                        handleSingleSelect(currentQuestion.key, opt.value)
+            {/* Date+time range */}
+            {currentQuestion.type === 'datetime-range' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="eventStartDate" className={labelBase}>
+                    Start
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      id="eventStartDate"
+                      type="date"
+                      min={today}
+                      value={scheduling.eventStartDate}
+                      onChange={(e) =>
+                        setScheduling((s) => ({ ...s, eventStartDate: e.target.value }))
                       }
-                    }}
-                    className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 flex items-center justify-between group ${
-                      isSelected
-                        ? 'border-brand-accent bg-brand-accent/5 shadow-sm'
-                        : 'border-brand-dark/10 hover:border-brand-dark/20 hover:bg-brand-dark/[0.02]'
-                    }`}
-                  >
-                    <span className={`font-sans text-sm ${isSelected ? 'text-brand-dark font-semibold' : 'text-brand-dark/70'}`}>
-                      {opt.label}
-                    </span>
-                    {isSelected && (
-                      <Check className="w-4 h-4 text-brand-accent flex-shrink-0" />
-                    )}
-                  </button>
-                )
-              })}
-            </div>
+                      aria-label="Preferred start date"
+                      className={inputBase}
+                    />
+                    <input
+                      id="eventStartTime"
+                      type="time"
+                      value={scheduling.eventStartTime}
+                      onChange={(e) =>
+                        setScheduling((s) => ({
+                          ...s,
+                          eventStartTime: e.target.value || DEFAULT_START_TIME,
+                        }))
+                      }
+                      aria-label="Preferred start time"
+                      className={inputBase}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="eventEndDate" className={labelBase}>
+                    End
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      id="eventEndDate"
+                      type="date"
+                      min={scheduling.eventStartDate || today}
+                      value={scheduling.eventEndDate}
+                      onChange={(e) =>
+                        setScheduling((s) => ({ ...s, eventEndDate: e.target.value }))
+                      }
+                      aria-label="Preferred end date"
+                      className={inputBase}
+                    />
+                    <input
+                      id="eventEndTime"
+                      type="time"
+                      value={scheduling.eventEndTime}
+                      onChange={(e) =>
+                        setScheduling((s) => ({
+                          ...s,
+                          eventEndTime: e.target.value || DEFAULT_END_TIME,
+                        }))
+                      }
+                      aria-label="Preferred end time"
+                      className={inputBase}
+                    />
+                  </div>
+                </div>
+                {questionError && (
+                  <p className="sm:col-span-2 -mt-2 text-sm text-red-600" role="alert">
+                    {questionError}
+                  </p>
+                )}
+                <p className="sm:col-span-2 -mt-2 text-xs text-brand-dark/50 font-sans leading-relaxed">
+                  Optional — defaults to school hours (09:00 – 16:00) if you only pick dates. Leave both blank to skip.
+                </p>
+              </div>
+            )}
+
+            {/* Option list */}
+            {currentQuestion.options && (
+              <div className="space-y-3">
+                {currentQuestion.options.map((opt) => {
+                  const val = answers[currentQuestion.key as keyof ProposalAnswers]
+                  const isSelected = currentQuestion.multi
+                    ? Array.isArray(val) && (val as string[]).includes(opt.value)
+                    : val === opt.value
+
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        if (currentQuestion.multi) {
+                          selectOption(
+                            currentQuestion.key as keyof ProposalAnswers,
+                            opt.value,
+                            true,
+                            currentQuestion.maxSelect,
+                          )
+                        } else {
+                          handleSingleSelect(
+                            currentQuestion.key as keyof ProposalAnswers,
+                            opt.value,
+                          )
+                        }
+                      }}
+                      className={`w-full text-left px-5 py-4 rounded-xl border transition-all duration-200 flex items-center justify-between group ${
+                        isSelected
+                          ? 'border-brand-accent bg-brand-accent/5 shadow-sm'
+                          : 'border-brand-dark/10 hover:border-brand-dark/20 hover:bg-brand-dark/[0.02]'
+                      }`}
+                    >
+                      <span className={`font-sans text-sm ${isSelected ? 'text-brand-dark font-semibold' : 'text-brand-dark/70'}`}>
+                        {opt.label}
+                      </span>
+                      {isSelected && (
+                        <Check className="w-4 h-4 text-brand-accent shrink-0" />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
 
             {/* Multi-select hint */}
             {currentQuestion.multi && (
               <p className="font-sans text-xs text-brand-dark/40 mt-3">
-                {(answers[currentQuestion.key] as string[] | undefined)?.length || 0} of {currentQuestion.maxSelect} selected
+                {(answers[currentQuestion.key as keyof ProposalAnswers] as string[] | undefined)?.length || 0}{' '}
+                of {currentQuestion.maxSelect} selected
               </p>
             )}
           </motion.div>
@@ -476,17 +701,20 @@ export default function ProposalForm() {
           Back
         </button>
 
-        {isQuestionStep && currentQuestion?.multi && (
-          <button
-            type="button"
-            onClick={handleNext}
-            disabled={!canAdvance}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-brand-dark text-white font-sans font-semibold text-sm rounded-lg hover:bg-brand-dark/90 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
-          >
-            Next
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        )}
+        {isQuestionStep &&
+          (currentQuestion?.multi ||
+            currentQuestion?.type === 'number-select' ||
+            currentQuestion?.type === 'datetime-range') && (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!canAdvance}
+              className="inline-flex items-center gap-2 px-8 py-3 bg-brand-dark text-white font-sans font-semibold text-sm rounded-lg hover:bg-brand-dark/90 active:scale-[0.98] transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
+            >
+              Next
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
 
         {isContactStep && (
           <button

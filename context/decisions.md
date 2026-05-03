@@ -355,6 +355,67 @@ The six Base Camp Kids marketing assets (hero, positioning, homepage banner, thr
 
 ---
 
+## Proposal engine is qualitative-only — duration is informational, not a scoring signal
+
+The old engine scored programs against a `Duration` enum (`half-day` / `full-day` / `2-days`) and used it to disqualify on-campus-camps when the customer asked for less than 2 days. Mid-2026 we briefly replaced that with a richer 6-option `DeliveryFormat` enum (incl. a `multi-day` bucket). Both have now been removed. The engine scores purely on qualitative answers: school type, class level, group size, goal, participants, venue, activities, and a single overnight preference.
+
+Timing is captured via an optional date+time picker at Step 6 ("rough dates fine") and travels in its own `Scheduling` payload directly to the team. The engine never reads it.
+
+**Why:** A real bug surfaced — a 3+ day request landed on a "Leadership Development → Influence (6 hours)" recommendation. The engine had to pick *some* tier, and the duration enum was forcing a misleading match. Once we accepted that schools at this stage of inquiry don't always have firm dates anyway, removing duration from scoring removed the whole class of mismatches. The team designs the actual schedule against whatever window the school picks during the quote conversation. The engine's job is to point at the right *programme*; the *length* is a logistics question that follows.
+
+**What this replaces:** the earlier "On-campus-camps tier selection driven by groupSize" decision below. groupSize still drives tier selection for nature-craft and leadership-development; on-campus-camps tiers are now driven by `overnightPreference` instead (see next decision).
+
+---
+
+## On-Campus Camps tier driven by `overnightPreference`, not group size or duration
+
+`selectTier` for on-campus-camps maps:
+- `'open-to-overnight'` → Summit
+- `'day-evening'` → Trail
+- `'day-only'` → Spark
+
+The form asks "If we recommend a camping experience, are you open to an overnight stay?" once, unconditionally, at Step 9. Non-camps recommendations ignore the answer.
+
+**Why:**
+- Spark / Trail / Summit are inherently format-differentiated (day camp / hybrid / overnight) — that's what the marketing tier cards on `/schools/programs/on-campus-camps` describe. Tiering on overnight preference matches the marketing.
+- Group-size-based tiering was the previous-previous decision, restored after duration broke. It worked but didn't reflect what actually distinguishes the camps offerings — overnight liability is the real decision a school makes.
+- One always-asked question is cheaper than conditional logic that runs the engine mid-form to decide whether to ask. Costs every customer one click; saves us a state machine.
+
+**Tradeoff:** non-camps recommendations carry an answered question that doesn't influence anything. Acceptable — the question is fast and the data still goes in the email for the team to see.
+
+---
+
+## Date display: Nigerian DD/MM/YYYY format
+
+Every server-rendered date uses `DD/MM/YYYY`. Two helpers in `app/api/proposal/route.ts`:
+
+- `formatDate(isoDate)` returns `"DD/MM/YYYY"`
+- `formatDateTime(isoDate, time)` returns `"DD/MM/YYYY · HH:MM"`
+
+The gear-rental inline duration preview in `QuoteForm.tsx` uses the same `DD/MM/YYYY` format via a parallel `formatDateShort` helper.
+
+**Why:**
+- Camping Nigeria is Nigerian. The British/Nigerian numeric convention is day-first.
+- The previous `'en-GB'` `toLocaleDateString({ day: 'numeric', month: 'short' })` produced `"29 May"` — readable but mixed-format and ambiguous when copy-pasted into a calendar.
+- Numeric-only is unambiguous, copy-pastes into Google Calendar correctly, and matches what schools see on their own paperwork.
+
+Native HTML5 `<input type="date">` rendering still follows the browser's own locale — we can't override that. But every place we *display* a date, we own the format, and we use this one.
+
+---
+
+## Proposal route fails closed when Resend is unavailable — no `mailto:` fallback
+
+`/api/proposal` returns proper HTTP errors (503 if `RESEND_API_KEY` missing, 502 if Resend rejects) and the form shows an amber banner pointing at `hello@campingnigeria.com`. There is no client-side `mailto:` fallback that opens the user's mail client mid-flow.
+
+**Why we removed the fallback:**
+- It was a placeholder shipped before Resend was wired. The form has been fully Resend-backed for months; the fallback was just dead code that fired on misconfiguration.
+- A `mailto:` fallback hides infrastructure failures from operators. If Resend is broken on a Tuesday and 12 schools submit, the only signal would be 12 prefilled draft emails opening in 12 different mail clients on 12 different schools' machines — most of which never get sent. We'd see nothing.
+- Hard-failing with an explicit "email us at hello@campingnigeria.com" banner is more honest. The school knows the website is having a moment; they have a path to reach us; we get the signal that something's wrong.
+
+**Why this is route-specific:** the contact and assessment routes still have a similar branch on `RESEND_API_KEY` missing — left in place for now since they predate this decision. If we hit an incident there, fold them in too.
+
+---
+
 ## `loadQuoteItems` reads only `id`, `name`, `category`, `available_qty` from the items CSV
 
 The published Google Sheets CSV at `NEXT_PUBLIC_SHEETS_ITEMS_URL` has columns `id, name, category, base_price_naira, available_qty`. The parser in `lib/quote-config.ts` uses `headers.indexOf('available_qty')` etc. to pick columns by header name, and **deliberately ignores `base_price_naira`**.

@@ -118,7 +118,8 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 
 - Comments explain **why**, not **what**. If the only thing a comment adds is a restatement of the code, delete it.
 - One-liner comments are fine; avoid multi-paragraph JSDoc unless the helper is exported for external consumers.
-- User-facing copy uses en-dash `–` for ranges ("14 March 2026 – 17 March 2026"), em-dash `—` for asides. Don't use `-` for either.
+- User-facing copy uses en-dash `–` for ranges, em-dash `—` for asides. Don't use `-` for either.
+- **Dates render as `DD/MM/YYYY`** (Nigerian/British numeric — e.g. `14/03/2026`). All server-rendered dates go through `formatDate` / `formatDateTime` helpers in the route files. Native `<input type="date">` rendering follows the browser's own locale and we can't override it; everywhere else in our UI/email templates, use the helper.
 - Naira is written `₦3,000,000` (no space).
 
 ## Routing
