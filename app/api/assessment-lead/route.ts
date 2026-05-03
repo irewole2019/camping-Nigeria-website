@@ -4,24 +4,28 @@ import { escapeHtml, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/
 import { checkRateLimit } from '@/lib/rate-limit'
 import { sendPairedMail } from '@/lib/mail'
 import {
+  bucketGroupSizeToAnswerKey,
   getRecommendedTier,
   isValidAnswerKey,
+  isValidGroupSize,
   type AnswerKey,
 } from '@/lib/expedition-recommendation'
 
 const RECIPIENT = 'hello@campingnigeria.com'
-const FROM = 'Camping Nigeria <assessment@campingnigeria.com>'
+const FROM = 'Camping Nigeria <hello@campingnigeria.com>'
 const SITE_URL = 'https://campingnigeria.com'
 const BOOKING_URL = CALENDAR_BOOKING_URL
 
 interface AssessmentLeadPayload {
   name: string
   email: string
+  phone: string
   school: string
+  groupSize: number
+  /** q3 is no longer captured directly — derived server-side from groupSize. */
   answers: {
     q1?: AnswerKey
     q2?: AnswerKey
-    q3?: AnswerKey
     q4?: AnswerKey
   }
 }
@@ -42,13 +46,6 @@ const Q2_LABELS: Record<string, string> = {
   D: 'Not sure',
 }
 
-const Q3_LABELS: Record<string, string> = {
-  A: 'Under 30 students',
-  B: '30 to 60 students',
-  C: '60 to 100 students',
-  D: 'More than 100 students',
-}
-
 const Q4_LABELS: Record<string, string> = {
   A: 'Equipment only — will run the program themselves',
   B: 'Equipment and facilitators — program run for them',
@@ -56,16 +53,15 @@ const Q4_LABELS: Record<string, string> = {
   D: 'Not sure yet — needs guidance',
 }
 
-const QUESTIONS = [
+const SELECT_QUESTIONS = [
   { key: 'q1', label: 'Who are you planning this for?', labels: Q1_LABELS },
   { key: 'q2', label: 'Is your school running the Award?', labels: Q2_LABELS },
-  { key: 'q3', label: 'Group size', labels: Q3_LABELS },
   { key: 'q4', label: 'Management level desired', labels: Q4_LABELS },
 ] as const
 
 function formatAnswer(questionKey: string, letter: string | undefined): string {
   if (!letter) return 'Not answered'
-  const q = QUESTIONS.find((q) => q.key === questionKey)
+  const q = SELECT_QUESTIONS.find((q) => q.key === questionKey)
   if (!q) return letter
   return q.labels[letter] ?? letter
 }
@@ -76,17 +72,33 @@ function buildInternalEmail(payload: AssessmentLeadPayload, recommendedName: str
   const { answers } = payload
   const name = escapeHtml(payload.name)
   const email = escapeHtml(payload.email)
+  const phone = escapeHtml(payload.phone)
   const school = escapeHtml(payload.school)
   const recommended = escapeHtml(recommendedName)
   const firstName = escapeHtml(payload.name.split(' ')[0])
 
-  const responseRows = QUESTIONS.map(
-    (q) =>
-      `<tr>
-        <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${escapeHtml(q.label)}</td>
-        <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${escapeHtml(formatAnswer(q.key, answers[q.key as keyof AssessmentLeadPayload['answers']]))}</td>
-      </tr>`
-  ).join('')
+  const row = (label: string, value: string) =>
+    `<tr>
+      <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">${escapeHtml(label)}</td>
+      <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${escapeHtml(value)}</td>
+    </tr>`
+
+  // Render in the original assessment order: q1, q2, group size (was q3), q4.
+  const responseRows = [
+    row(
+      'Who are you planning this for?',
+      formatAnswer('q1', answers.q1),
+    ),
+    row(
+      'Is your school running the Award?',
+      formatAnswer('q2', answers.q2),
+    ),
+    row('Group size', `${payload.groupSize} students`),
+    row(
+      'Management level desired',
+      formatAnswer('q4', answers.q4),
+    ),
+  ].join('')
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -127,6 +139,10 @@ function buildInternalEmail(payload: AssessmentLeadPayload, recommendedName: str
       <tr>
         <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">Email</td>
         <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;"><a href="mailto:${email}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${email}</a></td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;vertical-align:top;border-bottom:1px solid #f0f0f0;">Phone</td>
+        <td style="padding:8px 12px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;"><a href="tel:${phone}" style="color:#0e3e2e;text-decoration:none;font-weight:600;">${phone}</a></td>
       </tr>
     </table>
 
@@ -294,17 +310,20 @@ export async function POST(request: Request) {
     if (
       typeof r.name !== 'string' ||
       typeof r.email !== 'string' ||
+      typeof r.phone !== 'string' ||
       typeof r.school !== 'string' ||
+      !isValidGroupSize(r.groupSize) ||
       !r.answers ||
       typeof r.answers !== 'object'
     ) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
     }
 
-    // Every answer key must be A/B/C/D (or absent). Rejects fabricated values.
+    // q1, q2, q4 must be A/B/C/D (or absent). q3 is no longer accepted from
+    // the client — it's derived from groupSize below.
     const rawAnswers = r.answers as Record<string, unknown>
     const answers: AssessmentLeadPayload['answers'] = {}
-    for (const key of ['q1', 'q2', 'q3', 'q4'] as const) {
+    for (const key of ['q1', 'q2', 'q4'] as const) {
       const v = rawAnswers[key]
       if (v === undefined) continue
       if (!isValidAnswerKey(v)) {
@@ -316,29 +335,36 @@ export async function POST(request: Request) {
     const body: AssessmentLeadPayload = {
       name: r.name,
       email: r.email,
+      phone: r.phone,
       school: r.school,
+      groupSize: r.groupSize,
       answers,
     }
 
-    if (!body.name.trim() || !body.school.trim()) {
+    if (!body.name.trim() || !body.school.trim() || !body.phone.trim()) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
     }
+    if (body.phone.replace(/\D/g, '').length < 7) {
+      return NextResponse.json({ error: 'Invalid phone' }, { status: 400 })
+    }
     if (
       !withinLengthCaps([
         [body.name, MAX_LENGTHS.name],
         [body.email, MAX_LENGTHS.email],
+        [body.phone, MAX_LENGTHS.phone],
         [body.school, MAX_LENGTHS.schoolName],
       ])
     ) {
       return NextResponse.json({ error: 'Field too long' }, { status: 400 })
     }
 
-    // Derive the recommendation server-side — never trust the client to tell
-    // us which tier it was shown.
-    const tier = getRecommendedTier(answers.q2, answers.q3, answers.q4)
+    // Derive q3 from the raw group size, then derive the recommendation
+    // server-side — never trust the client to tell us which tier it was shown.
+    const q3 = bucketGroupSizeToAnswerKey(body.groupSize)
+    const tier = getRecommendedTier(answers.q2, q3, answers.q4)
     const recommended = tier.name
 
     const resendKey = process.env.RESEND_API_KEY

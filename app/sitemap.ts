@@ -42,6 +42,12 @@ const ROUTES: RouteEntry[] = [
     image: `${SITE_URL}/images/schools/doe-award.webp`,
   },
   {
+    path: '/schools/international-award/proposal',
+    changeFrequency: 'monthly',
+    priority: 0.7,
+    image: `${SITE_URL}/images/schools/doe-award.webp`,
+  },
+  {
     path: '/schools/programs/on-campus-camps',
     changeFrequency: 'monthly',
     priority: 0.7,

@@ -355,6 +355,28 @@ The six Base Camp Kids marketing assets (hero, positioning, homepage banner, thr
 
 ---
 
+## On-Campus Camps display title swaps based on date range — 1-Day / 2-Day / Multi-day
+
+`lib/proposal-engine.ts#getCampDurationOverride(result, scheduling)` returns an override that swaps the displayed programme title and tier duration when the customer's date range produces a non-standard day count:
+
+- **1 day** → "1-Day On-Campus Camp", tier duration "1 day · {format}", tier tag "Custom"
+- **2 days** → no override (the standard productised tier fits)
+- **3+ days** → "Multi-day On-Campus Camps", tier duration "{N} days · {format}", tier tag "Custom"
+
+Day count uses the same noon-to-noon rule as gear-rental: `max(1, ceil(elapsed_hours / 24))`. The format suffix (`day camp` / `hybrid` / `overnight`) is preserved from the engine's standard tier choice (Spark / Trail / Summit) so the team still has the closest format match as a starting point.
+
+**Why this is a display layer, not an engine layer:**
+- The proposal engine is qualitative-only by design (separate decision below). Adding date-aware scoring would re-introduce the bugs we left behind.
+- Tier scoring should reflect *what kind of programme fits*, not *how long the customer wants*. Day count shapes how the team prices and schedules, not which programme is right.
+- The override applies on both client (result card) and server (email templates + subject), so the customer sees the same framing the team sees.
+
+**Why standardise to "1-Day" / "2-Day" / "Multi-day":**
+- "1-Day" matches the existing "2-Day" marketing convention. "Multi-day" honestly signals bespoke without committing to a specific length.
+- The override doesn't pretend a single tier exists for non-standard durations — it just stops the standard 2-day title from misrepresenting the offer.
+- The team designs the actual schedule for non-standard requests during the quote conversation. The override lets the customer-facing card reflect what they actually asked for.
+
+---
+
 ## Proposal engine is qualitative-only — duration is informational, not a scoring signal
 
 The old engine scored programs against a `Duration` enum (`half-day` / `full-day` / `2-days`) and used it to disqualify on-campus-camps when the customer asked for less than 2 days. Mid-2026 we briefly replaced that with a richer 6-option `DeliveryFormat` enum (incl. a `multi-day` bucket). Both have now been removed. The engine scores purely on qualitative answers: school type, class level, group size, goal, participants, venue, activities, and a single overnight preference.
@@ -413,6 +435,22 @@ Native HTML5 `<input type="date">` rendering still follows the browser's own loc
 - Hard-failing with an explicit "email us at hello@campingnigeria.com" banner is more honest. The school knows the website is having a moment; they have a path to reach us; we get the signal that something's wrong.
 
 **Why this is route-specific:** the contact and assessment routes still have a similar branch on `RESEND_API_KEY` missing — left in place for now since they predate this decision. If we hit an incident there, fold them in too.
+
+---
+
+## DoE proposals get their own route, separate from `/schools/proposal`
+
+`/schools/international-award/proposal` is a dedicated form with its own API route (`app/api/award-proposal/route.ts`), its own validation (`lib/award-proposal.ts`), and its own email templates. The school-programmes proposal at `/schools/proposal` stays as-is and only handles camps/nature/leadership.
+
+**Why two routes instead of one consolidated form:**
+- DoE has a **different audience** — parents enquiring on behalf of their children, plus schools — while the school programmes form is school-only. Parents need different fields (their child's school, class, Award level interest) and different framing.
+- DoE has **published prices** (₦3M / ₦5M / ₦8M); the customer picks the tier directly. The school programmes are quote-based and need a recommendation engine to pick a tier from answers. Different mechanics.
+- Conflating them in one form would force conditional logic to swap fields, copy, validation, and email templates based on programme — more code than two focused forms.
+- The DoE assessment can deep-link to the proposal form with the recommended tier pre-filled via `?tier=base-camp|trail-ready|summit-partner`, which wouldn't work cleanly in a unified form.
+
+**Tier display when "Not sure" is chosen:** the customer email shows all three tier cards with prices and includes, plus a note that the team will recommend the right one on their call. Confirmed editorial decision — informative beats minimal here because customers reading the email may use it to start a budget conversation internally.
+
+**Award levels for schools are multi-select** (Bronze / Silver / Gold can run in parallel); for parents, single-select with an "unsure" option.
 
 ---
 

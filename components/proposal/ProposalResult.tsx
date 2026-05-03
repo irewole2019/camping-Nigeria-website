@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Check, ArrowLeft, ArrowRight, Send, Loader2, Home } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
-import type { ProposalResult as ProposalResultType } from '@/lib/proposal-engine'
-import type { ContactInfo } from '@/lib/proposal-engine'
+import type {
+  ProposalResult as ProposalResultType,
+  ContactInfo,
+  CampDurationOverride,
+} from '@/lib/proposal-engine'
 
 interface Props {
   result: ProposalResultType
@@ -13,6 +16,10 @@ interface Props {
   sent: boolean
   sending: boolean
   submitError: string | null
+  /** When set, overrides the displayed programme title and tier duration —
+   *  used for on-campus camp requests where the customer's date range
+   *  produces a non-standard day count (1 day or 3+ days). */
+  override: CampDurationOverride | null
   onSend: () => void
   onBack: () => void
 }
@@ -23,10 +30,14 @@ export default function ProposalResult({
   sent,
   sending,
   submitError,
+  override,
   onSend,
   onBack,
 }: Props) {
   const { program, tier } = result
+  const programTitle = override?.title ?? program.title
+  const tierDuration = override?.tierDuration ?? tier.duration
+  const tierTag = override?.tierTag ?? tier.tag
 
   if (sent) {
     return (
@@ -43,7 +54,7 @@ export default function ProposalResult({
           Proposal Request Sent
         </h2>
         <p className="font-sans text-base text-brand-dark/60 mb-2 max-w-md mx-auto">
-          We&apos;ve received your request for the <strong>{program.title}</strong> ({tier.name}) programme.
+          We&apos;ve received your request for the <strong>{programTitle}</strong> ({tier.name}) programme.
         </p>
         <p className="font-sans text-sm text-brand-dark/50 mb-2">
           A confirmation is on its way to <strong>{contact.email}</strong>, and our team will follow up within 48 hours.
@@ -90,7 +101,7 @@ export default function ProposalResult({
           Your Recommendation
         </span>
         <h2 className="font-serif text-3xl md:text-4xl font-bold text-brand-dark mt-2 mb-3 text-balance">
-          {program.title}
+          {programTitle}
         </h2>
         <p className="font-sans text-base text-brand-dark/60 max-w-lg mx-auto">
           {program.subtitle}
@@ -120,10 +131,10 @@ export default function ProposalResult({
             <h3 className="font-serif text-2xl font-bold text-brand-dark mt-1">
               {tier.name}
             </h3>
-            <p className="font-sans text-sm text-brand-dark/60 mt-0.5">{tier.duration}</p>
+            <p className="font-sans text-sm text-brand-dark/60 mt-0.5">{tierDuration}</p>
           </div>
           <span className="inline-flex items-center px-3 py-1 bg-brand-accent/20 text-brand-accent-readable text-xs font-semibold rounded-full">
-            {tier.tag}
+            {tierTag}
           </span>
         </div>
 

@@ -377,3 +377,76 @@ export function formatEmailBody(
 export function formatEmailSubject(contact: ContactInfo): string {
   return `New School Proposal Request — ${contact.schoolName}`
 }
+
+// ─── Multi-day override (display layer) ─────────────────────────────────────
+
+/**
+ * Compute the number of programme days from the optional Scheduling input
+ * using the same noon-to-noon rounding rule as gear-rental:
+ *   days = max(1, ceil(elapsed_hours / 24))
+ *
+ * Returns null when scheduling is incomplete or invalid.
+ */
+export function computeProgramDays(scheduling: Scheduling): number | null {
+  if (!scheduling.eventStartDate || !scheduling.eventEndDate) return null
+  const startMs = new Date(
+    `${scheduling.eventStartDate}T${scheduling.eventStartTime || '12:00'}:00`,
+  ).getTime()
+  const endMs = new Date(
+    `${scheduling.eventEndDate}T${scheduling.eventEndTime || '12:00'}:00`,
+  ).getTime()
+  if (Number.isNaN(startMs) || Number.isNaN(endMs)) return null
+  if (endMs <= startMs) return null
+  return Math.max(1, Math.ceil((endMs - startMs) / 86_400_000))
+}
+
+export interface CampDurationOverride {
+  /** Override for `program.title` when displayed. */
+  title: string
+  /** Override for `tier.duration` when displayed. */
+  tierDuration: string
+  /** Override for `tier.tag` when displayed. */
+  tierTag: string
+  /** Computed day count used for the override. */
+  days: number
+}
+
+/**
+ * On-Campus Camps is a productised 2-day programme — Spark/Trail/Summit are
+ * all "2 days · {format}". When the customer's date range produces a
+ * different day count (1 day or 3+ days), the standard tier title
+ * misrepresents the offer.
+ *
+ * Returns an override that swaps the displayed title and tier duration to
+ * match the actual day count, while keeping the engine's tier choice
+ * (Spark/Trail/Summit) as the closest format match.
+ *
+ * Returns null when no override is needed:
+ *  - non-camps programme
+ *  - missing dates (the form's optional Step 6 was skipped)
+ *  - exactly 2 days (standard tier fits)
+ */
+export function getCampDurationOverride(
+  result: ProposalResult,
+  scheduling: Scheduling,
+): CampDurationOverride | null {
+  if (result.program.slug !== 'on-campus-camps') return null
+  const days = computeProgramDays(scheduling)
+  if (days === null || days === 2) return null
+  // Lift the format suffix from the standard tier ("2 days · day camp" → "day camp")
+  const formatLabel = result.tier.duration.split('·')[1]?.trim() ?? 'custom'
+  if (days === 1) {
+    return {
+      title: '1-Day On-Campus Camp',
+      tierDuration: `1 day · ${formatLabel}`,
+      tierTag: 'Custom',
+      days: 1,
+    }
+  }
+  return {
+    title: 'Multi-day On-Campus Camps',
+    tierDuration: `${days} days · ${formatLabel}`,
+    tierTag: 'Custom',
+    days,
+  }
+}

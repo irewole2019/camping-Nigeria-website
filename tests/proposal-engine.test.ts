@@ -3,7 +3,10 @@ import {
   isValidAnswers,
   scoreAnswers,
   bucketGroupSize,
+  computeProgramDays,
+  getCampDurationOverride,
   type ProposalAnswers,
+  type Scheduling,
 } from '@/lib/proposal-engine'
 
 const validAnswers: ProposalAnswers = {
@@ -185,5 +188,136 @@ describe('scoreAnswers — tier selection', () => {
       expect(small.tier.name).toBe('Summit')
       expect(large.tier.name).toBe('Summit')
     }
+  })
+})
+
+describe('computeProgramDays — noon-to-noon ceil(elapsed_h / 24)', () => {
+  const baseScheduling = (
+    startDate: string,
+    startTime: string,
+    endDate: string,
+    endTime: string,
+  ): Scheduling => ({
+    eventStartDate: startDate,
+    eventStartTime: startTime,
+    eventEndDate: endDate,
+    eventEndTime: endTime,
+  })
+
+  it('returns null when either date is missing', () => {
+    expect(computeProgramDays(baseScheduling('', '', '', ''))).toBeNull()
+    expect(
+      computeProgramDays(baseScheduling('2026-05-01', '09:00', '', '')),
+    ).toBeNull()
+  })
+
+  it('canonical noon-to-noon: 24h = 1 day', () => {
+    expect(
+      computeProgramDays(baseScheduling('2026-05-01', '12:00', '2026-05-02', '12:00')),
+    ).toBe(1)
+  })
+
+  it('default school hours 09:00-16:00 over 4 calendar days = 4 days', () => {
+    expect(
+      computeProgramDays(baseScheduling('2026-05-01', '09:00', '2026-05-04', '16:00')),
+    ).toBe(4)
+  })
+
+  it('cross-noon barely (49h) ceils to 3', () => {
+    expect(
+      computeProgramDays(baseScheduling('2026-05-01', '12:00', '2026-05-03', '13:00')),
+    ).toBe(3)
+  })
+
+  it('end before start returns null', () => {
+    expect(
+      computeProgramDays(baseScheduling('2026-05-04', '12:00', '2026-05-01', '12:00')),
+    ).toBeNull()
+  })
+})
+
+describe('getCampDurationOverride', () => {
+  const sched = (start: string, end: string): Scheduling => ({
+    eventStartDate: start,
+    eventStartTime: '09:00',
+    eventEndDate: end,
+    eventEndTime: '16:00',
+  })
+
+  const campsAnswers: ProposalAnswers = {
+    schoolType: 'mixed',
+    classLevel: 'mixed',
+    groupSize: 100,
+    primaryGoal: 'celebration',
+    participantType: 'mix',
+    venue: 'on-campus',
+    activities: ['camping-tents'],
+    overnightPreference: 'open-to-overnight',
+  }
+
+  it('returns null when scheduling has no dates', () => {
+    const result = scoreAnswers(campsAnswers)
+    const override = getCampDurationOverride(result, {
+      eventStartDate: '',
+      eventStartTime: '',
+      eventEndDate: '',
+      eventEndTime: '',
+    })
+    expect(override).toBeNull()
+  })
+
+  it('returns null for non-camps programmes (even when 4-day window)', () => {
+    const natureResult = scoreAnswers({
+      ...campsAnswers,
+      schoolType: 'primary',
+      classLevel: 'primary-1-3',
+      primaryGoal: 'eco-creativity',
+      participantType: 'general',
+      activities: ['adire-crafts', 'eco-nature'],
+    })
+    if (natureResult.program.slug !== 'on-campus-camps') {
+      expect(getCampDurationOverride(natureResult, sched('2026-05-01', '2026-05-04'))).toBeNull()
+    }
+  })
+
+  it('returns null for exactly 2-day camps (standard tier fits)', () => {
+    const result = scoreAnswers(campsAnswers)
+    expect(getCampDurationOverride(result, sched('2026-05-01', '2026-05-02'))).toBeNull()
+  })
+
+  it('overrides for camps + same-day (1 day) request', () => {
+    const result = scoreAnswers(campsAnswers)
+    const override = getCampDurationOverride(result, sched('2026-05-01', '2026-05-01'))
+    expect(override).not.toBeNull()
+    expect(override?.title).toBe('1-Day On-Campus Camp')
+    expect(override?.days).toBe(1)
+    expect(override?.tierTag).toBe('Custom')
+    expect(override?.tierDuration).toContain('1 day')
+  })
+
+  it('overrides for camps + 3+ day window', () => {
+    const result = scoreAnswers(campsAnswers)
+    const override = getCampDurationOverride(result, sched('2026-05-01', '2026-05-04'))
+    expect(override).not.toBeNull()
+    expect(override?.title).toBe('Multi-day On-Campus Camps')
+    expect(override?.days).toBe(4)
+    expect(override?.tierTag).toBe('Custom')
+    expect(override?.tierDuration).toContain('4 days')
+  })
+
+  it('preserves the format suffix from the standard tier in the override', () => {
+    // Open-to-overnight → Summit ("2 days · overnight") → "{N} days · overnight"
+    const overnightOverride = getCampDurationOverride(
+      scoreAnswers({ ...campsAnswers, overnightPreference: 'open-to-overnight' }),
+      sched('2026-05-01', '2026-05-04'),
+    )
+    expect(overnightOverride?.tierDuration).toBe('4 days · overnight')
+
+    // Day-only → Spark ("2 days · day camp") → "{N} days · day camp"
+    const dayOnlyOverride = getCampDurationOverride(
+      scoreAnswers({ ...campsAnswers, overnightPreference: 'day-only' }),
+      sched('2026-05-01', '2026-05-04'),
+    )
+    expect(dayOnlyOverride?.tierDuration).toBe('4 days · day camp')
   })
 })

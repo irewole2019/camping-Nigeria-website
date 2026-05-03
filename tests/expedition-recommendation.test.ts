@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   isValidAnswerKey,
+  isValidGroupSize,
+  bucketGroupSizeToAnswerKey,
   getRecommendedTier,
 } from '@/lib/expedition-recommendation'
 
@@ -85,5 +87,44 @@ describe('getRecommendedTier — always populated fields', () => {
     expect(tier.priceNote).toBeTruthy()
     expect(tier.includes.length).toBeGreaterThan(0)
     expect(tier.price).toMatch(/₦/)
+  })
+})
+
+describe('isValidGroupSize', () => {
+  it('accepts positive integers within the range', () => {
+    expect(isValidGroupSize(1)).toBe(true)
+    expect(isValidGroupSize(60)).toBe(true)
+    expect(isValidGroupSize(5000)).toBe(true)
+  })
+
+  it('rejects zero, negatives, decimals, NaN, and non-numbers', () => {
+    expect(isValidGroupSize(0)).toBe(false)
+    expect(isValidGroupSize(-1)).toBe(false)
+    expect(isValidGroupSize(12.5)).toBe(false)
+    expect(isValidGroupSize(NaN)).toBe(false)
+    expect(isValidGroupSize('60')).toBe(false)
+    expect(isValidGroupSize(null)).toBe(false)
+    expect(isValidGroupSize(undefined)).toBe(false)
+  })
+
+  it('rejects absurdly large values', () => {
+    expect(isValidGroupSize(1_000_000)).toBe(false)
+  })
+})
+
+describe('bucketGroupSizeToAnswerKey', () => {
+  it('matches the original Q3 label boundaries', () => {
+    // A: Under 30 students
+    expect(bucketGroupSizeToAnswerKey(1)).toBe('A')
+    expect(bucketGroupSizeToAnswerKey(29)).toBe('A')
+    // B: 30 to 60 students (60 is in B per the original label)
+    expect(bucketGroupSizeToAnswerKey(30)).toBe('B')
+    expect(bucketGroupSizeToAnswerKey(60)).toBe('B')
+    // C: 60 to 100 students (61-100; 60 already claimed by B)
+    expect(bucketGroupSizeToAnswerKey(61)).toBe('C')
+    expect(bucketGroupSizeToAnswerKey(100)).toBe('C')
+    // D: More than 100 students
+    expect(bucketGroupSizeToAnswerKey(101)).toBe('D')
+    expect(bucketGroupSizeToAnswerKey(500)).toBe('D')
   })
 })

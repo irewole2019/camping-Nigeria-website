@@ -50,6 +50,40 @@ export function isValidAnswerKey(v: unknown): v is AnswerKey {
   return v === 'A' || v === 'B' || v === 'C' || v === 'D'
 }
 
+// Reasonable upper bound for a single school's expedition group; rejects
+// fabricated values without constraining real big-school requests.
+const MAX_GROUP_SIZE = 5000
+
+/**
+ * Validates a raw student count from the assessment form. Must be a positive
+ * integer within the upper bound.
+ */
+export function isValidGroupSize(v: unknown): v is number {
+  return (
+    typeof v === 'number' &&
+    Number.isFinite(v) &&
+    Number.isInteger(v) &&
+    v >= 1 &&
+    v <= MAX_GROUP_SIZE
+  )
+}
+
+/**
+ * Map a raw student count to the assessment's A/B/C/D bucket so the existing
+ * `getRecommendedTier(q2, q3, q4)` engine continues to work unchanged.
+ *
+ * Boundaries match the original Q3 labels (Under 30 / 30 to 60 / 60 to 100 /
+ * More than 100). The labels overlap at the edges (60 is in both B and C);
+ * we resolve in favour of the lower bucket so 60 students lands in B
+ * "30 to 60", and 61 lands in C "60 to 100".
+ */
+export function bucketGroupSizeToAnswerKey(n: number): AnswerKey {
+  if (n < 30) return 'A'
+  if (n <= 60) return 'B'
+  if (n <= 100) return 'C'
+  return 'D'
+}
+
 export function getRecommendedTier(
   q2: AnswerKey | undefined,
   q3: AnswerKey | undefined,

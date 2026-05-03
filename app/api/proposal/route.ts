@@ -3,8 +3,10 @@ import { escapeHtml, safeUrl, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps }
 import { checkRateLimit } from '@/lib/rate-limit'
 import { sendPairedMail } from '@/lib/mail'
 import {
+  getCampDurationOverride,
   isValidAnswers,
   scoreAnswers,
+  type CampDurationOverride,
   type ProposalAnswers,
   type ProposalResult,
   type Scheduling,
@@ -108,7 +110,11 @@ function formatDateRange(scheduling: Scheduling): string | null {
 
 // ─── Internal Notification (branded HTML) ───────────────────────────────────
 
-function buildInternalEmail(body: ProposalPayload, result: ProposalResult): string {
+function buildInternalEmail(
+  body: ProposalPayload,
+  result: ProposalResult,
+  override: CampDurationOverride | null,
+): string {
   const { answers, contact, scheduling } = body
 
   const schoolName = escapeHtml(contact.schoolName)
@@ -119,10 +125,10 @@ function buildInternalEmail(body: ProposalPayload, result: ProposalResult): stri
   const websiteHref = safeUrl(contact.website)
   const websiteDisplay = escapeHtml(contact.website)
   const firstName = escapeHtml(contact.contactName.split(' ')[0])
-  const programTitle = escapeHtml(result.program.title)
+  const programTitle = escapeHtml(override?.title ?? result.program.title)
   const tierName = escapeHtml(result.tier.name)
-  const tierTag = escapeHtml(result.tier.tag)
-  const tierDuration = escapeHtml(result.tier.duration)
+  const tierTag = escapeHtml(override?.tierTag ?? result.tier.tag)
+  const tierDuration = escapeHtml(override?.tierDuration ?? result.tier.duration)
   const dateRange = formatDateRange(scheduling)
 
   const responseRows = QUESTION_ORDER
@@ -229,7 +235,11 @@ function buildInternalEmail(body: ProposalPayload, result: ProposalResult): stri
 
 // ─── Customer Confirmation (branded HTML) ───────────────────────────────────
 
-function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): string {
+function buildCustomerEmail(
+  body: ProposalPayload,
+  result: ProposalResult,
+  override: CampDurationOverride | null,
+): string {
   const { contact } = body
 
   // Program slugs are derived from the server-side recommendation engine,
@@ -238,10 +248,10 @@ function buildCustomerEmail(body: ProposalPayload, result: ProposalResult): stri
 
   const firstName = escapeHtml(contact.contactName.split(' ')[0])
   const schoolName = escapeHtml(contact.schoolName)
-  const programTitle = escapeHtml(result.program.title)
+  const programTitle = escapeHtml(override?.title ?? result.program.title)
   const tierName = escapeHtml(result.tier.name)
-  const tierTag = escapeHtml(result.tier.tag)
-  const tierDuration = escapeHtml(result.tier.duration)
+  const tierTag = escapeHtml(override?.tierTag ?? result.tier.tag)
+  const tierDuration = escapeHtml(override?.tierDuration ?? result.tier.duration)
 
   const includesList = result.tier.includes
     .map(
@@ -437,6 +447,8 @@ export async function POST(request: Request) {
     // Derive the recommendation server-side — never trust the client to tell
     // us what program/tier it was shown.
     const result = scoreAnswers(body.answers)
+    const override = getCampDurationOverride(result, body.scheduling)
+    const displayTitle = override?.title ?? result.program.title
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
@@ -455,13 +467,13 @@ export async function POST(request: Request) {
       internal: {
         to: RECIPIENT,
         subject: `New School Proposal Request — ${contact.schoolName}`,
-        html: buildInternalEmail(body, result),
+        html: buildInternalEmail(body, result, override),
         replyTo: contact.email,
       },
       customer: {
         to: contact.email,
-        subject: `Your Programme Recommendation — ${result.program.title}`,
-        html: buildCustomerEmail(body, result),
+        subject: `Your Programme Recommendation — ${displayTitle}`,
+        html: buildCustomerEmail(body, result, override),
       },
     })
 

@@ -8,7 +8,11 @@ import Section from '@/components/ui/Section'
 import Honeypot from '@/components/ui/Honeypot'
 import { premiumEase } from '@/lib/animation'
 import { CALENDAR_BOOKING_URL } from '@/lib/constants'
-import { getRecommendedTier, type AnswerKey } from '@/lib/expedition-recommendation'
+import {
+  bucketGroupSizeToAnswerKey,
+  getRecommendedTier,
+  type AnswerKey,
+} from '@/lib/expedition-recommendation'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -17,26 +21,40 @@ type Phase = 'capture' | 'questions' | 'submitting' | 'results'
 interface LeadData {
   name: string
   email: string
+  phone: string
   school: string
 }
 
 interface LeadErrors {
   name?: string
   email?: string
+  phone?: string
   school?: string
 }
 
-interface Question {
+interface SelectQuestion {
   id: string
+  kind: 'select'
   prompt: string
   options: { key: AnswerKey; label: string }[]
 }
+
+interface NumberQuestion {
+  id: string
+  kind: 'number'
+  prompt: string
+  hint: string
+  placeholder: string
+}
+
+type Question = SelectQuestion | NumberQuestion
 
 // ─── Questions ──────────────────────────────────────────────────────────────
 
 const questions: Question[] = [
   {
     id: 'q1',
+    kind: 'select',
     prompt: 'Who are you planning this for?',
     options: [
       { key: 'A', label: 'I am a principal or teacher at a school' },
@@ -47,6 +65,7 @@ const questions: Question[] = [
   },
   {
     id: 'q2',
+    kind: 'select',
     prompt: 'Is your school currently running the Duke of Edinburgh Award?',
     options: [
       { key: 'A', label: 'Yes, we are already running it' },
@@ -57,16 +76,14 @@ const questions: Question[] = [
   },
   {
     id: 'q3',
+    kind: 'number',
     prompt: 'How many students are you thinking of including?',
-    options: [
-      { key: 'A', label: 'Under 30 students' },
-      { key: 'B', label: '30 to 60 students' },
-      { key: 'C', label: '60 to 100 students' },
-      { key: 'D', label: 'More than 100 students' },
-    ],
+    hint: 'A rough number is fine. We bucket it for the recommendation; your team gets the exact figure.',
+    placeholder: 'e.g. 80',
   },
   {
     id: 'q4',
+    kind: 'select',
     prompt: 'How much of the program does your school want to manage?',
     options: [
       { key: 'A', label: 'Equipment only — we will run the program ourselves' },
@@ -94,10 +111,13 @@ const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 
 export default function ExpeditionAssessment() {
   const [phase, setPhase] = useState<Phase>('capture')
-  const [leadData, setLeadData] = useState<LeadData>({ name: '', email: '', school: '' })
+  const [leadData, setLeadData] = useState<LeadData>({ name: '', email: '', phone: '', school: '' })
   const [leadErrors, setLeadErrors] = useState<LeadErrors>({})
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<string, AnswerKey>>({})
+  // Q3 is now a free integer; we bucket to A/B/C/D for the engine on submit.
+  const [groupSize, setGroupSize] = useState<number | null>(null)
+  const [groupSizeError, setGroupSizeError] = useState<string | null>(null)
   const [submitError, setSubmitError] = useState(false)
   // Prevents double-advance from rapid clicks during the 400ms feedback delay
   const [isAdvancing, setIsAdvancing] = useState(false)
@@ -112,6 +132,11 @@ export default function ExpeditionAssessment() {
       errors.email = 'Please enter your email address.'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadData.email)) {
       errors.email = 'Please enter a valid email address.'
+    }
+    if (!leadData.phone.trim()) {
+      errors.phone = 'Please enter your phone number.'
+    } else if (leadData.phone.replace(/\D/g, '').length < 7) {
+      errors.phone = 'Please enter a valid phone number.'
     }
     if (!leadData.school.trim()) errors.school = 'Please enter your school or organisation name.'
     return errors
@@ -131,7 +156,13 @@ export default function ExpeditionAssessment() {
 
   // ─── Phase 2: Questions ───────────────────────────────────────────────────
 
-  async function submitAssessment(finalAnswers: Record<string, AnswerKey>) {
+  function isQuestionComplete(index: number): boolean {
+    const q = questions[index]
+    if (q.kind === 'number') return groupSize !== null && groupSize > 0
+    return answers[q.id] !== undefined
+  }
+
+  async function submitAssessment(finalAnswers: Record<string, AnswerKey>, finalGroupSize: number) {
     try {
       const res = await fetch('/api/assessment-lead', {
         method: 'POST',
@@ -139,7 +170,9 @@ export default function ExpeditionAssessment() {
         body: JSON.stringify({
           name: leadData.name,
           email: leadData.email,
+          phone: leadData.phone,
           school: leadData.school,
+          groupSize: finalGroupSize,
           answers: finalAnswers,
           website_confirm: honeypotRef.current?.value || '',
         }),
@@ -150,6 +183,22 @@ export default function ExpeditionAssessment() {
     } finally {
       setPhase('results')
     }
+  }
+
+  function advanceFromCurrent(updatedAnswers: Record<string, AnswerKey>, updatedGroupSize: number | null) {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1)
+      return
+    }
+    // Final question — submit. groupSize is required by the time we reach here.
+    if (updatedGroupSize === null || updatedGroupSize <= 0) {
+      setSubmitError(true)
+      setPhase('results')
+      return
+    }
+    setSubmitError(false)
+    setPhase('submitting')
+    submitAssessment(updatedAnswers, updatedGroupSize)
   }
 
   function handleAnswer(key: AnswerKey) {
@@ -163,15 +212,29 @@ export default function ExpeditionAssessment() {
 
     // Brief delay for visual feedback, then advance
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1)
-      } else {
-        setSubmitError(false)
-        setPhase('submitting')
-        submitAssessment(nextAnswers)
-      }
+      advanceFromCurrent(nextAnswers, groupSize)
       setIsAdvancing(false)
     }, 400)
+  }
+
+  function handleGroupSizeChange(raw: string) {
+    if (raw === '') {
+      setGroupSize(null)
+      return
+    }
+    const n = parseInt(raw, 10)
+    if (!Number.isFinite(n) || n < 1) return
+    setGroupSize(n)
+    if (groupSizeError) setGroupSizeError(null)
+  }
+
+  function handleNumberNext() {
+    if (groupSize === null || groupSize <= 0) {
+      setGroupSizeError('Please enter a number greater than zero.')
+      return
+    }
+    setGroupSizeError(null)
+    advanceFromCurrent(answers, groupSize)
   }
 
   function handleBack() {
@@ -191,7 +254,7 @@ export default function ExpeditionAssessment() {
 
   function handleJumpToQuestion(index: number) {
     // Only allow jumping to questions that have been answered or the current one
-    if (!isAdvancing && (index <= currentQuestion || answers[questions[index].id])) {
+    if (!isAdvancing && (index <= currentQuestion || isQuestionComplete(index))) {
       setCurrentQuestion(index)
     }
   }
@@ -200,7 +263,9 @@ export default function ExpeditionAssessment() {
     setPhase('capture')
     setCurrentQuestion(0)
     setAnswers({})
-    setLeadData({ name: '', email: '', school: '' })
+    setGroupSize(null)
+    setGroupSizeError(null)
+    setLeadData({ name: '', email: '', phone: '', school: '' })
     setLeadErrors({})
     setSubmitError(false)
     setIsAdvancing(false)
@@ -210,8 +275,10 @@ export default function ExpeditionAssessment() {
 
   const q1Answer = answers[questions[0].id] as AnswerKey | undefined
   const q2Answer = answers[questions[1].id] as AnswerKey | undefined
-  const q3Answer = answers[questions[2].id] as AnswerKey | undefined
   const q4Answer = answers[questions[3].id] as AnswerKey | undefined
+  // Bucket the raw group size to A/B/C/D for the recommendation engine.
+  const q3Answer: AnswerKey | undefined =
+    groupSize !== null && groupSize > 0 ? bucketGroupSizeToAnswerKey(groupSize) : undefined
   const recommendedTier = getRecommendedTier(q2Answer, q3Answer, q4Answer)
   const isExploring = q1Answer === 'D'
 
@@ -317,6 +384,33 @@ export default function ExpeditionAssessment() {
                     )}
                   </div>
 
+                  {/* Phone */}
+                  <div>
+                    <label htmlFor="assessment-phone" className={labelBase}>
+                      Phone number{' '}
+                      <span className="text-brand-dark/40 font-normal">(WhatsApp preferred)</span>{' '}
+                      <span className="text-brand-accent">*</span>
+                    </label>
+                    <input
+                      id="assessment-phone"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      required
+                      value={leadData.phone}
+                      onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
+                      placeholder="e.g. 0704 053 8528"
+                      className={inputBase}
+                      aria-invalid={!!leadErrors.phone}
+                      aria-describedby={leadErrors.phone ? 'assessment-phone-error' : undefined}
+                    />
+                    {leadErrors.phone && (
+                      <p id="assessment-phone-error" className="mt-1 text-sm text-red-600" role="alert">
+                        {leadErrors.phone}
+                      </p>
+                    )}
+                  </div>
+
                   {/* School */}
                   <div>
                     <label htmlFor="assessment-school" className={labelBase}>
@@ -379,7 +473,7 @@ export default function ExpeditionAssessment() {
                 {/* Progress bar */}
                 <div className="grid grid-cols-4 gap-2 mb-8" role="progressbar" aria-valuenow={currentQuestion + 1} aria-valuemin={1} aria-valuemax={questions.length}>
                   {questions.map((q, i) => {
-                    const isComplete = !!answers[q.id]
+                    const isComplete = isQuestionComplete(i)
                     const isActive = i === currentQuestion
                     const isClickable = !isAdvancing && (i <= currentQuestion || isComplete)
                     return (
@@ -407,7 +501,54 @@ export default function ExpeditionAssessment() {
                   {questions[currentQuestion].prompt}
                 </h3>
 
-                {/* Options */}
+                {/* Number input for Q3 */}
+                {questions[currentQuestion].kind === 'number' && (
+                  <div className="mt-8">
+                    <input
+                      type="number"
+                      min={1}
+                      inputMode="numeric"
+                      value={groupSize ?? ''}
+                      onChange={(e) => handleGroupSizeChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          handleNumberNext()
+                        }
+                      }}
+                      placeholder={
+                        questions[currentQuestion].kind === 'number'
+                          ? questions[currentQuestion].placeholder
+                          : ''
+                      }
+                      aria-label={questions[currentQuestion].prompt}
+                      aria-invalid={!!groupSizeError}
+                      aria-describedby={groupSizeError ? 'group-size-error' : 'group-size-hint'}
+                      className={inputBase + ' max-w-xs'}
+                    />
+                    <p id="group-size-hint" className="mt-2 font-sans text-xs text-brand-dark/50 leading-relaxed">
+                      {questions[currentQuestion].kind === 'number'
+                        ? questions[currentQuestion].hint
+                        : ''}
+                    </p>
+                    {groupSizeError && (
+                      <p id="group-size-error" className="mt-2 text-sm text-red-600" role="alert">
+                        {groupSizeError}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleNumberNext}
+                      className="mt-6 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand-dark text-white font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                    >
+                      Next
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Options for select questions */}
+                {questions[currentQuestion].kind === 'select' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8">
                   {questions[currentQuestion].options.map((option) => {
                     const isSelected = answers[questions[currentQuestion].id] === option.key
@@ -444,6 +585,7 @@ export default function ExpeditionAssessment() {
                     )
                   })}
                 </div>
+                )}
               </motion.div>
             )}
 
@@ -595,30 +737,44 @@ export default function ExpeditionAssessment() {
                   </ul>
                 </motion.div>
 
-                {/* CTAs */}
+                {/* CTAs — primary action is conditional on Q4 (management
+                    level desired). Equipment-only takers go straight to the
+                    gear-rental quote tool; everyone else (facilitation or
+                    fully-managed wanted, or unsure) goes to the proposal
+                    flow. The booking-call link stays as a secondary option
+                    for any path. */}
                 <motion.div
                   className="flex flex-col sm:flex-row gap-3 mt-10"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, ease: premiumEase, delay: 0.6 }}
                 >
-                  {/* Primary — opens Outlook Bookings in a new tab (iframe embed not supported) */}
+                  {q4Answer === 'A' ? (
+                    <Link
+                      href="/gear-rental"
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                    >
+                      Rent Camping Gear
+                      <ArrowRight className="w-5 h-5" aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/schools/international-award/proposal?tier=${recommendedTier.key}`}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                    >
+                      Submit a Proposal
+                      <ArrowRight className="w-5 h-5" aria-hidden="true" />
+                    </Link>
+                  )}
                   <a
                     href={CALENDAR_BOOKING_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                    className="flex-1 inline-flex items-center justify-center px-6 py-4 bg-transparent border-2 border-brand-dark text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark hover:text-white active:scale-[0.98] transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
                   >
-                    Book a Call to Confirm This
-                    <ArrowRight className="w-5 h-5" aria-hidden="true" />
+                    Book a Call
                     <span className="sr-only">(opens in a new tab)</span>
                   </a>
-                  <Link
-                    href="/schools/proposal"
-                    className="flex-1 inline-flex items-center justify-center px-6 py-4 bg-transparent border-2 border-brand-dark text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark hover:text-white active:scale-[0.98] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-                  >
-                    Get a Proposal by Email
-                  </Link>
                 </motion.div>
 
                 {/* Start again */}

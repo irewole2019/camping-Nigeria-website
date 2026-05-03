@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, ArrowLeft, Check } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
 import {
+  getCampDurationOverride,
   scoreAnswers,
   type ProposalAnswers,
   type ContactInfo,
@@ -349,6 +350,7 @@ export default function ProposalForm() {
   // ─── Result Screen ──────────────────────────────────────────────────────
 
   if (result) {
+    const durationOverride = getCampDurationOverride(result, scheduling)
     return (
       <ProposalResultView
         result={result}
@@ -356,6 +358,7 @@ export default function ProposalForm() {
         sent={sent}
         sending={sending}
         submitError={submitError}
+        override={durationOverride}
         onSend={handleSendProposal}
         onBack={() => { setResult(null); setStep(QUESTIONS.length) }}
       />
