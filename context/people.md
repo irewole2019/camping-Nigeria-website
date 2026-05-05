@@ -41,7 +41,7 @@ When a decision is listed as "Leadership team" below, raise it in whatever chann
 ## Operations / bookings
 
 - **Generic inbox:** `hello@campingnigeria.com`
-- **Phone / WhatsApp:** +234 704 053 8528
+- **Phone / WhatsApp:** +234 814 607 5937
 - **Owner:** TBD — one of the three founders monitors inbound enquiries; confirm who before assuming SLA
 - **Involve for:** lead-routing changes, SLA commitments ("we reply within 24h"), Microsoft Forms workflow, Outlook Bookings calendar setup
 

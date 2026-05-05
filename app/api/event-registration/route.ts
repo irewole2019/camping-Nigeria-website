@@ -233,7 +233,7 @@ function buildCustomerEmail(data: RegistrationPayload, total: number, reference:
 
     <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
       Need to change something or ask a question? Reply to this email, or message us on WhatsApp at
-      <a href="https://wa.me/2347040538528" style="color:#0e3e2e;font-weight:600;text-decoration:none;">+234 704 053 8528</a>.
+      <a href="https://wa.me/2348146075937" style="color:#0e3e2e;font-weight:600;text-decoration:none;">+234 814 607 5937</a>.
     </p>
 
   </td></tr>

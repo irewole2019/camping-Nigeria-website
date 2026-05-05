@@ -99,6 +99,7 @@ export function buildOrganizationJsonLd() {
       streetAddress: CONTACT.address.streetAddress,
       addressLocality: CONTACT.address.locality,
       addressRegion: CONTACT.address.region,
+      postalCode: CONTACT.address.postalCode,
       addressCountry: CONTACT.address.country,
     },
     areaServed: {

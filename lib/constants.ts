@@ -4,17 +4,18 @@ export { MEDIA_LOGO as LOGO_URL, MEDIA_VIDEO as VIDEO_URL } from './media'
 /** Company contact info */
 export const CONTACT = {
   email: 'hello@campingnigeria.com',
-  phone: '+234 704 053 8528',
-  whatsapp: 'https://wa.me/2347040538528',
+  phone: '+234 814 607 5937',
+  whatsapp: 'https://wa.me/2348146075937',
   instagram: 'https://www.instagram.com/camping_ng/',
   facebook: 'https://www.facebook.com/campinggearsng',
   address: {
-    streetAddress: '198 Damboa Close, PW',
-    locality: 'Kubwa',
+    streetAddress: 'Shop No. 17A, Arts and Craft Village, Sani Abacha Way',
+    locality: 'Wuse',
     city: 'Abuja',
     region: 'FCT',
+    postalCode: '904101',
     country: 'NG',
-    formatted: '198 Damboa Close, PW, Kubwa, Abuja',
+    formatted: 'Shop No. 17A, Arts and Craft Village, Sani Abacha Way, Wuse, Abuja 904101',
   },
 } as const
 

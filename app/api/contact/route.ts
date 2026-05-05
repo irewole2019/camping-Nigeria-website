@@ -147,7 +147,7 @@ function buildCustomerEmail(data: ContactPayload): string {
 
     <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
       Need a faster response? Reach us on WhatsApp at
-      <a href="https://wa.me/2347040538528" style="color:#0e3e2e;font-weight:600;text-decoration:none;">+234 704 053 8528</a>
+      <a href="https://wa.me/2348146075937" style="color:#0e3e2e;font-weight:600;text-decoration:none;">+234 814 607 5937</a>
       or call us directly.
     </p>
 
@@ -163,7 +163,7 @@ function buildCustomerEmail(data: ContactPayload): string {
       &nbsp;&middot;&nbsp;
       <a href="https://www.facebook.com/campinggearsng" style="color:#ffffff70;text-decoration:none;">Facebook</a>
       &nbsp;&middot;&nbsp;
-      <a href="https://wa.me/2347040538528" style="color:#ffffff70;text-decoration:none;">WhatsApp</a>
+      <a href="https://wa.me/2348146075937" style="color:#ffffff70;text-decoration:none;">WhatsApp</a>
     </p>
     <p style="margin:12px 0 0;font-size:11px;color:#ffffff40;">
       &copy; ${new Date().getFullYear()} Camping Nigeria. All rights reserved.

@@ -399,7 +399,7 @@ export default function ExpeditionAssessment() {
                       required
                       value={leadData.phone}
                       onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
-                      placeholder="e.g. 0704 053 8528"
+                      placeholder="e.g. 0814 607 5937"
                       className={inputBase}
                       aria-invalid={!!leadErrors.phone}
                       aria-describedby={leadErrors.phone ? 'assessment-phone-error' : undefined}

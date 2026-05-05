@@ -103,6 +103,44 @@ export default function ContactPage() {
             ))}
           </div>
 
+          {/* Map — storefront location */}
+          <div className="max-w-5xl mx-auto mb-16">
+            <div className="text-center mb-6">
+              <p className="inline-flex items-center gap-2 text-brand-accent font-semibold text-sm uppercase tracking-widest mb-3">
+                <span className="block w-6 h-px bg-brand-accent" aria-hidden="true" />
+                Visit Us
+                <span className="block w-6 h-px bg-brand-accent" aria-hidden="true" />
+              </p>
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark text-balance">
+                Find us at the Arts and Craft Village
+              </h2>
+              <p className="mt-2 text-sm text-brand-dark/60 font-sans">
+                {CONTACT.address.formatted}
+              </p>
+            </div>
+            <div className="rounded-2xl overflow-hidden border border-brand-dark/5 shadow-sm aspect-video bg-brand-light">
+              <iframe
+                src="https://maps.google.com/maps?q=Arts+and+Craft+Village%2C+Sani+Abacha+Way%2C+Wuse%2C+Abuja&z=16&output=embed"
+                title="Camping Nigeria storefront on Google Maps"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            <p className="text-center mt-4">
+              <a
+                href="https://www.google.com/maps/search/?api=1&query=Arts+and+Craft+Village%2C+Sani+Abacha+Way%2C+Wuse%2C+Abuja"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-brand-accent hover:text-brand-accent-readable transition-colors"
+              >
+                Open in Google Maps →
+              </a>
+            </p>
+          </div>
+
           {/* Contact Form */}
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-10">

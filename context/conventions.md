@@ -92,7 +92,7 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 - Footer: forest green band, `campingnigeria.com` link in gold, social links muted, `© {year} Camping Nigeria`.
 - Middle: white card body with a gold-outlined "summary" table of what was submitted.
 - Internal email has a gold "Reply to {firstName}" mailto CTA at the bottom.
-- Customer email has a "What Happens Next" numbered list and ends with `hello@campingnigeria.com` + `+234 704 053 8528` contact line.
+- Customer email has a "What Happens Next" numbered list and ends with `hello@campingnigeria.com` + `+234 814 607 5937` contact line.
 - Dates in footer: `toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })`.
 
 ## Animation

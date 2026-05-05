@@ -6,7 +6,7 @@ Last updated: 2026-05-04
 
 ## Company
 
-Camping Nigeria is based in **Abuja** — registered address **198 Damboa Close, PW, Kubwa, Abuja, FCT, Nigeria**. Address flows from [`CONTACT.address` in lib/constants.ts](../lib/constants.ts) — never hardcoded; both the contact page, privacy policy, and `LocalBusiness` schema reference the same constant.
+Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and Craft Village, Sani Abacha Way, Wuse, Abuja 904101, FCT, Nigeria** (Plus code `3F8M+9RW`). Address flows from [`CONTACT.address` in lib/constants.ts](../lib/constants.ts) — never hardcoded; both the contact page, privacy policy, and `LocalBusiness` schema reference the same constant.
 
 ## Built
 
@@ -107,7 +107,7 @@ The `/gear-rental` form is the customer-facing entry point for a separate quote 
 - **Per-page metadata** via `lib/seo.ts#buildPageMetadata` — canonical, keywords, Open Graph (1200×630, `en_NG`), Twitter (`summary_large_image`). Used on all 14 routes.
 - **Per-route dynamic OG + Twitter cards** — every major page has its own `opengraph-image.tsx` + `twitter-image.tsx` pair (10 pages × 2 = 20 route files). Each calls a shared renderer at [lib/og-image.tsx](../lib/og-image.tsx) that composites the page's hero photo behind a forest-green gradient overlay with a gold-pill eyebrow + share-optimised headline. Homepage card reads "Adventure Made Simple". WebP heroes render fine through Satori — no JPG fallbacks needed.
 - **Structured data** (`lib/structured-data.ts`, rendered via `components/seo/JsonLd.tsx`):
-  - `Organization` + `LocalBusiness` hybrid (global) with `PostalAddress` (198 Damboa Close, PW, Kubwa, Abuja, FCT, NG), `priceRange`, `areaServed: Nigeria`, `sameAs` (IG/FB), `contactPoint`
+  - `Organization` + `LocalBusiness` hybrid (global) with `PostalAddress` (Shop No. 17A, Arts and Craft Village, Sani Abacha Way, Wuse, Abuja 904101, FCT, NG), `priceRange`, `areaServed: Nigeria`, `sameAs` (IG/FB), `contactPoint`
   - `WebSite` with publisher reference to the org `@id`
   - `BreadcrumbList` on every page
   - `FAQPage` on `/schools/international-award` driven by `AWARD_FAQS`

@@ -24,6 +24,7 @@ const cspReportOnly = [
   "font-src 'self' data:",
   "connect-src 'self' https://vitals.vercel-insights.com",
   "media-src 'self'",
+  "frame-src https://www.google.com https://maps.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
