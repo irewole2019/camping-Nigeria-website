@@ -13,6 +13,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
   - `public/pdf/...`
   - Video referenced via `MEDIA_VIDEO` from `lib/media.ts` (not raw paths)
   - Images registered in `lib/media.ts` with `{ src, alt }` tuples — components import the registry, never raw paths
+  - **Gear-rental item photos** are the exception: they live on Google Drive (column `image_url` in the pricing sheet) and the parser auto-rewrites `drive.google.com/file/d/<ID>/…` to `https://lh3.googleusercontent.com/d/<ID>`. Static fallback path is `/public/images/gear-rental/items/<id>.webp` keyed by catalogue `id`. See `EquipmentTable.tsx#ItemThumb` for the three-tier fallback chain (sheet URL → static file → Package icon).
 - **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-helvetica-now` / `--font-agrandir`
 
 ## Components

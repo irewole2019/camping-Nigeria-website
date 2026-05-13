@@ -20,7 +20,7 @@ const cspReportOnly = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://lh3.googleusercontent.com",
   "font-src 'self' data:",
   "connect-src 'self' https://vitals.vercel-insights.com",
   "media-src 'self'",

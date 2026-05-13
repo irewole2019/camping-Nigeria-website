@@ -493,3 +493,27 @@ The gear-rental form takes a pickup date+time and a dropoff date+time, both defa
 **Why the time fields are additive in the API contract:** the quote tool validates them with `^\d{2}:\d{2}$` and treats null/missing as "use the legacy date-only calc". This means the website can ship the time inputs without lockstep with the quote tool, and historical quotes (saved before times existed) keep their already-computed `rental_days` instead of silently recalculating. Backwards compatibility is what made this a no-brainer to roll out incrementally.
 
 **Why the client also computes the duration (when the server is the source of truth):** customer trust. The form's inline "3 days (26 Apr 12pm → 29 Apr 12pm)" preview lets the user verify the pricing premise before they submit. If the team sees a different `rental_days` server-side, that's a bug to find — but the same rule on both sides means the customer is never surprised by the priced quote a few hours later.
+
+---
+
+## Gear-rental item thumbnails are hosted on Google Drive, normalised at parse time
+
+The pricing-config Google Sheet has an `image_url` column. The team uploads photos to a shared Drive folder, sets each file to **"Anyone with the link → Viewer"**, and pastes the share link into the cell. The parser at `lib/quote-config.ts#normaliseImageUrl` rewrites any `drive.google.com/file/d/<ID>/…` (or `open?id=`, or `uc?id=`) variant to `https://lh3.googleusercontent.com/d/<ID>` before handing the URL to the renderer.
+
+**Why Drive and not the repo or a CDN like Vercel Blob:**
+- The team that maintains the equipment catalogue is non-technical. They already edit the pricing sheet to add items and adjust stock — adding an image column lets them swap a photo at the same time, no developer involvement, no redeploy.
+- Drive is already part of the company workspace. No new account, no new bill, no extra access management.
+- Vercel Blob would have been the next choice if hotlinking failed, but Drive serves `image/jpeg` with `access-control-allow-origin: *` and `cache-control: public, max-age=…` once you go through the `lh3.googleusercontent.com/d/<ID>` form. That's a CDN, just one wearing a Drive costume.
+
+**Why the URL rewrite instead of asking editors to paste the `lh3` form directly:**
+- The Share dialog only ever produces `drive.google.com/file/d/<ID>/view?usp=sharing`. Asking editors to transform that into a different URL form by hand is the kind of small friction that, every single time, produces a row with a broken image six months later. The regex handles the three formats the dialog has ever produced (`/file/d/<ID>/…`, `open?id=<ID>`, `uc?id=<ID>`), so the team copies and pastes and stops thinking about it.
+- The renderer never sees a `drive.google.com` URL, so the CSP can stay scoped to `https://lh3.googleusercontent.com` alone.
+
+**Three-tier fallback chain in `EquipmentTable.tsx#ItemThumb`:**
+1. `image_url` from the sheet (normalised) — primary source for everything today.
+2. `/images/gear-rental/items/<id>.webp` static convention — empty folder at the moment, but kept wired up so a Drive outage doesn't blank the form.
+3. Neutral `lucide-react` Package icon — last resort if both 404. Better an honest "we don't have a photo of this" than a broken-image glyph.
+
+The fallback is driven by `onError` from `next/image`, so it costs zero extra network requests in the happy path. The `unoptimized={src.startsWith('http')}` flag bypasses Next's image optimiser for remote URLs — keeps Drive thumbnails working without maintaining a `remotePatterns` allowlist as new image sources appear in the sheet.
+
+**Why a single lightbox at the table level instead of one per thumb:** rendering 17 hidden `<dialog>`/`AnimatePresence` trees was the obvious wasteful path. State lives on `EquipmentTable` (`preview: { item, src } | null`); thumbs call `onOpen(item, src)` on click; one `<Lightbox />` at the bottom of the table renders the open state. The lightbox locks `document.body.style.overflow`, listens for `Escape`, and traps the click via `onClick={onClose}` on the backdrop with `e.stopPropagation()` on the inner panel. Standard modal hygiene, kept in-file because it's the only consumer.

@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-05-04
+Last updated: 2026-05-13
 
 ## Company
 
@@ -84,10 +84,15 @@ The `/gear-rental` form is the customer-facing entry point for a separate quote 
 
 **Form behaviour:**
 - **Equipment selector** is structured, not free-text — a collapsible category list backed by a published Google Sheets CSV (`NEXT_PUBLIC_SHEETS_ITEMS_URL`, items tab, `gid=0`).
-  - Live config: 13 items across 7 categories (`tents`, `blankets`, `mats`, `pads`, `pillows`, `bicycles`, `hammocks`).
-  - Tents lead (primary product), then sleep gear (`pads`, `mats`, `pillows`, `blankets`), then everything else alphabetical.
+  - Live config: 17 items across 9 categories (`tents`, `blankets`, `mats`, `pads`, `pillows`, `bicycles`, `hammocks`, `mattress`, `furniture`).
+  - Tents lead (primary product), then mattresses, then the rest of the sleep accessories (`pads`, `mats`, `pillows`, `blankets`), then everything else alphabetical.
   - Tents start expanded; other categories start collapsed. A "{N} selected" pill on collapsed headers shows what's inside.
-  - The customer never sees prices — `lib/quote-config.ts#loadQuoteItems` reads only `id`, `name`, `category`, `available_qty` from the CSV (the `base_price_naira` column is intentionally ignored).
+  - The customer never sees prices — `lib/quote-config.ts#loadQuoteItems` reads only `id`, `name`, `category`, `available_qty`, and `image_url` from the CSV (the `base_price_naira` column is intentionally ignored).
+- **Item thumbnails + lightbox** — every row renders a 48–56px product photo next to the item name. Click → centered lightbox over a dim backdrop (closes on backdrop click, X button, or `Escape`; body scroll locked while open). Built on the existing Framer Motion stack — `ItemThumb` + `Lightbox` co-located in [`EquipmentTable.tsx`](../components/gear-rental/EquipmentTable.tsx).
+  - **Image source:** sheet `image_url` column. Drive share links (`drive.google.com/file/d/<ID>/…`) are auto-rewritten to `https://lh3.googleusercontent.com/d/<ID>` by `normaliseImageUrl()` in `lib/quote-config.ts`, so editors paste whatever Google's Share dialog gives them and it just works. Each file must be **"Anyone with the link → Viewer"** in Drive or `lh3` returns 403.
+  - **Three-tier fallback** per item: sheet `image_url` → `/images/gear-rental/items/<id>.webp` static convention → neutral `lucide-react` Package icon. The static folder is empty today (all photos live in Drive), but the path is honoured if anyone drops a WebP in.
+  - **CSP** — `img-src` allows `'self' data: blob: https://lh3.googleusercontent.com`. Add new hosts here if a future image source isn't Drive.
+  - **`next/image`** runs `unoptimized` on any `http*` src — keeps Drive thumbnails working without maintaining a `remotePatterns` allowlist.
 - **Required fields:** name, email, phone (WhatsApp-preferred), pickup date + time, dropoff date + time, delivery zone (Abuja/Lagos/Other), and at least one item with quantity > 0 (skipped if the CSV failed to load — message field carries the request instead).
 - **Pickup / dropoff times:** rentals run **noon-to-noon by default** (`12:00`). Customers can adjust either time for same-day or off-noon hires. Same-day rentals are allowed; the form requires `dropoff_time > pickup_time` when both dates match. The form shows an inline duration preview (e.g. `1 day (30 Apr 2pm → 31 Apr 10am)`) using the same `max(1, ceil(elapsed_hours / 24))` rule the quote tool runs server-side. Time picker rendering is left native — 24h on Android, 12h on iOS, etc. — only the inline preview is forced to 12h for consistency.
 - **Optional fields:** organisation/school, message.

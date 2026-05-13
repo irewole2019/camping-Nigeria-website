@@ -14,6 +14,30 @@ export interface QuoteItem {
   name: string
   category: string
   available_qty: number
+  /**
+   * Optional override for the item thumbnail. When set, takes precedence over
+   * the `/images/gear-rental/items/<id>.webp` static fallback, so non-devs can
+   * swap images by editing the sheet — no redeploy needed.
+   *
+   * Google Drive share links (`drive.google.com/file/d/<ID>/…`) are normalised
+   * to `lh3.googleusercontent.com/d/<ID>` so they actually render in `<img>`.
+   */
+  image_url?: string
+}
+
+/**
+ * Google Drive's `/file/d/<ID>/view` URL is an HTML viewer page — `<img>` tags
+ * can't display it. Their CDN does support direct hotlinking via
+ * `lh3.googleusercontent.com/d/<ID>`, which works for any "Anyone with the
+ * link → Viewer" file. We rewrite the URL so the sheet stays editable with
+ * whatever URL form Google's Share dialog produces.
+ */
+function normaliseImageUrl(raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed) return ''
+  const m = trimmed.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([A-Za-z0-9_-]{20,})/)
+  if (m) return `https://lh3.googleusercontent.com/d/${m[1]}`
+  return trimmed
 }
 
 /** RFC 4180-ish CSV parser. Handles quoted fields, embedded quotes, BOM, CRLF. */
@@ -78,6 +102,7 @@ export async function loadQuoteItems(
   const nameIdx = headers.indexOf('name')
   const catIdx = headers.indexOf('category')
   const qtyIdx = headers.indexOf('available_qty')
+  const imgIdx = headers.indexOf('image_url')
   if (idIdx < 0 || nameIdx < 0 || catIdx < 0) {
     throw new Error('Items CSV is missing required columns')
   }
@@ -88,11 +113,13 @@ export async function loadQuoteItems(
     const id = (row[idIdx] || '').trim()
     const name = (row[nameIdx] || '').trim()
     if (!id || !name) continue
+    const image_url = imgIdx >= 0 ? normaliseImageUrl(row[imgIdx] || '') : ''
     items.push({
       id,
       name,
       category: (row[catIdx] || '').trim() || 'Other',
       available_qty: qtyIdx >= 0 ? Number((row[qtyIdx] || '0').trim()) || 0 : 0,
+      ...(image_url ? { image_url } : {}),
     })
   }
   return items
