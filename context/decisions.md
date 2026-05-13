@@ -453,6 +453,27 @@ Native HTML5 `<input type="date">` rendering still follows the browser's own loc
 
 ---
 
+## Navigation CTAs route to `/contact`, not `mailto:`
+
+The headline CTAs on `/about` (hero + bottom) and `/organizations` (hero + bottom) point at `/contact`. Earlier they all opened `mailto:hello@campingnigeria.com`.
+
+**Why we stopped using `mailto:` for nav CTAs:**
+- A mailto link pops the user's mail client, which on mobile is a coin-flip: the OS may open Gmail / Outlook / Apple Mail / nothing at all depending on what's installed. On desktop in incognito or work browsers, it often does nothing.
+- Even when it works, the user is dropped into a blank message with no prompts. The contact form asks the right questions (name, org type, message, honeypot, rate limit) and the resulting email is structured and parseable by whoever's monitoring `hello@`.
+- The contact page now has the storefront map — visitors get spatial trust before they commit.
+
+**What stays as `mailto:`:** elements where the label literally reads "Email" (the Email card on `/contact`, the footer email link, the contact line in `/privacy-policy` and `/terms`) — clicking an "Email" link should open the mail client; that's the user's mental model. Same goes for `mailto:` inside outbound email HTML templates, where recipients click them in their own mail client.
+
+---
+
+## Visiting address shown sitewide; legal/footer block uses `CONTACT.address.formatted`
+
+The storefront at the Arts and Craft Village, Wuse is rendered on the contact page (text + Google Maps iframe), on the privacy policy, on the terms page, and in the LocalBusiness JSON-LD. All consumers read from `CONTACT.address` in `lib/constants.ts`; terms.tsx historically hardcoded `Lagos, Nigeria` and has been fixed.
+
+**Why a map embed and not just text:** the address is in a market complex, not a numbered street — a map is the difference between "we have a registered address" and "you can walk in." The iframe uses the keyless `https://maps.google.com/maps?q=…&output=embed` URL, which avoids API-key management and Maps JavaScript API billing. `frame-src https://www.google.com https://maps.google.com` was added to the CSP so the embed survives when CSP gets flipped from report-only to enforce.
+
+---
+
 ## DoE proposals get their own route, separate from `/schools/proposal`
 
 `/schools/international-award/proposal` is a dedicated form with its own API route (`app/api/award-proposal/route.ts`), its own validation (`lib/award-proposal.ts`), and its own email templates. The school-programmes proposal at `/schools/proposal` stays as-is and only handles camps/nature/leadership.
