@@ -24,7 +24,7 @@ export default function OrganizationsCta() {
             Tell us about your group and we&#39;ll design a retreat that delivers lasting impact.
           </p>
           <Link
-            href="mailto:hello@campingnigeria.com"
+            href="/contact"
             className="inline-flex items-center justify-center px-10 py-4 bg-brand-dark text-white font-sans font-semibold text-base rounded-lg hover:bg-brand-accent hover:text-brand-dark active:scale-95 transition-transform duration-200 shadow-md"
           >
             Plan Your Organization&#39;s Retreat

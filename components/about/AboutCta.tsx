@@ -41,7 +41,7 @@ export default function AboutCta() {
             looking for adventure — we&apos;re here to make it happen.
           </p>
           <Link
-            href="mailto:hello@campingnigeria.com"
+            href="/contact"
             className="inline-flex items-center justify-center px-10 py-4 bg-brand-accent text-brand-dark font-sans font-semibold text-base rounded-lg hover:brightness-105 active:scale-95 transition-transform duration-200 shadow-lg shadow-brand-accent/20"
           >
             Get in Touch

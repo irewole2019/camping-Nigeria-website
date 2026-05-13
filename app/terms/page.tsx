@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import JsonLd from '@/components/seo/JsonLd'
+import { CONTACT } from '@/lib/constants'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 
@@ -234,7 +235,7 @@ export default function TermsOfServicePage() {
                 <p>
                   <strong>Camping Nigeria</strong>
                 </p>
-                <p>Lagos, Nigeria</p>
+                <p>{CONTACT.address.formatted}</p>
                 <p>
                   Email:{' '}
                   <a
