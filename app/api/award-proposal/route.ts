@@ -16,7 +16,7 @@ import {
 } from '@/lib/award-proposal'
 
 const RECIPIENT = 'hello@campingnigeria.com'
-const SITE_URL = 'https://campingnigeria.com'
+const SITE_URL = 'https://www.campingnigeria.com'
 const FROM = 'Camping Nigeria <hello@campingnigeria.com>'
 
 // ─── Date Helpers (DD/MM/YYYY for Nigeria) ──────────────────────────────────

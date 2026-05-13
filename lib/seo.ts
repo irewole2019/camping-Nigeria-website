@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const SITE_NAME = 'Camping Nigeria'
-export const SITE_URL = 'https://campingnigeria.com'
+export const SITE_URL = 'https://www.campingnigeria.com'
 export const SITE_LOCALE = 'en_NG'
 export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}/opengraph-image`
 export const DEFAULT_TWITTER_IMAGE_URL = `${SITE_URL}/twitter-image`

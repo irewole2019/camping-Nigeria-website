@@ -250,7 +250,7 @@ async function handleSubmit(e: FormEvent) {
 Paystack dashboard → Settings → API Keys & Webhooks → set the webhook URL to:
 
 ```
-https://campingnigeria.com/api/event-registration/webhook
+https://www.campingnigeria.com/api/event-registration/webhook
 ```
 
 For local testing, use ngrok:

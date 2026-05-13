@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/'],
       },
     ],
-    host: 'https://campingnigeria.com',
-    sitemap: 'https://campingnigeria.com/sitemap.xml',
+    host: 'https://www.campingnigeria.com',
+    sitemap: 'https://www.campingnigeria.com/sitemap.xml',
   }
 }
