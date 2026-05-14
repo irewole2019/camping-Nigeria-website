@@ -15,6 +15,9 @@ const ITEMS_CSV_URL = process.env.NEXT_PUBLIC_SHEETS_ITEMS_URL
 const DELIVERY_ZONES = ['Abuja', 'Lagos', 'Other'] as const
 type DeliveryZone = (typeof DELIVERY_ZONES)[number]
 
+const FULFILLMENT_METHODS = ['pickup', 'delivery'] as const
+type FulfillmentMethod = (typeof FULFILLMENT_METHODS)[number]
+
 const DEFAULT_PICKUP_TIME = '12:00'
 const DEFAULT_DROPOFF_TIME = '12:00'
 
@@ -74,7 +77,9 @@ interface FormErrors {
   email?: string
   phone?: string
   rentalDates?: string
+  fulfillmentMethod?: string
   deliveryZone?: string
+  deliveryAddress?: string
   items?: string
 }
 
@@ -92,6 +97,9 @@ export default function QuoteForm() {
   const [dropoffTime, setDropoffTime] = useState(DEFAULT_DROPOFF_TIME)
   const [today, setToday] = useState('')
   const [minEndDate, setMinEndDate] = useState('')
+
+  const [fulfillmentMethod, setFulfillmentMethod] =
+    useState<FulfillmentMethod>('delivery')
 
   const [sending, setSending] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -147,7 +155,9 @@ export default function QuoteForm() {
     fullName: string
     email: string
     phone: string
+    fulfillmentMethod: string
     deliveryZone: string
+    deliveryAddress: string
     startDate: string
     pickupTime: string
     endDate: string
@@ -176,8 +186,17 @@ export default function QuoteForm() {
     ) {
       next.rentalDates = 'For same-day rentals, dropoff must be after pickup.'
     }
-    if (!DELIVERY_ZONES.includes(data.deliveryZone as DeliveryZone)) {
-      next.deliveryZone = 'Please select a delivery zone.'
+    if (
+      !FULFILLMENT_METHODS.includes(data.fulfillmentMethod as FulfillmentMethod)
+    ) {
+      next.fulfillmentMethod = 'Please choose pickup or delivery.'
+    } else if (data.fulfillmentMethod === 'delivery') {
+      if (!DELIVERY_ZONES.includes(data.deliveryZone as DeliveryZone)) {
+        next.deliveryZone = 'Please select a delivery zone.'
+      }
+      if (!data.deliveryAddress.trim()) {
+        next.deliveryAddress = 'Please enter your delivery address.'
+      }
     }
     // Only require items when the equipment list actually loaded.
     if (!configError && items.length > 0 && data.selected.length === 0) {
@@ -195,6 +214,7 @@ export default function QuoteForm() {
     const organization = String(fd.get('organization') || '')
     const message = String(fd.get('message') || '')
     const deliveryZone = String(fd.get('deliveryZone') || '')
+    const deliveryAddress = String(fd.get('deliveryAddress') || '')
     const startDateVal = String(fd.get('startDate') || '')
     const endDateVal = String(fd.get('endDate') || '')
     const pickupTimeVal = String(fd.get('pickupTime') || DEFAULT_PICKUP_TIME)
@@ -205,7 +225,9 @@ export default function QuoteForm() {
       fullName,
       email,
       phone,
+      fulfillmentMethod,
       deliveryZone,
+      deliveryAddress,
       startDate: startDateVal,
       pickupTime: pickupTimeVal,
       endDate: endDateVal,
@@ -223,6 +245,7 @@ export default function QuoteForm() {
     setSending(true)
 
     try {
+      const isDelivery = fulfillmentMethod === 'delivery'
       const res = await fetch(QUOTE_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -233,7 +256,9 @@ export default function QuoteForm() {
             phone,
             org: organization,
           },
-          delivery_zone: deliveryZone,
+          fulfillment_method: fulfillmentMethod,
+          delivery_zone: isDelivery ? deliveryZone : null,
+          delivery_address: isDelivery ? deliveryAddress.trim() : null,
           rental_start: startDateVal,
           rental_end: endDateVal,
           pickup_time: pickupTimeVal,
@@ -508,36 +533,131 @@ export default function QuoteForm() {
             </p>
           </div>
 
-          {/* Delivery Zone */}
-          <div>
-            <label htmlFor="deliveryZone" className={labelBase}>
-              Delivery Zone <span className="text-brand-accent">*</span>
-            </label>
-            <select
-              id="deliveryZone"
-              name="deliveryZone"
-              required
-              aria-required="true"
-              aria-invalid={!!errors.deliveryZone}
-              aria-describedby={errors.deliveryZone ? 'deliveryZone-error' : undefined}
-              defaultValue=""
-              className={inputBase}
-            >
-              <option value="" disabled>
-                Select a delivery zone…
-              </option>
-              {DELIVERY_ZONES.map((zone) => (
-                <option key={zone} value={zone}>
-                  {zone}
-                </option>
-              ))}
-            </select>
-            {errors.deliveryZone && (
-              <p id="deliveryZone-error" className="mt-1 text-sm text-red-600" role="alert">
-                {errors.deliveryZone}
+          {/* Fulfillment method */}
+          <fieldset>
+            <legend className="block font-sans text-sm font-semibold text-brand-dark mb-2">
+              How would you like to receive the gear?{' '}
+              <span className="text-brand-accent">*</span>
+            </legend>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {FULFILLMENT_METHODS.map((method) => {
+                const selected = fulfillmentMethod === method
+                return (
+                  <label
+                    key={method}
+                    className={`flex items-start gap-3 cursor-pointer rounded-lg border px-4 py-3 transition-colors ${
+                      selected
+                        ? 'border-brand-accent bg-brand-accent-tint'
+                        : 'border-brand-dark/15 bg-white hover:border-brand-dark/30'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="fulfillmentMethod"
+                      value={method}
+                      checked={selected}
+                      onChange={() => {
+                        setFulfillmentMethod(method)
+                        setErrors((prev) => ({
+                          ...prev,
+                          fulfillmentMethod: undefined,
+                          deliveryZone: undefined,
+                          deliveryAddress: undefined,
+                        }))
+                      }}
+                      className="mt-1 accent-brand-accent"
+                    />
+                    <span className="flex flex-col">
+                      <span className="font-sans text-sm font-semibold text-brand-dark">
+                        {method === 'pickup' ? 'Pickup' : 'Delivery'}
+                      </span>
+                      <span className="font-sans text-xs text-brand-dark/60 mt-0.5 leading-relaxed">
+                        {method === 'pickup'
+                          ? 'Collect from our Abuja store — free'
+                          : 'We bring the gear to your address'}
+                      </span>
+                    </span>
+                  </label>
+                )
+              })}
+            </div>
+            {errors.fulfillmentMethod && (
+              <p className="mt-1 text-sm text-red-600" role="alert">
+                {errors.fulfillmentMethod}
               </p>
             )}
-          </div>
+          </fieldset>
+
+          {fulfillmentMethod === 'delivery' && (
+            <>
+              {/* Delivery Zone */}
+              <div>
+                <label htmlFor="deliveryZone" className={labelBase}>
+                  Delivery Zone <span className="text-brand-accent">*</span>
+                </label>
+                <select
+                  id="deliveryZone"
+                  name="deliveryZone"
+                  required
+                  aria-required="true"
+                  aria-invalid={!!errors.deliveryZone}
+                  aria-describedby={
+                    errors.deliveryZone ? 'deliveryZone-error' : undefined
+                  }
+                  defaultValue=""
+                  className={inputBase}
+                >
+                  <option value="" disabled>
+                    Select a delivery zone…
+                  </option>
+                  {DELIVERY_ZONES.map((zone) => (
+                    <option key={zone} value={zone}>
+                      {zone}
+                    </option>
+                  ))}
+                </select>
+                {errors.deliveryZone && (
+                  <p
+                    id="deliveryZone-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
+                    {errors.deliveryZone}
+                  </p>
+                )}
+              </div>
+
+              {/* Delivery Address */}
+              <div>
+                <label htmlFor="deliveryAddress" className={labelBase}>
+                  Delivery Address <span className="text-brand-accent">*</span>
+                </label>
+                <textarea
+                  id="deliveryAddress"
+                  name="deliveryAddress"
+                  rows={3}
+                  required
+                  maxLength={500}
+                  aria-required="true"
+                  aria-invalid={!!errors.deliveryAddress}
+                  aria-describedby={
+                    errors.deliveryAddress ? 'deliveryAddress-error' : undefined
+                  }
+                  placeholder="Street, area, city, landmark — anything that helps our courier find you"
+                  className={inputBase + ' resize-none'}
+                />
+                {errors.deliveryAddress && (
+                  <p
+                    id="deliveryAddress-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
+                    {errors.deliveryAddress}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Message */}
           <div>
