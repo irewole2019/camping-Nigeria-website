@@ -2,7 +2,6 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import JsonLd from '@/components/seo/JsonLd'
 import GearHero from '@/components/gear-rental/GearHero'
-import EquipmentAndOptions from '@/components/gear-rental/EquipmentAndOptions'
 import QuoteForm from '@/components/gear-rental/QuoteForm'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
@@ -26,7 +25,6 @@ export default function GearRentalPage() {
       />
       <Navbar />
       <GearHero />
-      <EquipmentAndOptions />
       <QuoteForm />
       <Footer />
     </main>
