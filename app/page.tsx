@@ -5,6 +5,8 @@ import Footer from '@/components/layout/Footer'
 import { LOGO_URL, VIDEO_URL } from '@/lib/constants'
 import AnimatedTagline from '@/components/home/AnimatedTagline'
 import BackgroundVideo from '@/components/home/BackgroundVideo'
+import EventBanner from '@/components/home/EventBanner'
+import { FEATURED_UPCOMING_EVENT } from '@/lib/events'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata = buildPageMetadata({
@@ -84,6 +86,12 @@ export default function GatewayPage() {
         </div>
       </section>
 
+      {/* Only while an edition is actually taking registrations. With nothing
+          upcoming the banner is not rendered at all, so no client chunk ships
+          and the homepage never advertises a finished event. */}
+      {FEATURED_UPCOMING_EVENT?.banner && (
+        <EventBanner banner={FEATURED_UPCOMING_EVENT.banner} />
+      )}
 
       <section className="bg-brand-dark text-white py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

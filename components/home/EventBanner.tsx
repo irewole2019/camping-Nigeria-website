@@ -5,22 +5,21 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { ArrowRight, Calendar, MapPin, Users } from 'lucide-react'
 import { premiumEase } from '@/lib/animation'
-import {
-  EVENT_PATH,
-  EVENT_DATE_LABEL,
-  EVENT_ANNOUNCEMENT,
-  VENUE_CITY,
-  SEAT_CAP,
-  EARLY_BIRD_PRICE,
-  WALK_IN_PRICE,
-  HOMEPAGE_BANNER_IMAGE,
-  HOMEPAGE_BANNER_IMAGE_ALT,
-  formatNaira,
-} from '@/lib/events/base-camp-kids'
+import type { EventBannerContent, EventStatIcon } from '@/lib/events'
 
-const SAVINGS = WALK_IN_PRICE - EARLY_BIRD_PRICE
+const STAT_ICONS: Record<EventStatIcon, React.ComponentType<{ className?: string }>> = {
+  calendar: Calendar,
+  'map-pin': MapPin,
+  users: Users,
+}
 
-export default function EventBanner() {
+/**
+ * Homepage promo for whichever event is currently taking registrations.
+ * Content-agnostic — everything it renders comes from the registry entry, so
+ * the next campaign is a data change. The homepage decides whether to render
+ * it at all; a past event never reaches here.
+ */
+export default function EventBanner({ banner }: { banner: EventBannerContent }) {
   return (
     <section className="bg-brand-light py-16 md:py-24" aria-labelledby="event-banner-heading">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -34,15 +33,15 @@ export default function EventBanner() {
             transition={{ duration: 1, ease: premiumEase }}
           >
             <Image
-              src={HOMEPAGE_BANNER_IMAGE}
-              alt={HOMEPAGE_BANNER_IMAGE_ALT}
+              src={banner.image}
+              alt={banner.imageAlt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
             <span className="absolute top-5 left-5 inline-flex items-center bg-brand-dark text-brand-accent font-sans text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mr-2 animate-pulse" aria-hidden="true" />
-              Now Booking · {SEAT_CAP} Seats
+              {banner.badge}
             </span>
           </motion.div>
 
@@ -56,7 +55,7 @@ export default function EventBanner() {
               transition={{ duration: 0.7, ease: premiumEase }}
             >
               <span className="block w-6 h-px bg-brand-accent" aria-hidden="true" />
-              Children’s Day · Abuja · 2026
+              {banner.eyebrow}
             </motion.p>
 
             <div className="overflow-hidden mb-3">
@@ -68,7 +67,7 @@ export default function EventBanner() {
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: premiumEase, delay: 0.1 }}
               >
-                Base Camp Kids — a real camp adventure for kids 6 to 12.
+                {banner.headline}
               </motion.h2>
             </div>
 
@@ -79,7 +78,7 @@ export default function EventBanner() {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: premiumEase, delay: 0.15 }}
             >
-              {EVENT_ANNOUNCEMENT}
+              {banner.announcement}
             </motion.p>
 
             <motion.p
@@ -89,10 +88,7 @@ export default function EventBanner() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.2 }}
             >
-              Tents. House teams. Outdoor games. Souvenirs they keep. One Saturday only,
-              30 seats, in {VENUE_CITY}. Save{' '}
-              <strong className="text-brand-dark font-semibold">{formatNaira(SAVINGS)}</strong>{' '}
-              by registering online before they sell out.
+              {banner.body}
             </motion.p>
 
             <motion.dl
@@ -102,9 +98,9 @@ export default function EventBanner() {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.3 }}
             >
-              <Stat icon={<Calendar className="w-3.5 h-3.5" aria-hidden="true" />} label="When" value={EVENT_DATE_LABEL.replace('Saturday, ', '')} />
-              <Stat icon={<MapPin className="w-3.5 h-3.5" aria-hidden="true" />} label="Where" value={VENUE_CITY} />
-              <Stat icon={<Users className="w-3.5 h-3.5" aria-hidden="true" />} label="Seats" value={`${SEAT_CAP} only`} />
+              {banner.stats.map((stat) => (
+                <Stat key={stat.label} icon={stat.icon} label={stat.label} value={stat.value} />
+              ))}
             </motion.dl>
 
             <motion.div
@@ -115,17 +111,17 @@ export default function EventBanner() {
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.4 }}
             >
               <Link
-                href={`${EVENT_PATH}#register`}
+                href={banner.primaryCta.href}
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-dark text-white font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-accent hover:text-brand-dark transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
-                Reserve a Seat
+                {banner.primaryCta.label}
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
               <Link
-                href={EVENT_PATH}
+                href={banner.secondaryCta.href}
                 className="inline-flex items-center justify-center px-6 py-3.5 bg-transparent border border-brand-dark/25 text-brand-dark font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
-                See the Full Day
+                {banner.secondaryCta.label}
               </Link>
             </motion.div>
           </div>
@@ -135,11 +131,12 @@ export default function EventBanner() {
   )
 }
 
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Stat({ icon, label, value }: { icon: EventStatIcon; label: string; value: string }) {
+  const Icon = STAT_ICONS[icon]
   return (
     <div>
       <dt className="flex items-center gap-1.5 text-brand-accent-readable text-[11px] uppercase tracking-widest font-semibold mb-1">
-        {icon}
+        <Icon className="w-3.5 h-3.5" aria-hidden="true" />
         {label}
       </dt>
       <dd className="font-sans text-sm md:text-base font-semibold text-brand-dark">{value}</dd>

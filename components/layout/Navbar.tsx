@@ -22,6 +22,7 @@ const NAV_LINKS: NavLink[] = [
   { label: 'Individuals', href: '/individuals' },
   { label: 'Organizations', href: '/organizations' },
   { label: 'Gear Rental', href: '/gear-rental' },
+  { label: 'Events', href: '/events' },
 ]
 
 export default function Navbar() {
