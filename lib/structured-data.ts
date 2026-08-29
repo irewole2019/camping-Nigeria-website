@@ -47,8 +47,13 @@ export interface EventJsonLdInput {
     region: string
     country: string
   }
-  /** Single ticket offer — uses Offer not AggregateOffer because all attendees pay the same advertised early-bird price */
-  offer: {
+  /**
+   * Single ticket offer — uses Offer not AggregateOffer because all attendees
+   * pay the same advertised early-bird price. Omit once the event has run:
+   * advertising a price for a date that has passed is misleading, and Google
+   * drops past events from rich results regardless.
+   */
+  offer?: {
     price: number
     priceCurrency: 'NGN'
     /** schema.org URL — InStock, SoldOut, LimitedAvailability */
@@ -265,14 +270,18 @@ export function buildEventJsonLd(input: EventJsonLdInput) {
       },
     },
     organizer: { '@id': ORG_ID },
-    offers: {
-      '@type': 'Offer',
-      price: input.offer.price,
-      priceCurrency: input.offer.priceCurrency,
-      availability: input.offer.availability,
-      url: toAbsoluteUrl(input.path),
-      ...(input.offer.validFrom ? { validFrom: input.offer.validFrom } : {}),
-    },
+    ...(input.offer
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: input.offer.price,
+            priceCurrency: input.offer.priceCurrency,
+            availability: input.offer.availability,
+            url: toAbsoluteUrl(input.path),
+            ...(input.offer.validFrom ? { validFrom: input.offer.validFrom } : {}),
+          },
+        }
+      : {}),
     ...(input.maximumAttendeeCapacity ? { maximumAttendeeCapacity: input.maximumAttendeeCapacity } : {}),
     ...(input.audience
       ? {

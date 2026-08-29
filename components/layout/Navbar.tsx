@@ -7,12 +7,21 @@ import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { LOGO_URL } from '@/lib/constants'
 
-const NAV_LINKS = [
+interface NavLink {
+  label: string
+  href: string
+  /**
+   * Renders as a gold pulsing pill. Reserve it for a live, bookable campaign —
+   * it is the loudest thing in the navbar and reads as "act now".
+   */
+  highlight?: boolean
+}
+
+const NAV_LINKS: NavLink[] = [
   { label: 'Schools', href: '/schools' },
   { label: 'Individuals', href: '/individuals' },
   { label: 'Organizations', href: '/organizations' },
   { label: 'Gear Rental', href: '/gear-rental' },
-  { label: 'Base Camp Kids', href: '/events/base-camp-kids', highlight: true as const },
 ]
 
 export default function Navbar() {

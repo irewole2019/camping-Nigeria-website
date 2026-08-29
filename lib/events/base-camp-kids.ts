@@ -34,6 +34,32 @@ export const MAX_CHILDREN_PER_REGISTRATION = 6
 export const EVENT_PATH = '/events/base-camp-kids'
 export const REGISTERED_PATH = '/events/base-camp-kids/registered'
 
+export type EventStatus = 'upcoming' | 'past'
+
+/**
+ * Lifecycle state for this edition. Deliberately an explicit flag rather than
+ * a `Date.now() > EVENT_END_ISO` comparison: these pages are statically
+ * rendered, so a runtime date check bakes in at build time and goes stale
+ * between deploys. Flipping one line is predictable; a stale build is not.
+ *
+ * 'past' switches the page to recap framing, closes the registration form,
+ * drops the ticket Offer from the Event JSON-LD, and rejects POSTs to
+ * `/api/event-registration`.
+ */
+export const EVENT_STATUS: EventStatus = 'past'
+
+/**
+ * Derived, not hand-maintained, so the two can never disagree. Goes through a
+ * parameter because TypeScript narrows a `const` to its literal initializer —
+ * comparing EVENT_STATUS to 'upcoming' directly is a compile error once it
+ * reads 'past'.
+ */
+export function isRegistrationOpen(status: EventStatus): boolean {
+  return status === 'upcoming'
+}
+
+export const REGISTRATION_OPEN: boolean = isRegistrationOpen(EVENT_STATUS)
+
 /**
  * Image registry — generated via openai/gpt-image-2 on inference.sh.
  * Source prompts live in scripts/generate-base-camp-kids-images.mjs;

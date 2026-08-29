@@ -16,6 +16,7 @@ import {
   MAX_AGE,
   HERO_IMAGE,
   HERO_IMAGE_ALT,
+  REGISTRATION_OPEN,
 } from '@/lib/events/base-camp-kids'
 
 const HEADING_ID = 'base-camp-kids-hero'
@@ -73,9 +74,19 @@ export default function Hero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: premiumEase, delay: 0.55 }}
             >
-              A camping-themed Children’s Day at {VENUE_NAME}, {VENUE_CITY},
-              for kids ages {MIN_AGE} to {MAX_AGE}. Tents, house teams, outdoor games,
-              kid-friendly food, and souvenirs they keep.
+              {REGISTRATION_OPEN ? (
+                <>
+                  A camping-themed Children’s Day at {VENUE_NAME}, {VENUE_CITY},
+                  for kids ages {MIN_AGE} to {MAX_AGE}. Tents, house teams, outdoor games,
+                  kid-friendly food, and souvenirs they keep.
+                </>
+              ) : (
+                <>
+                  A camping-themed Children’s Day at {VENUE_NAME}, {VENUE_CITY},
+                  for kids ages {MIN_AGE} to {MAX_AGE}. Tents, house teams, outdoor games,
+                  kid-friendly food, and souvenirs they kept. Here’s how the day was built.
+                </>
+              )}
             </motion.p>
 
             {/* Magazine-style spec strip */}
@@ -88,7 +99,10 @@ export default function Hero() {
               <SpecItem first label="Time" value={EVENT_TIME_LABEL} />
               <SpecItem label="Where" value={VENUE_CITY} />
               <SpecItem label="Ages" value={`${MIN_AGE}–${MAX_AGE}`} />
-              <SpecItem label="Seats" value={`${SEAT_CAP} only`} />
+              <SpecItem
+                label={REGISTRATION_OPEN ? 'Seats' : 'Campers'}
+                value={REGISTRATION_OPEN ? `${SEAT_CAP} only` : String(SEAT_CAP)}
+              />
             </motion.dl>
 
             <motion.div
@@ -98,17 +112,17 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.9 }}
             >
               <Link
-                href="#register"
+                href={REGISTRATION_OPEN ? '#register' : '#schedule'}
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-accent hover:text-brand-dark active:scale-[0.98] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
-                Reserve a Seat
+                {REGISTRATION_OPEN ? 'Reserve a Seat' : 'See How the Day Ran'}
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </Link>
               <Link
-                href="#schedule"
+                href={REGISTRATION_OPEN ? '#schedule' : '/schools/proposal'}
                 className="inline-flex items-center justify-center px-7 py-4 bg-transparent border border-brand-dark/30 text-brand-dark font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
               >
-                See the Day
+                {REGISTRATION_OPEN ? 'See the Day' : 'Bring This to Your School'}
               </Link>
             </motion.div>
 
@@ -173,17 +187,24 @@ export default function Hero() {
             </div>
           </motion.div>
 
-          {/* "Now booking" pill — bottom-left */}
+          {/* Status pill — bottom-left */}
           <motion.div
             className="absolute bottom-5 left-5 sm:bottom-7 sm:left-7 z-10"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: premiumEase, delay: 0.9 }}
           >
-            <span className="inline-flex items-center bg-brand-dark/90 backdrop-blur-sm text-brand-accent font-sans text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mr-2 animate-pulse" aria-hidden="true" />
-              Now Booking
-            </span>
+            {REGISTRATION_OPEN ? (
+              <span className="inline-flex items-center bg-brand-dark/90 backdrop-blur-sm text-brand-accent font-sans text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-accent mr-2 animate-pulse" aria-hidden="true" />
+                Now Booking
+              </span>
+            ) : (
+              <span className="inline-flex items-center bg-white/90 backdrop-blur-sm text-brand-dark font-sans text-xs font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-brand-dark/40 mr-2" aria-hidden="true" />
+                This Edition Has Ended
+              </span>
+            )}
           </motion.div>
         </div>
       </div>

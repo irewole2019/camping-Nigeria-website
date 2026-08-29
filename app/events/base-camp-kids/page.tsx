@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
@@ -34,12 +36,17 @@ import {
   HERO_IMAGE,
   POSITIONING_IMAGE,
   POSITIONING_IMAGE_ALT,
+  EVENT_DATE_LABEL,
+  REGISTRATION_OPEN,
 } from '@/lib/events/base-camp-kids'
 
 export const metadata = buildPageMetadata({
-  title: `${EVENT_TITLE} — Children's Day in Abuja | Camping Nigeria`,
-  description:
-    "A camping-themed Children's Day at Durumi Recreational Park, Abuja, on Saturday 30 May 2026. Tents, house teams, outdoor games, and souvenirs for kids ages 6 to 12. Limited to 30 seats.",
+  title: REGISTRATION_OPEN
+    ? `${EVENT_TITLE} — Children's Day in Abuja | Camping Nigeria`
+    : `${EVENT_TITLE} — Children's Day in Abuja, 2026 | Camping Nigeria`,
+  description: REGISTRATION_OPEN
+    ? "A camping-themed Children's Day at Durumi Recreational Park, Abuja, on Saturday 30 May 2026. Tents, house teams, outdoor games, and souvenirs for kids ages 6 to 12. Limited to 30 seats."
+    : "How we ran Base Camp Kids — a camping-themed Children's Day at Durumi Recreational Park, Abuja, in May 2026. The full schedule, the souvenirs, and the safeguarding standards behind the day. Registration for this edition is closed.",
   path: EVENT_PATH,
   keywords: [
     "Children's Day Abuja",
@@ -76,11 +83,17 @@ export default function BaseCampKidsPage() {
             region: VENUE_REGION,
             country: VENUE_COUNTRY,
           },
-          offer: {
-            price: EARLY_BIRD_PRICE,
-            priceCurrency: 'NGN',
-            availability: 'https://schema.org/LimitedAvailability',
-          },
+          // Offer is dropped once the edition has run — quoting a live ticket
+          // price against a date that has passed is misleading.
+          ...(REGISTRATION_OPEN
+            ? {
+                offer: {
+                  price: EARLY_BIRD_PRICE,
+                  priceCurrency: 'NGN' as const,
+                  availability: 'https://schema.org/LimitedAvailability' as const,
+                },
+              }
+            : {}),
           maximumAttendeeCapacity: SEAT_CAP,
           audience: { suggestedMinAge: MIN_AGE, suggestedMaxAge: MAX_AGE },
           image: `${SITE_URL}${HERO_IMAGE}`,
@@ -165,7 +178,7 @@ export default function BaseCampKidsPage() {
           </ul>
 
           <p className="text-center font-sans text-sm text-brand-dark/55 mt-8 italic">
-            Placeholder photography — the real Base Camp Kids shots arrive after 30 May.
+            Illustrative imagery. Photography from the day is being added.
           </p>
         </div>
       </Section>
@@ -200,24 +213,60 @@ export default function BaseCampKidsPage() {
       <Pricing />
       <Faq />
 
-      {/* Registration form */}
-      <Section id="register" className="bg-brand-light">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-10">
+      {/* Registration — or, once the edition has run, where to go next.
+          The form is not rendered when closed, so its client bundle never
+          ships and there is no live control to submit. `/api/event-registration`
+          refuses POSTs independently, for stale caches and bots. */}
+      {REGISTRATION_OPEN ? (
+        <Section id="register" className="bg-brand-light">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent-readable">
+                Reserve a Seat
+              </p>
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-brand-dark text-balance leading-tight mt-3 mb-4">
+                Register your child{`(ren)`}
+              </h2>
+              <p className="font-sans text-base text-brand-dark/70 leading-relaxed">
+                You’ll receive an invoice within 24 hours. Your seat is locked in once payment clears.
+              </p>
+            </div>
+
+            <RegistrationForm />
+          </div>
+        </Section>
+      ) : (
+        <Section id="register" className="bg-brand-light">
+          <div className="max-w-2xl mx-auto text-center">
             <p className="text-sm font-sans font-semibold tracking-widest uppercase text-brand-accent-readable">
-              Reserve a Seat
+              Registration Closed
             </p>
             <h2 className="font-serif text-3xl md:text-4xl font-bold text-brand-dark text-balance leading-tight mt-3 mb-4">
-              Register your child{`(ren)`}
+              This edition ran on {EVENT_DATE_LABEL.replace('Saturday, ', '')}
             </h2>
-            <p className="font-sans text-base text-brand-dark/70 leading-relaxed">
-              You’ll receive an invoice within 24 hours. Your seat is locked in once payment clears.
+            <p className="font-sans text-base text-brand-dark/70 leading-relaxed mb-9">
+              We’re not taking registrations for it any more. If you want a day like this for your
+              school, or you’d like to hear when the next one opens, start here.
             </p>
-          </div>
 
-          <RegistrationForm />
-        </div>
-      </Section>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/schools/proposal"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-dark text-white font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-accent hover:text-brand-dark transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+              >
+                Bring This to Your School
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center justify-center px-6 py-3.5 bg-transparent border border-brand-dark/25 text-brand-dark font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-dark hover:text-white hover:border-brand-dark transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+              >
+                Tell Me About the Next One
+              </Link>
+            </div>
+          </div>
+        </Section>
+      )}
 
       <Footer />
     </main>

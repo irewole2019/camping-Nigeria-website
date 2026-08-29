@@ -13,6 +13,7 @@ import {
   MAX_CHILDREN_PER_REGISTRATION,
   computeRegistrationTotal,
   formatNaira,
+  REGISTRATION_OPEN,
 } from '@/lib/events/base-camp-kids'
 
 const RECIPIENT = 'hello@campingnigeria.com'
@@ -256,6 +257,20 @@ function buildCustomerEmail(data: RegistrationPayload, total: number, reference:
 
 export async function POST(request: Request) {
   try {
+    // Hard gate, checked before anything else. The page stops rendering the
+    // form when registration closes, but a cached page, a bookmarked tab, or
+    // a bot can still POST here — and a phantom registration means an invoice
+    // chased for an event that has already happened.
+    if (!REGISTRATION_OPEN) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Registration for ${EVENT_TITLE} (${EVENT_DATE_LABEL}) is closed. Email hello@campingnigeria.com to hear about the next edition.`,
+        },
+        { status: 403 },
+      )
+    }
+
     const raw: unknown = await request.json().catch(() => null)
     if (!raw || typeof raw !== 'object') {
       return NextResponse.json({ success: false, error: 'Invalid payload' }, { status: 400 })

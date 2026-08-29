@@ -91,11 +91,14 @@ const ROUTES: RouteEntry[] = [
     image: `${SITE_URL}/images/about/hero.webp`,
   },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.6 },
+  { path: '/events', changeFrequency: 'monthly', priority: 0.6 },
+  // Past edition — kept indexed for the recap and its seasonal search equity,
+  // demoted from 0.85 now that there is nothing to book on it.
   {
     path: '/events/base-camp-kids',
-    changeFrequency: 'weekly',
-    priority: 0.85,
-    image: `${SITE_URL}/images/schools/why-outdoor-learning.webp`,
+    changeFrequency: 'yearly',
+    priority: 0.4,
+    image: `${SITE_URL}/images/events/base-camp-kids/hero-v2.webp`,
   },
   { path: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },

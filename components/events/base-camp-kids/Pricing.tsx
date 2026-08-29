@@ -10,6 +10,7 @@ import {
   WALK_IN_PRICE,
   SIBLING_DISCOUNT_RATE,
   formatNaira,
+  REGISTRATION_OPEN,
 } from '@/lib/events/base-camp-kids'
 
 const SAVINGS = WALK_IN_PRICE - EARLY_BIRD_PRICE
@@ -27,7 +28,7 @@ export default function Pricing() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: premiumEase }}
           >
-            Pricing
+            {REGISTRATION_OPEN ? 'Pricing' : 'What a Seat Cost'}
           </motion.span>
 
           <div className="overflow-hidden mt-3">
@@ -38,7 +39,9 @@ export default function Pricing() {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: premiumEase, delay: 0.1 }}
             >
-              Save {formatNaira(SAVINGS)} by registering early
+              {REGISTRATION_OPEN
+                ? `Save ${formatNaira(SAVINGS)} by registering early`
+                : '2026 pricing, for reference'}
             </motion.h2>
           </div>
         </div>
@@ -56,7 +59,7 @@ export default function Pricing() {
             className="relative rounded-2xl border-2 border-brand-accent bg-brand-accent-tint p-8 flex flex-col"
           >
             <span className="absolute -top-3 left-8 inline-flex items-center bg-brand-dark text-brand-accent font-sans text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full">
-              Book Online
+              {REGISTRATION_OPEN ? 'Book Online' : 'What Most Parents Paid'}
             </span>
 
             <p className="font-sans text-xs uppercase tracking-widest text-brand-accent-readable font-semibold mb-2">
@@ -68,19 +71,25 @@ export default function Pricing() {
             <p className="font-sans text-sm text-brand-dark/60 mb-6">per child</p>
 
             <ul className="space-y-3 mb-8">
-              <Item>Reserve before seats sell out</Item>
+              {REGISTRATION_OPEN && <Item>Reserve before seats sell out</Item>}
               <Item>10% sibling discount on every additional child ({formatNaira(SIBLING_PRICE)} each)</Item>
               <Item>All food, souvenirs, and certificates included</Item>
-              <Item>Full refund up to 7 days before</Item>
+              {REGISTRATION_OPEN && <Item>Full refund up to 7 days before</Item>}
             </ul>
 
-            <Link
-              href="#register"
-              className="mt-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-dark text-white font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-            >
-              Reserve a Seat
-              <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            </Link>
+            {REGISTRATION_OPEN ? (
+              <Link
+                href="#register"
+                className="mt-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-brand-dark text-white font-semibold rounded-lg text-sm tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+              >
+                Reserve a Seat
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            ) : (
+              <p className="mt-auto font-sans text-sm text-brand-dark/60 italic">
+                The online rate for the 30 May 2026 edition.
+              </p>
+            )}
           </motion.div>
 
           {/* Walk-in (muted) */}
@@ -104,7 +113,9 @@ export default function Pricing() {
             </ul>
 
             <p className="mt-auto font-sans text-sm text-brand-dark/55 italic">
-              We open the gate at 9:30 AM. We cannot promise space.
+              {REGISTRATION_OPEN
+                ? 'We open the gate at 9:30 AM. We cannot promise space.'
+                : 'The rate for anyone who turned up on the day without a seat booked.'}
             </p>
           </motion.div>
         </motion.div>
@@ -116,9 +127,22 @@ export default function Pricing() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, ease: premiumEase, delay: 0.3 }}
         >
-          Once you register below, we email you an invoice within 24 hours. Your seat is locked in
-          the moment payment clears. We’ll then send the venue address, what to bring, and your
-          child’s house assignment.
+          {REGISTRATION_OPEN ? (
+            <>
+              Once you register below, we email you an invoice within 24 hours. Your seat is locked
+              in the moment payment clears. We’ll then send the venue address, what to bring, and
+              your child’s house assignment.
+            </>
+          ) : (
+            <>
+              Pricing for the next edition hasn’t been set. If you’d like us to run a day like this
+              for your school or community group,{' '}
+              <Link href="/schools/proposal" className="underline underline-offset-4 hover:text-brand-dark">
+                tell us what you have in mind
+              </Link>
+              .
+            </>
+          )}
         </motion.p>
       </div>
     </Section>

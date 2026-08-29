@@ -5,7 +5,6 @@ import Footer from '@/components/layout/Footer'
 import { LOGO_URL, VIDEO_URL } from '@/lib/constants'
 import AnimatedTagline from '@/components/home/AnimatedTagline'
 import BackgroundVideo from '@/components/home/BackgroundVideo'
-import EventBanner from '@/components/home/EventBanner'
 import { buildPageMetadata } from '@/lib/seo'
 
 export const metadata = buildPageMetadata({
@@ -85,7 +84,6 @@ export default function GatewayPage() {
         </div>
       </section>
 
-      <EventBanner />
 
       <section className="bg-brand-dark text-white py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
