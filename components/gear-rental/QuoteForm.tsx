@@ -404,7 +404,7 @@ export default function QuoteForm() {
               aria-required="true"
               aria-invalid={!!errors.phone}
               aria-describedby={errors.phone ? 'phone-error' : undefined}
-              placeholder="e.g. 0814 607 5937"
+              placeholder="e.g. 0903 404 2503"
               className={inputBase}
             />
             {errors.phone && (

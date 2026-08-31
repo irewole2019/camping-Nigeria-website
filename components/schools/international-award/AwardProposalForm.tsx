@@ -759,7 +759,7 @@ export default function AwardProposalForm() {
                   autoComplete="tel"
                   value={contact.phone}
                   onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))}
-                  placeholder="e.g. 0814 607 5937"
+                  placeholder="e.g. 0903 404 2503"
                   className={inputBase}
                   aria-invalid={!!errors.phone}
                 />

@@ -4,9 +4,14 @@ export { MEDIA_LOGO as LOGO_URL, MEDIA_VIDEO as VIDEO_URL } from './media'
 /** Company contact info */
 export const CONTACT = {
   email: 'hello@campingnigeria.com',
-  phone: '+234 814 607 5937',
-  whatsapp: 'https://wa.me/2348146075937',
-  instagram: 'https://www.instagram.com/camping_ng/',
+  phone: '+234 903 404 2503',
+  /**
+   * WhatsApp "click to chat" short link from the business QR code — opaque,
+   * not derived from `phone`. Don't rebuild it as `wa.me/<digits>`; the two
+   * are independent and the number can change without invalidating this link.
+   */
+  whatsapp: 'https://wa.me/message/4NX4VTGXCP4UE1?src=qr',
+  instagram: 'https://www.instagram.com/campingnigeria/',
   facebook: 'https://www.facebook.com/campinggearsng',
   address: {
     streetAddress: 'Shop No. 17A, Arts and Craft Village, Sani Abacha Way',

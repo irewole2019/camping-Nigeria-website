@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { CONTACT } from '@/lib/constants'
 import { escapeHtml, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { sendPairedMail } from '@/lib/mail'
@@ -234,7 +235,7 @@ function buildCustomerEmail(data: RegistrationPayload, total: number, reference:
 
     <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
       Need to change something or ask a question? Reply to this email, or message us on WhatsApp at
-      <a href="https://wa.me/2348146075937" style="color:#0e3e2e;font-weight:600;text-decoration:none;">+234 814 607 5937</a>.
+      <a href="${CONTACT.whatsapp}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${CONTACT.phone}</a>.
     </p>
 
   </td></tr>
