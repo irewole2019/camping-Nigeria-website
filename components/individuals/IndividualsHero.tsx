@@ -2,6 +2,7 @@
 
 import PageHero from '@/components/shared/PageHero'
 import { INDIVIDUALS_HERO } from '@/lib/media'
+import { BOOKING_FORM_URL } from '@/lib/constants'
 
 export default function IndividualsHero() {
   return (
@@ -17,7 +18,7 @@ export default function IndividualsHero() {
       }
       subheadline="Discover structured and accessible camping experiences designed for young adults and adventure seekers."
       ctaLabel="Book Your Spot"
-      ctaHref="https://forms.office.com/r/bgsZ4shNxD"
+      ctaHref={BOOKING_FORM_URL}
       height="h-[70dvh]"
       minHeight="min-h-[480px]"
     />

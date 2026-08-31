@@ -4,6 +4,7 @@ import { Instagram, Facebook, Mail, Phone, MessageCircle } from 'lucide-react'
 import { LOGO_URL, CONTACT } from '@/lib/constants'
 
 const quickLinks = [
+  { label: 'Offers', href: '/offers' },
   { label: 'Schools', href: '/schools' },
   { label: 'Individuals', href: '/individuals' },
   { label: 'Organizations', href: '/organizations' },

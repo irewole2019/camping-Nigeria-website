@@ -19,6 +19,9 @@ export const CONTACT = {
   },
 } as const
 
+/** Microsoft Forms booking form for individual trip seats — always link out */
+export const BOOKING_FORM_URL = 'https://forms.office.com/r/bgsZ4shNxD'
+
 /** Outlook Bookings "Book With Me" scheduling link (cannot be iframe-embedded — open in new tab) */
 export const CALENDAR_BOOKING_URL =
   'https://outlook.office.com/bookwithme/user/af37a0b6a8bd421baee86c4284a1791b@campingnigeria.com/meetingtype/XKVSQzWp00OYaRlYcFPsjg2?anonymous&ismsaljsauthenabled&ep=mlink'

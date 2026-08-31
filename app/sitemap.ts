@@ -34,6 +34,30 @@ interface RouteEntry {
 
 const ROUTES: RouteEntry[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1, image: OG },
+  {
+    path: '/offers',
+    changeFrequency: 'weekly',
+    priority: 0.9,
+    image: `${SITE_URL}/images/schools/media-feature.webp`,
+  },
+  {
+    path: '/offers/schools',
+    changeFrequency: 'weekly',
+    priority: 0.85,
+    image: `${SITE_URL}/images/schools/hero.webp`,
+  },
+  {
+    path: '/offers/organizations',
+    changeFrequency: 'weekly',
+    priority: 0.85,
+    image: `${SITE_URL}/images/organizations/hero.webp`,
+  },
+  {
+    path: '/offers/individuals',
+    changeFrequency: 'weekly',
+    priority: 0.85,
+    image: `${SITE_URL}/images/individuals/hero.webp`,
+  },
   { path: '/schools', changeFrequency: 'weekly', priority: 0.9, image: `${SITE_URL}/images/schools/hero.webp` },
   {
     path: '/schools/international-award',

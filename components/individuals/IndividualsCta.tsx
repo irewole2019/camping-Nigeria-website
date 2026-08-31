@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { premiumEase } from '@/lib/animation'
 import { INDIVIDUALS_CTA } from '@/lib/media'
+import { BOOKING_FORM_URL } from '@/lib/constants'
 
 export default function IndividualsCta() {
   return (
@@ -39,7 +40,7 @@ export default function IndividualsCta() {
             Join a community of young Nigerians discovering the outdoors — safely, meaningfully, and memorably.
           </p>
           <a
-            href="https://forms.office.com/r/bgsZ4shNxD"
+            href={BOOKING_FORM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center px-10 py-4 bg-brand-accent text-brand-dark font-sans font-semibold text-base rounded-lg hover:brightness-105 active:scale-95 transition-transform duration-200 shadow-lg shadow-brand-accent/20"

@@ -105,6 +105,12 @@ export default function GatewayPage() {
           </p>
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
+              href="/offers"
+              className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"
+            >
+              See Offers &amp; Pricing
+            </Link>
+            <Link
               href="/schools"
               className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"
             >
