@@ -6,27 +6,39 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 
 - **Pages**: `app/<route>/page.tsx` (App Router)
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
-- **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `home/`, `shared/`, `ui/`, `layout/`)
-- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
+- **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `individuals/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
+- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/base-camp-kids.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - `public/pdf/...`
   - Video referenced via `MEDIA_VIDEO` from `lib/media.ts` (not raw paths)
   - Images registered in `lib/media.ts` with `{ src, alt }` tuples — components import the registry, never raw paths
   - **Gear-rental item photos** are the exception: they live on Google Drive (column `image_url` in the pricing sheet) and the parser auto-rewrites `drive.google.com/file/d/<ID>/…` to `https://lh3.googleusercontent.com/d/<ID>`. Static fallback path is `/public/images/gear-rental/items/<id>.webp` keyed by catalogue `id`. See `EquipmentTable.tsx#ItemThumb` for the three-tier fallback chain (sheet URL → static file → Package icon).
-- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-helvetica-now` / `--font-agrandir`
+- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-dm-sans` / `--font-agrandir`. DM Sans comes from `next/font/google` (self-hosted at build time); Agrandir is a local `.otf` via `next/font/local`.
 
 ## Components
 
 - Client components start with `'use client'`. Keep them as narrow as possible — most pages are Server Components that render Client Components for interactive bits.
 - Every interactive component that animates uses Framer Motion `motion.*` primitives — don't mix with CSS transitions for the same property.
-- Shared primitives live in `components/ui/` (currently `Section`). Shared page scaffolding in `components/shared/` (`PageHero`, etc).
+- Shared primitives live in `components/ui/` (currently `Section`, `Honeypot`). Shared page scaffolding in `components/shared/` (`PageHero`, etc).
+
+### Data-driven route families
+
+When several routes are the same page shape with different content (the three `/offers/<group>` routes, the three `/schools/programs/*` routes), put **all** the varying content in one `lib/*-data.ts` module and give the family a single shell component. Each `page.tsx` then does nothing but look up its record, export metadata, and render the shell:
+
+```tsx
+const group = getOfferGroup('schools')
+export const metadata = buildPageMetadata({ title: group.metaTitle, /* ... */ })
+export default function Page() { return <OfferGroupPage group={group} /> }
+```
+
+Keep the routes explicit — do **not** collapse them into a `[slug]` dynamic segment. Route-segment config for OG/Twitter cards must be statically analysable per route (see the OG section below), and explicit directories keep the sitemap, metadata and card copy visible per URL. Adding a market is then a data edit plus one four-line page file and one OG/Twitter pair.
 
 ## Styling
 
 - **Tailwind v4** with `@theme inline` in `app/globals.css` — do **not** create `tailwind.config.js`. If you need a new design token, add it to both `:root` and `@theme inline` in `globals.css`.
 - Brand classes: `bg-brand-dark`, `text-brand-dark`, `bg-brand-accent`, `text-brand-accent-readable` (use for gold text on cream — the regular gold fails contrast), `bg-brand-light`, `bg-brand-dark-tint`, `bg-brand-accent-tint`.
-- Fonts: `font-sans` (Helvetica Now) for body, `font-serif` (Agrandir) for headlines.
+- Fonts: `font-sans` (DM Sans) for body and UI, `font-serif` (Agrandir) for headlines. `font-serif` is just the Tailwind slot name — Agrandir is not a serif.
 - **No emojis in UI** — use `lucide-react` icons. (Exception: none. This has come up before.)
 
 ## Forms
@@ -93,7 +105,7 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 - Footer: forest green band, `campingnigeria.com` link in gold, social links muted, `© {year} Camping Nigeria`.
 - Middle: white card body with a gold-outlined "summary" table of what was submitted.
 - Internal email has a gold "Reply to {firstName}" mailto CTA at the bottom.
-- Customer email has a "What Happens Next" numbered list and ends with `hello@campingnigeria.com` + `+234 814 607 5937` contact line.
+- Customer email has a "What Happens Next" numbered list and ends with `hello@campingnigeria.com` + the phone number, both interpolated from `CONTACT` in `lib/constants.ts` — never hardcoded.
 - Dates in footer: `toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })`.
 
 ## Animation
@@ -213,4 +225,6 @@ npm run test:watch # vitest watch mode
 npx tsc --noEmit   # type check
 ```
 
-`npm audit` is clean as of Next 16.2.4.
+**`npm audit` is no longer clean.** As of 31/08/2026 a fresh `npm install` reports 10 vulnerabilities (1 critical, 7 high). Next 16.2.4 itself now carries ~18 advisories (middleware/proxy bypass, RSC cache poisoning, XSS with CSP nonces, several DoS); the rest are dev-only transitive deps (`@babel/core`, `esbuild`, `js-yaml`, `brace-expansion`, `nanoid`). These are new disclosures against a pinned version, not a regression introduced by any change here. Upgrading Next is tracked in [state.md](state.md#next-tracked-todos) — treat it as its own session, not a drive-by bump.
+
+Note also that npm 11+ blocks postinstall scripts by default: `esbuild`, `sharp` and `unrs-resolver` are listed as pending on install. Nothing has broken so far; if `next/image` optimisation or vitest misbehaves, run `npm approve-scripts --allow-scripts-pending`.

@@ -41,7 +41,8 @@ When a decision is listed as "Leadership team" below, raise it in whatever chann
 ## Operations / bookings
 
 - **Generic inbox:** `hello@campingnigeria.com`
-- **Phone / WhatsApp:** +234 814 607 5937
+- **Phone:** +234 903 404 2503 (local `09034042503`)
+- **WhatsApp:** `https://wa.me/message/4NX4VTGXCP4UE1?src=qr` — a click-to-chat short link from the business QR code, **not** derived from the phone number
 - **Owner:** TBD — one of the three founders monitors inbound enquiries; confirm who before assuming SLA
 - **Involve for:** lead-routing changes, SLA commitments ("we reply within 24h"), Microsoft Forms workflow, Outlook Bookings calendar setup
 
@@ -75,7 +76,7 @@ When a decision is listed as "Leadership team" below, raise it in whatever chann
 | Microsoft Forms | Individual trip bookings (`forms.office.com/r/bgsZ4shNxD`) | TBD |
 | Vercel | Hosting + analytics | TBD |
 | Domain registrar | `campingnigeria.com` | TBD |
-| Instagram `@camping_ng` | Social | TBD |
+| Instagram `@campingnigeria` | Social | TBD |
 | Facebook `campinggearsng` | Social | TBD |
 
 ---

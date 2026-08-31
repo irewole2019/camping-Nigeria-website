@@ -14,14 +14,16 @@ The site is the main acquisition surface: it books individuals into trips (via M
 - **Tailwind v4** with `@theme inline` CSS-defined tokens — **no `tailwind.config.js`**. Brand tokens live in `app/globals.css`.
 - **Framer Motion 12** for reveals, staggered children, masked H2 animations
 - **lucide-react** for icons (no emojis in UI)
-- **Resend REST API** via direct `fetch()` (not the SDK) in 4 API routes
+- **Resend REST API** via direct `fetch()` (not the SDK) in 5 API routes
 - **@vercel/analytics** for traffic analytics
-- Fonts: `var(--font-helvetica-now)` (sans) + `var(--font-agrandir)` (serif)
+- Fonts: **DM Sans** (primary/body, `var(--font-dm-sans)` → `font-sans`) + **Agrandir** (secondary/headlines, `var(--font-agrandir)` → `font-serif`)
 
 ## Key routes
 
 Public pages (all App Router `page.tsx`):
 - `/` — home (hero video, schools/individuals/gear teasers)
+- `/offers` — published-pricing hub. Hero with one pill button per market, then group cards. Each market has its own route: `/offers/schools`, `/offers/organizations`, `/offers/individuals`. All content in `lib/offers-data.ts`; shared shell in `components/offers/OfferGroupPage.tsx`. **Not in the main navbar** — reached from the footer Quick Links and the homepage grid. Coexists with the quote-based flows rather than replacing them — see `context/decisions.md`.
+- `/events/base-camp-kids` — one-day event activation with its own registration form, sibling-discount pricing engine, and Sheets recording → `/api/event-registration`. Source of truth: `lib/events/base-camp-kids.ts`. Confirmation page at `/events/base-camp-kids/registered`.
 - `/about`, `/individuals`, `/organizations` — light marketing pages
 - `/schools` — hub, includes the Duke of Edinburgh callout
 - `/schools/international-award` — full DoE page with 4-question assessment → `/api/assessment-lead`. Q3 (group size) is a free integer; phone is required on the capture phase. Assessment results CTAs are conditional: equipment-only takers go to `/gear-rental`, everyone else to `/schools/international-award/proposal?tier={recommended}`
@@ -41,7 +43,7 @@ The gear-rental form does **not** use this stack — it talks straight to the qu
 ## External services
 
 - **Resend** — transactional email. Needs `RESEND_API_KEY` env var. From address: `rentals@campingnigeria.com` / similar per route.
-- **Microsoft Forms** — individual trip bookings. Hardcoded link: `https://forms.office.com/r/bgsZ4shNxD`. All "Book Your Spot" CTAs link out.
+- **Microsoft Forms** — individual trip bookings. URL lives in `lib/constants.ts#BOOKING_FORM_URL`. All "Book Your Spot" CTAs link out — don't re-hardcode it.
 - **Outlook Bookings** — DoE consultation calendar. URL lives in `lib/constants.ts#CALENDAR_BOOKING_URL`. **Cannot be iframed** (X-Frame-Options) — always link-out.
 - **Vercel** — hosting + analytics.
 
@@ -63,8 +65,8 @@ Use as `bg-brand-dark`, `text-brand-accent-readable`, etc.
 ## Contact + ownership
 
 - **Storefront address:** Shop No. 17A, Arts and Craft Village, Sani Abacha Way, Wuse, Abuja 904101, FCT, Nigeria (Plus code `3F8M+9RW`)
-- Domain contact: `hello@campingnigeria.com` / `+234 814 607 5937` (WhatsApp: `wa.me/2348146075937`)
-- Socials: Instagram `@camping_ng`, Facebook `campinggearsng`
+- Domain contact: `hello@campingnigeria.com` / `+234 903 404 2503`. WhatsApp is a click-to-chat short link, not a number-based `wa.me/<digits>` URL — see `lib/constants.ts#CONTACT`
+- Socials: Instagram `@campingnigeria`, Facebook `campinggearsng`
 - Built by the three founders: **Irewole** (CEO · [@irewole2019](https://github.com/irewole2019) · `iakande@live.com`), **Taiye** (President), **Kehinde** (Managing Director). See [context/people.md](context/people.md) for who to involve in which decisions.
 
 ## Where to look next
@@ -81,7 +83,7 @@ npm install
 npm run dev       # localhost:3000 (or :3001 if 3000 is taken)
 npm run build     # production build — run before merging
 npm run lint      # eslint
-npm test          # vitest run (44 pure-function tests)
+npm test          # vitest run (83 pure-function tests)
 npm run test:watch # vitest watch mode
 npx tsc --noEmit  # type check
 ```

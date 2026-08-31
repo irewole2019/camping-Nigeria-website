@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Camping Nigeria Offers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#0F3D2E;
+    --teal-deep:#0A2A20;
+    --mustard:#E6B325;
+    --ivory:#F3EFE6;
+    --paper:#FBF9F4;
+    --ink:#15130E;
+    --meta:#6B6455;
+    --rule:#DCD5C4;
+    --display:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --body:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px;}
+
+  /* ---------- masthead ---------- */
+  .masthead{background:var(--teal);color:#fff;padding:64px 0 56px;}
+  .brand{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.28em;
+    text-transform:uppercase;
+    color:var(--mustard);
+    margin:0 0 10px;
+  }
+  .tagline{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:15px;
+    color:rgba(255,255,255,.72);
+    margin:0 0 34px;
+  }
+  .masthead h1{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(2.3rem,6vw,4rem);
+    line-height:1.02;
+    letter-spacing:-.025em;
+    margin:0 0 20px;
+    max-width:21ch;
+  }
+  .masthead p.lede{
+    margin:0;
+    max-width:56ch;
+    font-size:17px;
+    color:rgba(255,255,255,.85);
+  }
+
+  /* ---------- sticky nav ---------- */
+  nav{
+    position:sticky;top:0;z-index:20;
+    background:var(--teal-deep);
+    border-bottom:3px solid var(--mustard);
+  }
+  nav ul{display:flex;gap:0;list-style:none;margin:0;padding:0;flex-wrap:wrap;}
+  nav a{
+    display:block;
+    padding:15px 22px;
+    font-family:var(--display);
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:rgba(255,255,255,.7);
+    text-decoration:none;
+    border-bottom:3px solid transparent;
+    margin-bottom:-3px;
+  }
+  nav a:hover,nav a:focus-visible{color:#fff;border-bottom-color:var(--mustard);}
+
+  /* ---------- market section ---------- */
+  .market{padding:72px 0 8px;scroll-margin-top:56px;}
+  .market-head{
+    border-top:4px solid var(--teal);
+    padding-top:18px;
+    margin-bottom:38px;
+  }
+  .market-head h2{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(1.9rem,4.4vw,2.9rem);
+    letter-spacing:-.02em;
+    color:var(--teal);
+    margin:0 0 8px;
+  }
+  .market-head p{margin:0;color:var(--meta);max-width:62ch;font-size:16px;}
+
+  /* ---------- offer card ---------- */
+  .offer{
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-left:7px solid var(--teal);
+    margin-bottom:26px;
+  }
+  .offer-top{padding:30px 34px 0;}
+  .chip{
+    display:inline-block;
+    font-family:var(--display);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--teal);
+    background:var(--mustard);
+    padding:5px 11px;
+    margin-bottom:14px;
+  }
+  .offer h3{
+    font-family:var(--display);
+    font-weight:800;
+    font-size:clamp(1.5rem,3.4vw,2.1rem);
+    letter-spacing:-.02em;
+    color:var(--teal);
+    margin:0 0 8px;
+  }
+  .offer .sub{margin:0;color:var(--meta);font-size:16px;max-width:60ch;}
+
+  /* data strip */
+  .facts{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    margin:26px 0 0;
+  }
+  .fact{padding:16px 34px;border-right:1px solid var(--rule);}
+  .fact:last-child{border-right:0;}
+  .fact dt{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:10px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--meta);
+    margin:0 0 5px;
+  }
+  .fact dd{
+    margin:0;
+    font-family:var(--display);
+    font-weight:600;
+    font-size:15px;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .fact.price dd{color:var(--teal);font-weight:800;}
+
+  /* body of card */
+  .offer-body{padding:28px 34px 32px;}
+  .offer-body h4{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--teal);
+    margin:0 0 14px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--mustard);
+    display:inline-block;
+  }
+  .offer-body ul{
+    margin:0;
+    padding:0;
+    list-style:none;
+    columns:2;
+    column-gap:44px;
+  }
+  .offer-body li{
+    position:relative;
+    padding-left:19px;
+    margin-bottom:9px;
+    break-inside:avoid;
+    font-size:15.5px;
+  }
+  .offer-body li::before{
+    content:"";
+    position:absolute;left:0;top:.62em;
+    width:7px;height:7px;
+    background:var(--mustard);
+  }
+  .builds{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:14px;
+    color:var(--teal);
+    background:var(--ivory);
+    border-left:3px solid var(--mustard);
+    padding:10px 14px;
+    margin:0 0 20px;
+  }
+  .note{
+    margin:22px 0 0;
+    padding-top:16px;
+    border-top:1px solid var(--rule);
+    font-size:14.5px;
+    color:var(--meta);
+  }
+  .note strong{color:var(--ink);font-weight:600;}
+
+  /* ---------- footer ---------- */
+  footer{background:var(--teal);color:rgba(255,255,255,.8);margin-top:72px;padding:52px 0 44px;}
+  footer h5{
+    font-family:var(--display);
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--mustard);
+    margin:0 0 12px;
+  }
+  footer p{margin:0 0 14px;max-width:70ch;font-size:15px;}
+  footer .sig{
+    margin-top:30px;padding-top:22px;
+    border-top:1px solid rgba(255,255,255,.18);
+    font-family:var(--display);
+    font-weight:700;
+    letter-spacing:.06em;
+    color:#fff;
+    font-size:15px;
+  }
+  footer a{color:var(--mustard);}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:820px){
+    .facts{grid-template-columns:repeat(2,1fr);}
+    .fact{border-bottom:1px solid var(--rule);}
+    .fact:nth-child(2n){border-right:0;}
+    .fact:nth-last-child(-n+2){border-bottom:0;}
+    .offer-body ul{columns:1;}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 18px;}
+    .offer-top,.offer-body{padding-left:20px;padding-right:20px;}
+    .facts{grid-template-columns:1fr;}
+    .fact{padding:14px 20px;border-right:0;border-bottom:1px solid var(--rule);}
+    .fact:last-child{border-bottom:0;}
+  }
+
+  @media print{
+    body{background:#fff;}
+    nav{display:none;}
+    .offer{break-inside:avoid;border-color:#999;}
+    .masthead,footer{background:#0F3D2E !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="brand">Camping Nigeria</p>
+    <p class="tagline">Adventure Made Simple</p>
+    <h1>Offers for schools, organizations and individuals</h1>
+    <p class="lede">Managed outdoor programmes. We bring the equipment, the facilitators, the safety documentation and the paperwork. You get the programme and the record of it.</p>
+  </div>
+</header>
+
+<nav aria-label="Markets">
+  <div class="wrap">
+    <ul>
+      <li><a href="#schools">Schools</a></li>
+      <li><a href="#organizations">Organizations</a></li>
+      <li><a href="#individuals">Individuals</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============================ SCHOOLS ============================ -->
+<section class="market" id="schools">
+  <div class="wrap">
+    <div class="market-head">
+      <h2>Schools</h2>
+      <p>Outdoor development programmes delivered on your own campus. Your teachers supervise. Nothing lands on one member of staff.</p>
+    </div>
+
+    <!-- Field Day -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Core</span>
+        <h3>Field Day</h3>
+        <p class="sub">A single facilitated day on campus. The way most schools start.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>1 day, on campus</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>Up to 150 students</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>3 to 4 weeks</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;3,000,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <h4>What is included</h4>
+        <ul>
+          <li>Age-banded programme: Nature and Craft, or Leadership Development</li>
+          <li>Facilitators on site throughout, at a published ratio</li>
+          <li>Students pitch and strike their own camp</li>
+          <li>Equipment, delivery, setup and collection</li>
+          <li>Safety pack and risk assessment</li>
+          <li>Parent pack, written and ready to send</li>
+          <li>Photo documentation</li>
+          <li>Written impact report</li>
+          <li>Named Programme Manager from signing to report</li>
+        </ul>
+        <p class="note"><strong>School provides:</strong> venue, catering, teacher supervision, first aid presence.<br>
+        <strong>Price:</strong> &#8358;1,200,000 mobilisation plus &#8358;18,000 per student. &#8358;3,000,000 at 100 students.</p>
+      </div>
+    </article>
+
+    <!-- Campus Expedition -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Premium</span>
+        <h3>The Campus Expedition</h3>
+        <p class="sub">Two days and a night on campus. A real expedition without leaving the school gates.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>2 days, 1 night</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>Up to 150 students</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>6 weeks</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;6,000,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <p class="builds">Everything in Field Day, plus:</p>
+        <h4>What is included</h4>
+        <ul>
+          <li>Overnight camp with house system, evening circle and campfire</li>
+          <li>Pre-camp student briefing assembly</li>
+          <li>Site assessment with written access and security plan</li>
+          <li>Overnight supervision plan with published night ratio</li>
+          <li>First aid trained staff on site</li>
+          <li>Equipment maintenance presence on site</li>
+          <li>Teacher role cards and pre-start briefing</li>
+          <li>Equipment inspection photographs before delivery</li>
+          <li>Certificates and house awards</li>
+          <li>Photo and video, highlight cut within 48 hours</li>
+          <li>Impact report with student self-ratings before and after</li>
+          <li>Debrief session with school leadership</li>
+        </ul>
+        <p class="note"><strong>School provides:</strong> campus access, catering, teacher presence throughout, permission slips on our template.<br>
+        <strong>Price:</strong> &#8358;2,500,000 mobilisation plus &#8358;35,000 per student. &#8358;6,000,000 at 100 students.</p>
+      </div>
+    </article>
+
+    <!-- Outdoor Year -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Annual</span>
+        <h3>The Outdoor Year</h3>
+        <p class="sub">An outdoor programme for the whole school year, with your dates locked before the calendar fills.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>2 to 3 programmes a year</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>Whole school, by year group</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>Before the school year opens</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;12,750,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <p class="builds">Everything above, across the year, plus:</p>
+        <h4>What is included</h4>
+        <ul>
+          <li>Dates locked in an annual planning call before the year starts</li>
+          <li>Programme built around your school's development goals</li>
+          <li>Priority calendar rights before general booking opens</li>
+          <li>Progressive design, so each year group builds on the last</li>
+          <li>Licence to use programme photography in admissions marketing</li>
+          <li>Annual outcomes summary for the board</li>
+          <li>Partner rate on any additional equipment hire</li>
+          <li>One outdoor session for teaching staff</li>
+        </ul>
+        <p class="note"><strong>Price:</strong> annual agreement, quoted on student numbers and programme mix. Two Campus Expeditions and one Field Day at 100 students is &#8358;12,750,000.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ========================= ORGANIZATIONS ========================= -->
+<section class="market" id="organizations">
+  <div class="wrap">
+    <div class="market-head">
+      <h2>Organizations</h2>
+      <p>Company days and leadership offsites where the team builds and lives in a real camp, not a conference room with a view.</p>
+    </div>
+
+    <!-- Company Field Day -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Core</span>
+        <h3>The Company Field Day</h3>
+        <p class="sub">A full day and evening for the whole team. Reward, bonding and a story people repeat on Monday.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>1 day and evening</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>30 to 120 people</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>4 weeks</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;3,550,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <h4>What is included</h4>
+        <ul>
+          <li>Camp build: the team pitches and strikes its own camp</li>
+          <li>Full camping equipment, shade, seating, lighting</li>
+          <li>Facilitators throughout, at a published ratio</li>
+          <li>Structured team challenge programme</li>
+          <li>Catering: main meal, suya station, small chops, bar</li>
+          <li>Sound system, DJ and MC</li>
+          <li>Bonfire evening with a structured close</li>
+          <li>Medical personnel on ground</li>
+          <li>Site assessment, safety and emergency plan</li>
+          <li>Photo and video, highlight cut within 48 hours</li>
+          <li>Named Programme Manager</li>
+        </ul>
+        <p class="note"><strong>Add on:</strong> movie night, branded team merchandise, family day format with a supervised children's zone.<br>
+        <strong>Company provides:</strong> confirmed headcount 14 days out, dietary requirements, one contact on the day, venue if using own grounds.<br>
+        <strong>Price:</strong> &#8358;2,200,000 mobilisation plus &#8358;45,000 per head. &#8358;4,450,000 at 50 people.</p>
+      </div>
+    </article>
+
+    <!-- Leadership Expedition -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Premium</span>
+        <h3>The Leadership Expedition</h3>
+        <p class="sub">Two days and a night for a leadership team, built around the issues you name, with a written debrief afterwards.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>2 days, 1 night</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>15 to 45 people</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>6 weeks</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;5,450,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <p class="builds">Everything in The Company Field Day, plus:</p>
+        <h4>What is included</h4>
+        <ul>
+          <li>Overnight camp: the team sleeps in what it built</li>
+          <li>Discovery call with the sponsor before we design anything</li>
+          <li>Programme built around your two or three real issues</li>
+          <li>Rotating command: every participant leads a task</li>
+          <li>Facilitated reflection after each challenge</li>
+          <li>Confidential peer feedback round</li>
+          <li>Commitment circle: everyone leaves with a written commitment</li>
+          <li>Overnight supervision and security plan</li>
+          <li>Team Debrief Report within 10 days</li>
+          <li>Follow-up call with the sponsor after 90 days</li>
+        </ul>
+        <p class="note"><strong>Not included:</strong> psychometric testing or individual performance ratings. Facilitator observations go to the sponsor as input, not evaluation.<br>
+        <strong>Price:</strong> &#8358;3,200,000 mobilisation plus &#8358;75,000 per head. &#8358;6,950,000 at 50 people.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ========================== INDIVIDUALS ========================== -->
+<section class="market" id="individuals">
+  <div class="wrap">
+    <div class="market-head">
+      <h2>Individuals</h2>
+      <p>Camping without owning any of it. Bring clothes and a toothbrush. We handle the rest.</p>
+    </div>
+
+    <!-- Open Camp -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Buy a seat</span>
+        <h3>Open Camp</h3>
+        <p class="sub">A scheduled overnight camp you join on your own or with a friend. Built for people who have never camped.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>1 night, set dates</dd></div>
+        <div class="fact"><dt>Minimum to run</dt><dd>18 people</dd></div>
+        <div class="fact"><dt>Booking closes</dt><dd>10 days before</dd></div>
+        <div class="fact price"><dt>Per person</dt><dd>&#8358;95,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <h4>What is included</h4>
+        <ul>
+          <li>All gear: tent, sleeping mat, sleeping bag, lighting</li>
+          <li>Guided pitch, so you put up your own tent with help</li>
+          <li>All meals: dinner, bonfire suya, breakfast</li>
+          <li>Facilitated activities, so nobody stands alone</li>
+          <li>Bonfire evening with music, stories and games</li>
+          <li>Morning activity: nature walk or sunrise session</li>
+          <li>Medical personnel on ground and an emergency protocol</li>
+          <li>Site security and overnight supervision</li>
+          <li>Photo record shared with everyone afterwards</li>
+          <li>First-timer briefing sent when you book</li>
+        </ul>
+        <p class="note"><strong>Runs or refunds:</strong> if we do not reach 18 people, the camp does not run and every ticket is refunded in full within five working days.<br>
+        <strong>Add on:</strong> return transport from a single Abuja pickup point, &#8358;15,000 per person.<br>
+        <strong>Payment:</strong> in full on booking. Solo bookings and tent sharing available.</p>
+      </div>
+    </article>
+
+    <!-- Private Camp -->
+    <article class="offer">
+      <div class="offer-top">
+        <span class="chip">Bring your group</span>
+        <h3>Private Camp</h3>
+        <p class="sub">Your group, your date, no strangers. For birthdays, families, church groups, societies and small teams.</p>
+      </div>
+      <dl class="facts">
+        <div class="fact"><dt>Format</dt><dd>1 night, your date</dd></div>
+        <div class="fact"><dt>Group size</dt><dd>From 10 people</dd></div>
+        <div class="fact"><dt>Lead time</dt><dd>3 weeks</dd></div>
+        <div class="fact price"><dt>From</dt><dd>&#8358;1,550,000</dd></div>
+      </dl>
+      <div class="offer-body">
+        <p class="builds">Everything in Open Camp, plus:</p>
+        <h4>What is included</h4>
+        <ul>
+          <li>Your own date and your own group</li>
+          <li>Choice of location from our vetted sites</li>
+          <li>Programme shaped to the occasion</li>
+          <li>Catering tailored to the group, including dietary and faith requirements</li>
+          <li>Option to run on private grounds, subject to a site visit</li>
+          <li>Named Programme Manager and one point of contact</li>
+          <li>Full photo and video record</li>
+        </ul>
+        <p class="note"><strong>Add on:</strong> bonfire and music setup, DJ, movie night, celebration setup, children's zone with dedicated supervision, craft session.<br>
+        <strong>Price:</strong> &#8358;900,000 plus &#8358;65,000 per person. &#8358;2,200,000 at 20 people.<br>
+        <strong>Payment:</strong> 50% deposit, balance one week before.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <h5>Every programme includes</h5>
+    <p>Trained facilitators, full equipment and setup, a written safety pack and risk assessment, medical cover appropriate to the format, and a named Programme Manager from signing to delivery.</p>
+    <h5>Booking and payment</h5>
+    <p>50% deposit on signing, balance two weeks before delivery, with 5% off for full payment on signing. Termly and annual invoicing available for schools. Purchase orders accepted.</p>
+    <h5>Pricing</h5>
+    <p>Prices are indicative and subject to confirmation on group size, dates and location. Quotes are issued within 72 hours of a planning call.</p>
+    <p class="sig">Camping Nigeria &nbsp;&middot;&nbsp; Adventure Made Simple &nbsp;&middot;&nbsp; <a href="https://www.campingnigeria.com">campingnigeria.com</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

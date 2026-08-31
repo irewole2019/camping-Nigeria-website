@@ -538,3 +538,68 @@ The pricing-config Google Sheet has an `image_url` column. The team uploads phot
 The fallback is driven by `onError` from `next/image`, so it costs zero extra network requests in the happy path. The `unoptimized={src.startsWith('http')}` flag bypasses Next's image optimiser for remote URLs — keeps Drive thumbnails working without maintaining a `remotePatterns` allowlist as new image sources appear in the sheet.
 
 **Why a single lightbox at the table level instead of one per thumb:** rendering 17 hidden `<dialog>`/`AnimatePresence` trees was the obvious wasteful path. State lives on `EquipmentTable` (`preview: { item, src } | null`); thumbs call `onOpen(item, src)` on click; one `<Lightbox />` at the bottom of the table renders the open state. The lightbox locks `document.body.style.overflow`, listens for `Escape`, and traps the click via `onClick={onClose}` on the backdrop with `e.stopPropagation()` on the inner panel. Standard modal hygiene, kept in-file because it's the only consumer.
+## `/offers` is a hub of separate routes, not one anchor-scrolled page
+
+The source design (`Camping_Nigeria_Offers_1.html`) was a single document with a sticky nav scrolling to `#schools` / `#organizations` / `#individuals`. The site build splits it into four routes: `/offers` (hub with the hero + three group cards) and `/offers/{schools,organizations,individuals}` (packages for that market).
+
+**Why separate routes:**
+- Each market gets its own canonical URL, OG/Twitter card, sitemap entry and `Service` + `AggregateOffer` schema. One page could only carry one of each, so two of the three markets would publish no price signal to Google.
+- Sales can send a school a link to *only* school packages. An anchor link drops the reader into the middle of a page whose top half is about something else.
+- The three markets have genuinely different CTAs (school proposal form / contact / Microsoft Forms booking). Mixing them on one page makes the page's job ambiguous.
+- Mirrors the homepage gateway, which already routes Schools / Organizations / Individuals to three destinations.
+
+Shared shell is `components/offers/OfferGroupPage.tsx`; each `page.tsx` is a four-line data lookup. Adding a fourth market is a data edit in `lib/offers-data.ts` plus one page file and one OG/Twitter pair.
+
+---
+
+## Offer pricing lives in `lib/offers-data.ts` with a display string *and* a number
+
+Every package carries both `facts[3].value` (the human string, e.g. `'₦3,000,000'`) and `priceFromValue` (e.g. `3_000_000`). The string renders; the number feeds `buildServiceJsonLd`, which emits `AggregateOffer` low/high price only when **every** offer in the group has a numeric price.
+
+**Why both instead of deriving one from the other:** the display strings are not all parseable as a single number — Open Camp shows `₦95,000` under a `Per person` label, and The Outdoor Year's figure is an annual-agreement example, not a floor. Deriving the schema number from the display string would either publish per-person prices as programme prices or need per-package parsing rules. Keeping them adjacent with a comment to hold them in step is the smaller risk.
+
+**Known inconsistency carried over verbatim from the source document:** The Leadership Expedition lists `From ₦5,450,000` with a group size of `15 to 45 people`, but its own price formula (`₦3,200,000 + ₦75,000/head`) gives ₦4,325,000 at the 15-person minimum — the ₦5,450,000 figure assumes 30 people. Every other package's "From" matches its formula at the stated minimum. Not corrected in code because it is a pricing decision, not a bug. Resolve with Taiye and Kehinde, then edit `lib/offers-data.ts`.
+
+---
+
+## Published offer pricing coexists with the quote-based flows; it does not replace them
+
+`/offers` publishes prices for school, corporate and individual packages. The existing quote-based surfaces are untouched: `/schools/proposal` still runs the 9-question recommendation engine, the DoE pages still publish their own ₦3M / ₦5M / ₦8M tiers, and `/gear-rental` still routes to the quote tool.
+
+**Why not consolidate yet:** the open question in [TODO.md](../TODO.md) — whether to retire the recommendation engine in favour of published pricing across the board — is a positioning decision for the founders, not a coding one. Shipping `/offers` gives the team a published-pricing surface to test against real enquiries *before* committing to tearing out the engine. Two things to watch while both exist:
+- The schools taxonomies differ. `/offers/schools` sells **Field Day / The Campus Expedition / The Outdoor Year**; `/schools/programs/*` sells **Nature & Craft / Leadership Development / On-Campus Camps** with Spark/Trail/Summit tiers. A visitor can reach both. Field Day's inclusions name the older programmes ("Nature and Craft, or Leadership Development"), which is the only bridge between them today.
+- Both `/offers/schools` and `/schools/programs/*` emit `Service` schema for school programmes. They have distinct `@id`-less `url` values so they will not collide, but if the two ever describe the same product at different prices, Google will see conflicting offers.
+
+---
+## Primary typeface is DM Sans via `next/font/google`; Agrandir stays local
+
+`--font-sans` (Tailwind `font-sans`) is **DM Sans**, loaded with `next/font/google` in `app/layout.tsx`. `--font-serif` (Tailwind `font-serif`) is still **Agrandir**, loaded with `next/font/local` from `public/fonts/Agrandir-Regular.otf`. Body and UI are DM Sans; headlines are Agrandir.
+
+**Why `next/font/google` rather than a `<link>` to fonts.googleapis.com:** the loader downloads the font at build time and serves it from `/_next/static/media/`, so there is no runtime request to Google. That matters here because the CSP declares `font-src 'self' data:` and `style-src` does not allow `fonts.googleapis.com` — a `<link rel="stylesheet">` to Google would be blocked the moment the CSP is flipped from report-only to enforce. Self-hosting means the font change needs **no CSP edit at all**.
+
+**Why not a local `.ttf` like the old Helvetica:** DM Sans on Google Fonts is a variable font, so one woff2 covers weights 400–700. The site uses `font-medium`, `font-semibold` and `font-bold`; a static local file would have meant shipping three or four separate files or letting the browser synthesise fake bold.
+
+**Fallback stacks are declared in the `@theme inline` block**, not just the bare variable: `var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif`. Without a fallback, any failure to define the variable silently drops text to the browser default with no system-font safety net.
+
+**`font-serif` is a slot name, not a description.** Agrandir is a geometric sans. It occupies Tailwind's `serif` slot because the project needed a second family and that slot was free. Don't "fix" this by renaming — every headline in the codebase uses `font-serif`.
+
+**Email templates are deliberately unchanged.** All five routes in `app/api/*/route.ts` set `font-family:Helvetica,Arial,sans-serif` inline. Mail clients strip or ignore webfonts, so those stacks stay web-safe. Changing them to DM Sans would render as the client's default anyway and lose the deliberate fallback.
+
+**Leftover:** `public/fonts/Helvetica.ttf` is now unreferenced. It is also a proprietary Monotype face that was being served publicly from `/fonts/Helvetica.ttf` — worth deleting on both counts. Left in place only because removing a binary asset should be a deliberate commit, not a side effect of a font swap.
+
+---
+## `CONTACT.whatsapp` is an opaque click-to-chat link, not `wa.me/<phone digits>`
+
+It was `https://wa.me/2348146075937` — the phone number with the leading zero swapped for the country code. It is now `https://wa.me/message/4NX4VTGXCP4UE1?src=qr`, the business's click-to-chat short link generated from its WhatsApp QR code.
+
+**Consequence:** the WhatsApp URL and the phone number are now **independent values**. Do not reconstruct one from the other. A future phone change does not invalidate the chat link, and vice versa — but it also means a stale `wa.me/<digits>` URL will not be caught by grepping for the old phone number.
+
+## Contact details are interpolated into email templates, never hardcoded
+
+All five routes in `app/api/*/route.ts` used to hardcode the phone, WhatsApp URL, Instagram URL and Facebook URL directly in their HTML template literals, even though `CONTACT` already existed in `lib/constants.ts` and the contact page, footer and JSON-LD all read from it. A contact change therefore had to be made in ~17 places across five files, and the last one (31/08/2026) missed the email templates entirely — the site showed one number while every outbound email showed another for months.
+
+Every occurrence now interpolates: `${CONTACT.phone}`, `${CONTACT.whatsapp}`, `${CONTACT.instagram}`, `${CONTACT.facebook}`, and `tel:${CONTACT.phone.replace(/\s/g, '')}` for dial links. **Adding a new email template? Import `CONTACT` — do not paste a literal.**
+
+Note the one thing that stays hardcoded on purpose: the `font-family:Helvetica,Arial,sans-serif` stacks in those same templates. Mail clients strip webfonts, so a web-safe stack is correct there.
+
+---
