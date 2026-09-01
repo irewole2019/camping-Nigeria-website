@@ -656,3 +656,32 @@ This is the third pairing. The history matters because the slot names are now ac
 **Fallback stacks are declared on both slots**, not bare `var()`. An undefined variable would otherwise drop text to the browser default with no system-font safety net — which is exactly what happened during the 31/08 switch when Tailwind's cached `@theme` block kept pointing at a removed variable.
 
 ---
+## Type pairing reversed again: Agrandir back to headings, Inter stays on body
+
+Reverses the DM Sans / Inter pairing set earlier the same day. Current mapping in `app/globals.css`:
+
+```css
+--font-serif: var(--font-agrandir), ui-sans-serif, system-ui, sans-serif;  /* headings */
+--font-sans:  var(--font-inter),    ui-sans-serif, system-ui, sans-serif;  /* body, UI */
+```
+
+**Full history — four pairings in two days.** Anyone reading an older entry in this file will find a mapping that is no longer true, so the table is the thing to trust:
+
+| Date | `font-serif` (headings) | `font-sans` (body) |
+|---|---|---|
+| Originally | Agrandir | Helvetica Now (local `.ttf`) |
+| 31/08/2026 | Agrandir | DM Sans |
+| 01/09/2026 | DM Sans | Inter |
+| 01/09/2026 | **Agrandir** | **Inter** |
+
+The end state is the original design with Helvetica swapped for Inter. Agrandir is the brand display face and belongs in the heading slot; DM Sans is out of the codebase entirely.
+
+**Better still, read `app/globals.css`.** Given the churn, treat any font claim in the docs as possibly stale and check the `@theme inline` block.
+
+**Agrandir's fallback stack is a sans one, not the original `Georgia, serif`.** Agrandir is a geometric sans; a serif fallback flashes something visibly wrong on a slow load or if the `.otf` ever fails. This is a deliberate difference from the pre-31/08 setup, not an oversight in the revert.
+
+**Loading differs by face and that is fine.** Agrandir is a licensed local `.otf` through `next/font/local`; Inter comes through `next/font/google` and is self-hosted at build time under `/_next/static/media/`. Neither makes a runtime request off-origin, so `font-src 'self' data:` in the CSP covers both without an edit.
+
+**`public/fonts/Helvetica.ttf` is now unambiguously dead.** Nothing has referenced it since 31/08, it is a proprietary Monotype face, and it is still downloadable from `https://www.campingnigeria.com/fonts/Helvetica.ttf` because anything in `public/` is served whether or not it is imported. That is a licensing exposure, not untidiness. Delete it. `Agrandir-Regular.otf` stays — it is in active use again.
+
+---
