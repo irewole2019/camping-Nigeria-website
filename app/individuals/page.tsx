@@ -5,8 +5,12 @@ import IndividualsHero from '@/components/individuals/IndividualsHero'
 import Expectations from '@/components/individuals/Expectations'
 import ImageGallery from '@/components/individuals/ImageGallery'
 import IndividualsCta from '@/components/individuals/IndividualsCta'
+import OfferShowcase from '@/components/offers/OfferShowcase'
+import { getOfferGroup } from '@/lib/offers-data'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
+
+const individualOffers = getOfferGroup('individuals')
 
 export const metadata = buildPageMetadata({
   title: 'Individuals | Camping Nigeria',
@@ -29,6 +33,12 @@ export default function IndividualsPage() {
       <IndividualsHero />
       <Expectations />
       <ImageGallery />
+      <OfferShowcase
+        group={individualOffers}
+        heading="Join a Camp, or Bring Your Own Group"
+        intro={individualOffers.packagesIntro}
+        className="bg-brand-light"
+      />
       <IndividualsCta />
       <Footer />
     </main>

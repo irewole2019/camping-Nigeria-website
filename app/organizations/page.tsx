@@ -4,8 +4,12 @@ import JsonLd from '@/components/seo/JsonLd'
 import OrganizationsHero from '@/components/organizations/OrganizationsHero'
 import WhatWeOffer from '@/components/organizations/WhatWeOffer'
 import OrganizationsCta from '@/components/organizations/OrganizationsCta'
+import OfferShowcase from '@/components/offers/OfferShowcase'
+import { getOfferGroup } from '@/lib/offers-data'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
+
+const organizationOffers = getOfferGroup('organizations')
 
 export const metadata = buildPageMetadata({
   title: 'Organizations | Camping Nigeria',
@@ -27,6 +31,12 @@ export default function OrganizationsPage() {
       <Navbar />
       <OrganizationsHero />
       <WhatWeOffer />
+      <OfferShowcase
+        group={organizationOffers}
+        heading="Packages for Your Team"
+        intro={organizationOffers.packagesIntro}
+        className="bg-brand-light"
+      />
       <OrganizationsCta />
       <Footer />
     </main>
