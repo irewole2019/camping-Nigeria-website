@@ -33,10 +33,11 @@
 }
 
 @theme inline {
-  /* Primary: DM Sans (body, UI). Secondary: Agrandir (headlines, `font-serif`
-     is the Tailwind slot name, not a claim that Agrandir is a serif). */
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-agrandir), Georgia, serif;
+  /* Headings: DM Sans. Body and UI: Inter. `font-serif` is only the Tailwind
+     slot name every headline in the codebase already uses — nothing in this
+     pairing is a serif, so its fallback stack is a sans one. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
 
   --color-brand-dark: var(--brand-dark);

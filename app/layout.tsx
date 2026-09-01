@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import localFont from 'next/font/local'
-import { DM_Sans } from 'next/font/google'
+import { DM_Sans, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -9,19 +8,22 @@ import { buildOrganizationJsonLd, buildWebsiteJsonLd } from '@/lib/structured-da
 import { buildPageMetadata, SITE_URL } from '@/lib/seo'
 import './globals.css'
 
-// Primary typeface. next/font/google downloads and self-hosts at build time,
-// so nothing is fetched from Google at runtime and `font-src 'self'` in the
-// CSP keeps covering it. DM Sans is variable — one file serves 400 to 700.
+// Both faces come from next/font/google, which downloads and self-hosts them
+// at build time — nothing is fetched from Google at runtime, so `font-src
+// 'self'` in the CSP keeps covering them. Both are variable fonts, so one
+// file each serves the whole 400–700 range the site uses.
+
+// Headings. Mapped to Tailwind's `font-serif` slot in globals.css.
 const dmSans = DM_Sans({
   subsets: ['latin'],
   variable: '--font-dm-sans',
   display: 'swap',
 })
 
-// Secondary typeface — headlines. Still the licensed local file.
-const agrandir = localFont({
-  src: '../public/fonts/Agrandir-Regular.otf',
-  variable: '--font-agrandir',
+// Body and UI. Mapped to Tailwind's `font-sans` slot.
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
   display: 'swap',
 })
 
@@ -73,7 +75,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-NG" className={`${dmSans.variable} ${agrandir.variable} scroll-smooth`}>
+    <html lang="en-NG" className={`${dmSans.variable} ${inter.variable} scroll-smooth`}>
       <body className="font-sans antialiased bg-brand-light text-brand-dark">
         <JsonLd id="organization-jsonld" data={buildOrganizationJsonLd()} />
         <JsonLd id="website-jsonld" data={buildWebsiteJsonLd()} />
