@@ -33,11 +33,12 @@
 }
 
 @theme inline {
-  /* Headings: DM Sans. Body and UI: Inter. `font-serif` is only the Tailwind
-     slot name every headline in the codebase already uses — nothing in this
-     pairing is a serif, so its fallback stack is a sans one. */
+  /* Headings: Agrandir (the brand display face). Body and UI: Inter.
+     `font-serif` is only the Tailwind slot name every headline in the
+     codebase already uses — Agrandir is a geometric sans, not a serif, so
+     its fallback stack is a sans one. */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-agrandir), ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
 
   --color-brand-dark: var(--brand-dark);
