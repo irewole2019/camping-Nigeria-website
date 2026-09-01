@@ -225,6 +225,8 @@ npm run test:watch # vitest watch mode
 npx tsc --noEmit   # type check
 ```
 
+**`tsc` failing inside `.next/dev/types/` is not your code.** `tsconfig.json` includes Next's generated route validators, and running `tsc --noEmit` while `next dev` is mid-regeneration can catch a torn write — producing nonsense like `error TS2304: Cannot find name 'ment'` from a truncated `ment-lead/route.ts` line. Re-running does not help; the bad file is on disk. Stop the dev server, `rm -rf .next`, then re-run. Same applies to a `@theme` edit in `globals.css` not taking effect — Tailwind v4 caches the compiled block, so that also needs a stop, `.next` clear, and restart rather than a hot reload.
+
 **`npm audit` is no longer clean.** As of 31/08/2026 a fresh `npm install` reports 10 vulnerabilities (1 critical, 7 high). Next 16.2.4 itself now carries ~18 advisories (middleware/proxy bypass, RSC cache poisoning, XSS with CSP nonces, several DoS); the rest are dev-only transitive deps (`@babel/core`, `esbuild`, `js-yaml`, `brace-expansion`, `nanoid`). These are new disclosures against a pinned version, not a regression introduced by any change here. Upgrading Next is tracked in [state.md](state.md#next-tracked-todos) — treat it as its own session, not a drive-by bump.
 
 Note also that npm 11+ blocks postinstall scripts by default: `esbuild`, `sharp` and `unrs-resolver` are listed as pending on install. Nothing has broken so far; if `next/image` optimisation or vitest misbehaves, run `npm approve-scripts --allow-scripts-pending`.

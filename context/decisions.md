@@ -603,3 +603,30 @@ Every occurrence now interpolates: `${CONTACT.phone}`, `${CONTACT.whatsapp}`, `$
 Note the one thing that stays hardcoded on purpose: the `font-family:Helvetica,Arial,sans-serif` stacks in those same templates. Mail clients strip webfonts, so a web-safe stack is correct there.
 
 ---
+## Offers appear twice: compact cards on each market page, full detail on `/offers`
+
+Each market's own marketing page (`/schools`, `/individuals`, `/organizations`) renders `OfferShowcase` — compact feature cards that open the full package in a modal. The dedicated `/offers/<group>` pages still render every package inline via `OfferPackages`.
+
+**Why two presentations rather than one:** the jobs differ. Someone on `/schools` is being sold the idea and should be able to price a programme without losing their place in the page — hence a modal, not a navigation. Someone on `/offers/schools` arrived to compare packages and wants everything visible, linkable and printable.
+
+**Why they can't drift:** both render the same pieces from `components/offers/OfferDetail.tsx` (`FactsStrip`, `OfferChip`, `OfferBody`, `OfferCta`) over the same `lib/offers-data.ts` records. Changing a package changes both. Don't inline package markup in either component.
+
+**Modal, not an accordion.** Packages carry up to twelve inclusions plus a notes block; expanding that in place inside a card grid either pushes the grid around or needs a full-width panel spanning columns, and on mobile it buries the rest of the page. A modal with `max-h-[85vh]` and its own scroll handles the longest package and the smallest screen identically. It follows the existing lightbox conventions from `EquipmentTable.tsx`: Escape to close, backdrop click, body scroll lock, `role="dialog"` + `aria-modal`, focus moved to the close button on open and returned to the triggering card on close.
+
+**Offer schema is emitted once, on `/offers/<group>` only.** The market pages render the same prices as plain content. Duplicating `Service` + `AggregateOffer` across two URLs would publish competing offers for the same product.
+
+**The market sections do not link to `/offers/<group>`.** `OfferShowcase` originally carried a "See all &lt;group&gt; packages" link under the grid; it was removed on request. Nothing is lost for the reader — the modal already carries the full offer, so the section is self-contained. The cost is three fewer internal links into `/offers/*`, which now depends on the footer Quick Links, the homepage grid and the sitemap (priority 0.85) for crawl signal. If those pages ever start underperforming in search, restoring this link is the first thing to try. `footerLinks` on the component is unrelated and still in use — that is the schools programme-page row below.
+
+---
+
+## `/schools` sells offers where it used to list programmes
+
+The "Structured for Schools" section (`components/home/OurSchoolPrograms.tsx` — three parallax cards linking to the programme sub-pages) was replaced by the schools `OfferShowcase`.
+
+**Consequence to watch:** that grid was the **only** navigational link into `/schools/programs/{nature-craft,leadership-development,on-campus-camps}`. The only other reference is `ProposalResult.tsx`, which links to whichever single programme the engine recommends after someone completes the form — not browsable navigation. Replacing the section outright would have orphaned three indexed pages from the internal link graph.
+
+They are preserved as a `footerLinks` row beneath the offer cards on `/schools`. If that row is ever removed, either give the programme pages another entry point or retire them properly (sitemap, redirects) — don't leave them reachable only by direct URL.
+
+`OurSchoolPrograms.tsx` is now unreferenced. Left in the tree rather than deleted, because the two taxonomies question in [TODO.md](../TODO.md) is still open and this is the component that would come back if the team keeps programme-led marketing.
+
+---
