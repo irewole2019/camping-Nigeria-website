@@ -16,7 +16,7 @@ The site is the main acquisition surface: it books individuals into trips (via M
 - **lucide-react** for icons (no emojis in UI)
 - **Resend REST API** via direct `fetch()` (not the SDK) in 5 API routes
 - **@vercel/analytics** for traffic analytics
-- Fonts: **DM Sans** (primary/body, `var(--font-dm-sans)` → `font-sans`) + **Agrandir** (secondary/headlines, `var(--font-agrandir)` → `font-serif`)
+- Fonts: **DM Sans** (headings, `var(--font-dm-sans)` → `font-serif`) + **Inter** (body/UI, `var(--font-inter)` → `font-sans`). Both from `next/font/google`, self-hosted at build time. `font-serif` is only Tailwind's slot name — neither face is a serif.
 
 ## Key routes
 

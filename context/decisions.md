@@ -630,3 +630,29 @@ They are preserved as a `footerLinks` row beneath the offer cards on `/schools`.
 `OurSchoolPrograms.tsx` is now unreferenced. Left in the tree rather than deleted, because the two taxonomies question in [TODO.md](../TODO.md) is still open and this is the component that would come back if the team keeps programme-led marketing.
 
 ---
+## Type pairing: DM Sans for headings, Inter for body — Agrandir retired
+
+Current mapping in `app/globals.css`:
+
+```css
+--font-serif: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;  /* headings */
+--font-sans:  var(--font-inter),   ui-sans-serif, system-ui, sans-serif;  /* body, UI */
+```
+
+This is the third pairing. The history matters because the slot names are now actively misleading:
+
+| | `font-serif` (headings) | `font-sans` (body) |
+|---|---|---|
+| Originally | Agrandir | Helvetica Now (local `.ttf`) |
+| 31/08/2026 | Agrandir | DM Sans |
+| 01/09/2026 | **DM Sans** | **Inter** |
+
+**`font-serif` holds no serif and never has.** It is Tailwind's slot name, and every headline in the codebase already uses the `font-serif` utility. Renaming the slot to something honest (`font-display`) would mean editing every heading in every component for zero user-visible gain. Leave it, and read it as "the heading face".
+
+**Both faces now load through `next/font/google`.** They are downloaded and self-hosted at build time under `/_next/static/media/`, so no request leaves the site at runtime and the CSP's `font-src 'self' data:` keeps covering them without edits. Both are variable fonts, so one woff2 each serves the 400–700 range the site uses — two font files total for the whole site.
+
+**No local font files remain in use.** `public/fonts/Helvetica.ttf` (dropped 31/08) and `public/fonts/Agrandir-Regular.otf` (dropped 01/09) are both unreferenced. `next/font/local` is no longer imported anywhere. Helvetica is a proprietary Monotype face that was being served publicly from `/fonts/`; Agrandir was the brand display face, so check with the founders before deleting that one — retiring it is a brand decision, not a cleanup.
+
+**Fallback stacks are declared on both slots**, not bare `var()`. An undefined variable would otherwise drop text to the browser default with no system-font safety net — which is exactly what happened during the 31/08 switch when Tailwind's cached `@theme` block kept pointing at a removed variable.
+
+---

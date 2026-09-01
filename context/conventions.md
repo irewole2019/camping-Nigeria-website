@@ -14,7 +14,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
   - Video referenced via `MEDIA_VIDEO` from `lib/media.ts` (not raw paths)
   - Images registered in `lib/media.ts` with `{ src, alt }` tuples — components import the registry, never raw paths
   - **Gear-rental item photos** are the exception: they live on Google Drive (column `image_url` in the pricing sheet) and the parser auto-rewrites `drive.google.com/file/d/<ID>/…` to `https://lh3.googleusercontent.com/d/<ID>`. Static fallback path is `/public/images/gear-rental/items/<id>.webp` keyed by catalogue `id`. See `EquipmentTable.tsx#ItemThumb` for the three-tier fallback chain (sheet URL → static file → Package icon).
-- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-dm-sans` / `--font-agrandir`. DM Sans comes from `next/font/google` (self-hosted at build time); Agrandir is a local `.otf` via `next/font/local`.
+- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-dm-sans` / `--font-inter`. Both come from `next/font/google` and are self-hosted at build time, so no runtime request leaves the site and `font-src 'self'` in the CSP keeps covering them. No local font files are used any more.
 
 ## Components
 
@@ -38,7 +38,7 @@ Keep the routes explicit — do **not** collapse them into a `[slug]` dynamic se
 
 - **Tailwind v4** with `@theme inline` in `app/globals.css` — do **not** create `tailwind.config.js`. If you need a new design token, add it to both `:root` and `@theme inline` in `globals.css`.
 - Brand classes: `bg-brand-dark`, `text-brand-dark`, `bg-brand-accent`, `text-brand-accent-readable` (use for gold text on cream — the regular gold fails contrast), `bg-brand-light`, `bg-brand-dark-tint`, `bg-brand-accent-tint`.
-- Fonts: `font-sans` (DM Sans) for body and UI, `font-serif` (Agrandir) for headlines. `font-serif` is just the Tailwind slot name — Agrandir is not a serif.
+- Fonts: `font-serif` (**DM Sans**) for headings, `font-sans` (**Inter**) for body and UI. `font-serif` is just the Tailwind slot name every headline already uses — neither face is a serif, and renaming the slot would mean touching every heading in the codebase.
 - **No emojis in UI** — use `lucide-react` icons. (Exception: none. This has come up before.)
 
 ## Forms
