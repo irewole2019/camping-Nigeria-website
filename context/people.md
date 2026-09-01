@@ -10,11 +10,11 @@ Who to involve for which decisions. Update when roles shift.
 
 The site is built and run by the three founders:
 
-| Person | Role | Contact |
-|---|---|---|
-| **Irewole** | CEO | [@irewole2019](https://github.com/irewole2019) · `iakande@live.com` |
-| **Taiye** | President | TBD |
-| **Kehinde** | Managing Director | TBD |
+| Person            | Role              | Contact                                                               |
+| ----------------- | ----------------- | --------------------------------------------------------------------- |
+| **Irewole** | CEO               | [@irewole2019](https://github.com/irewole2019) · `iakande@live.com` |
+| **Taiye**   | President         | TBD                                                                   |
+| **Kehinde** | Managing Director | TBD                                                                   |
 
 When a decision is listed as "Leadership team" below, raise it in whatever channel the three of them use to sync — don't default to just the commit author.
 
@@ -69,15 +69,15 @@ When a decision is listed as "Leadership team" below, raise it in whatever chann
 
 ## External services — who holds the keys
 
-| Service | Purpose | Key holder |
-|---|---|---|
-| Resend | Transactional email | TBD |
-| Microsoft 365 / Outlook Bookings | DoE consultation calendar | TBD |
-| Microsoft Forms | Individual trip bookings (`forms.office.com/r/bgsZ4shNxD`) | TBD |
-| Vercel | Hosting + analytics | TBD |
-| Domain registrar | `campingnigeria.com` | TBD |
-| Instagram `@campingnigeria` | Social | TBD |
-| Facebook `campinggearsng` | Social | TBD |
+| Service                          | Purpose                                                      | Key holder |
+| -------------------------------- | ------------------------------------------------------------ | ---------- |
+| Resend                           | Transactional email                                          | TBD        |
+| Microsoft 365 / Outlook Bookings | DoE consultation calendar                                    | TBD        |
+| Microsoft Forms                  | Individual trip bookings (URL in `lib/constants.ts#BOOKING_FORM_URL`) | TBD        |
+| Vercel                           | Hosting + analytics                                          | TBD        |
+| Domain registrar                 | `campingnigeria.com`                                       | TBD        |
+| Instagram `@campingnigeria`     | Social                                                       | TBD        |
+| Facebook `campinggearsng`       | Social                                                       | TBD        |
 
 ---
 
