@@ -109,6 +109,7 @@ The UI uses two `<input type="date">` pickers, but the client combines them into
 ---
 
 ## DoE pricing note is a flat add-on, not per-tier
+*(Superseded 07/09/2026 — these tiers were retired. See "DoE tiers retired" below.)*
 
 All three tiers are priced "for up to 60 students"; the "+₦50,000 per additional student up to 100" note is shared under the grid, not duplicated on each card.
 
@@ -117,6 +118,7 @@ All three tiers are priced "for up to 60 students"; the "+₦50,000 per addition
 ---
 
 ## DoE assessment — q4 drives the tier, q2/q3 tailor copy
+*(Partly superseded 07/09/2026 — q4 still selects, but by time commitment, not management level. See "DoE tiers retired" below.)*
 
 `getRecommendedTier(q2, q3, q4)` builds the tier object from templates. q4 alone selects Base Camp vs. Trail Ready vs. Summit Partner; q2 adds a "Since your school already runs the Award…" prefix to the summary; q3 previously drove capacity copy but is now effectively unused (pricing is fixed).
 
@@ -683,5 +685,43 @@ The end state is the original design with Helvetica swapped for Inter. Agrandir 
 **Loading differs by face and that is fine.** Agrandir is a licensed local `.otf` through `next/font/local`; Inter comes through `next/font/google` and is self-hosted at build time under `/_next/static/media/`. Neither makes a runtime request off-origin, so `font-src 'self' data:` in the CSP covers both without an edit.
 
 **`public/fonts/Helvetica.ttf` is now unambiguously dead.** Nothing has referenced it since 31/08, it is a proprietary Monotype face, and it is still downloadable from `https://www.campingnigeria.com/fonts/Helvetica.ttf` because anything in `public/` is served whether or not it is imported. That is a licensing exposure, not untidiness. Delete it. `Agrandir-Regular.otf` stays — it is in active use again.
+
+---
+## DoE tiers retired; `/schools/international-award` sells the school offers
+
+Base Camp / Trail Ready / Summit Partner (₦3M / ₦5M / ₦8M, "for up to 60 students") are gone. The page now sells the same three school offers as `/offers/schools` and `/schools`: Field Day, The Campus Expedition, The Outdoor Year. `components/schools/ExpeditionTiers.tsx` was deleted.
+
+**The two tier systems measured different things, and that is what made the swap non-trivial.** The DoE tiers scaled by *how much Camping Nigeria manages* — equipment only, then facilitation, then fully managed. The school offers scale by *duration and depth* — one day, two days and a night, a whole year. Facilitators, safety documentation and a named Programme Manager are in every school offer, so the management axis has no range left to express.
+
+Three consequences fell out of that:
+
+**Assessment Q4 changed axis.** It asked "How much of the programme does your school want to manage?"; it now asks "How much time can your school give the programme?" with A → Field Day, B → Campus Expedition, C → Outdoor Year, D/unanswered → Campus Expedition. Keeping the old question would have offered a choice the catalogue can no longer honour.
+
+**The conditional "Rent Camping Gear" CTA was removed.** It fired on the old Q4=A (equipment only) and sent those takers to `/gear-rental`. No answer identifies an equipment-only requester any more, so every assessment result now routes to the proposal form. `/gear-rental` is unaffected and still linked from everywhere else.
+
+**Legacy `?tier=` links fall through to "Not sure", deliberately.** Assessment emails already sent carry `?tier=base-camp|trail-ready|summit-partner`. Those are *not* mapped onto a new package: Trail Ready and The Campus Expedition are not the same product, and silently substituting one would put a request in front of the team for something the requester did not choose. "Recommend on our call" is the honest state for a link naming something we no longer sell.
+
+## The DoE surfaces now read their prices from the offers catalogue
+
+Before this change the DoE prices were hardcoded in five places — the tier cards, the page's JSON-LD, `expedition-recommendation.ts`, `award-proposal.ts` (twice: the radio labels and the email card data), plus the PDF. Two byte-identical constants existed for the same note (`PRICE_NOTE` and `DOE_PRICE_NOTE`), and the note rendered on the page had already drifted to different wording ("per student" vs "each") because the component imported neither.
+
+Everything now derives from `getOfferGroup('schools')`:
+
+- `lib/expedition-recommendation.ts` builds `TierResult` from the package — name, includes and price read, only the assessment-specific prose written locally
+- `lib/award-proposal.ts` derives `TIER_KEYS`, `TIER_INTEREST_LABELS` and `DOE_TIERS` from the same packages
+- `app/schools/international-award/page.tsx` maps the packages into its `Service` offers
+- `AwardProposalForm` imports `TIER_KEYS` instead of keeping its own copy
+
+New helpers on `lib/offers-data.ts` make that possible: `getOfferPackage`, `formatPackagePrice` (headline price from the last facts column) and `getPackagePriceNote` (the package's own mobilisation + per-student breakdown). Two tests in `tests/expedition-recommendation.test.ts` fail if the engine and the catalogue ever disagree.
+
+**This is the same failure mode as the contact details**, which were hardcoded across five email templates and left every outbound email quoting a dead phone number for months. Adding a school package now updates the page, the assessment, the proposal radios, the email and the schema from one edit.
+
+**Still outside the catalogue:** `public/pdf/CampingNigeria_DoE_Offer_download.pdf`. It holds the retired tiers and cannot be grepped. Its download link was removed rather than publish contradictory prices, but the file is still served from `/pdf/`. Regenerate or delete it, and treat it as a manual step beside any future price change.
+
+## Open: the DoE page's framing no longer matches what it sells
+
+Hero, explainer, expedition overview and FAQ still speak about the Duke of Edinburgh Award; the offers below them are generic on-campus packages. A DoE expedition normally has to happen away from school, which sits awkwardly next to "on campus, your teachers supervise".
+
+Not resolved here — this was a scope call, not an oversight. Either the copy needs rewriting to explain how the school offers serve an Award expedition, or the Award needs its own package in `lib/offers-data.ts` with expedition-appropriate terms. Raise with the founders; it is a positioning question, not a coding one.
 
 ---
