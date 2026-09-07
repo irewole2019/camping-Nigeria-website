@@ -12,6 +12,7 @@ import {
   AWARD_LEVEL_LABELS,
   REQUESTER_LABELS,
   TIER_INTEREST_LABELS,
+  TIER_KEYS,
   type AwardLevel,
   type AwardProposalContact,
   type AwardProposalScheduling,
@@ -31,7 +32,8 @@ const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 const DEFAULT_START_TIME = '09:00'
 const DEFAULT_END_TIME = '16:00'
 
-const TIER_KEYS: TierInterest[] = ['base-camp', 'trail-ready', 'summit-partner', 'unsure']
+// TIER_KEYS is imported from lib/award-proposal — it is derived from the
+// offers catalogue, so adding a school package adds a radio here for free.
 
 // ─── State Types ────────────────────────────────────────────────────────────
 
@@ -90,9 +92,15 @@ export default function AwardProposalForm() {
   const [sent, setSent] = useState(false)
   const [today, setToday] = useState('')
 
-  // Pre-fill tier from ?tier= URL param when arriving from the assessment.
+  // Pre-fill the package from ?tier= when arriving from the assessment.
   // Legitimate post-hydration state init — the URL param is only available
   // client-side; the SSR render starts with the default 'unsure' value.
+  //
+  // Links from before the school offers replaced the DoE tiers carry
+  // ?tier=base-camp|trail-ready|summit-partner. Those deliberately fall
+  // through to 'unsure' rather than being mapped onto a new package: the
+  // products are not equivalent, and "recommend on our call" is the honest
+  // state for a request naming something we no longer sell.
   useEffect(() => {
     const t = searchParams.get('tier')
     if (t && (TIER_KEYS as readonly string[]).includes(t)) {

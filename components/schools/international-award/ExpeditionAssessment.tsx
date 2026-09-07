@@ -84,11 +84,14 @@ const questions: Question[] = [
   {
     id: 'q4',
     kind: 'select',
-    prompt: 'How much of the program does your school want to manage?',
+    // Selects the package. The school offers differ by time commitment, not
+    // by how much we manage — facilitators, safety documentation and a
+    // Programme Manager are in every one of them.
+    prompt: 'How much time can your school give the programme?',
     options: [
-      { key: 'A', label: 'Equipment only — we will run the program ourselves' },
-      { key: 'B', label: 'Equipment and facilitators — we need the program run for us' },
-      { key: 'C', label: 'Everything managed — equipment, facilitation, safety, catering, and documentation' },
+      { key: 'A', label: 'A single facilitated day on campus' },
+      { key: 'B', label: 'Two days and an overnight on campus' },
+      { key: 'C', label: 'Several programmes across the school year' },
       { key: 'D', label: 'We are not sure yet — we need guidance' },
     ],
   },
@@ -737,35 +740,26 @@ export default function ExpeditionAssessment() {
                   </ul>
                 </motion.div>
 
-                {/* CTAs — primary action is conditional on Q4 (management
-                    level desired). Equipment-only takers go straight to the
-                    gear-rental quote tool; everyone else (facilitation or
-                    fully-managed wanted, or unsure) goes to the proposal
-                    flow. The booking-call link stays as a secondary option
-                    for any path. */}
+                {/* CTAs — every path goes to the proposal flow with the
+                    recommended package pre-selected. This used to branch to
+                    /gear-rental for equipment-only takers, but the school
+                    offers all include equipment, facilitators and safety
+                    documentation, so no answer here identifies someone who
+                    only wants gear. The booking-call link stays as the
+                    secondary option. */}
                 <motion.div
                   className="flex flex-col sm:flex-row gap-3 mt-10"
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, ease: premiumEase, delay: 0.6 }}
                 >
-                  {q4Answer === 'A' ? (
-                    <Link
-                      href="/gear-rental"
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-                    >
-                      Rent Camping Gear
-                      <ArrowRight className="w-5 h-5" aria-hidden="true" />
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/schools/international-award/proposal?tier=${recommendedTier.key}`}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-                    >
-                      Submit a Proposal
-                      <ArrowRight className="w-5 h-5" aria-hidden="true" />
-                    </Link>
-                  )}
+                  <Link
+                    href={`/schools/international-award/proposal?tier=${recommendedTier.key}`}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-4 bg-brand-dark text-white font-semibold rounded-lg text-base tracking-wide hover:bg-brand-dark/90 active:scale-[0.98] transition-transform duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+                  >
+                    Submit a Proposal
+                    <ArrowRight className="w-5 h-5" aria-hidden="true" />
+                  </Link>
                   <a
                     href={CALENDAR_BOOKING_URL}
                     target="_blank"

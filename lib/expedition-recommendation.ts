@@ -1,11 +1,28 @@
 /**
- * Deterministic tier recommendation for the Duke of Edinburgh expedition
+ * Deterministic package recommendation for the Duke of Edinburgh expedition
  * assessment. Shared by both the client (to preview the result instantly)
  * and the API (to derive the trusted result for outbound email).
+ *
+ * The three recommendable packages are the school offers in
+ * `lib/offers-data.ts` — Field Day, The Campus Expedition, The Outdoor Year.
+ * Names, inclusions and prices are read from there, never restated here, so
+ * a price change is one edit in one file.
+ *
+ * This replaced the retired Base Camp / Trail Ready / Summit Partner tiers,
+ * which differed by how much Camping Nigeria managed. The school offers
+ * differ by duration and depth instead, so Q4 asks about time commitment
+ * rather than management level — see decisions.md.
  */
 
+import {
+  formatPackagePrice,
+  getOfferGroup,
+  getPackagePriceNote,
+  type OfferPackage,
+} from '@/lib/offers-data'
+
 export type AnswerKey = 'A' | 'B' | 'C' | 'D'
-export type TierKey = 'base-camp' | 'trail-ready' | 'summit-partner'
+export type TierKey = 'field-day' | 'campus-expedition' | 'outdoor-year'
 
 export interface TierResult {
   key: TierKey
@@ -14,6 +31,17 @@ export interface TierResult {
   includes: string[]
   price: string
   priceNote: string
+}
+
+/** Order matters — it is the Q4 A/B/C mapping, shallowest to deepest. */
+export const TIER_KEYS: readonly TierKey[] = [
+  'field-day',
+  'campus-expedition',
+  'outdoor-year',
+]
+
+export function isValidTierKey(v: unknown): v is TierKey {
+  return typeof v === 'string' && (TIER_KEYS as readonly string[]).includes(v)
 }
 
 // Q2 (Award status) tunes the opening of the summary paragraph
@@ -25,7 +53,9 @@ const Q2_SUMMARY_PREFIX: Record<AnswerKey, string> = {
 }
 
 // Q3 (Group size) is surfaced in the summary copy — answered by the user,
-// not used to change the tier (pricing is flat: base 60 students, +₦50k/student to 100).
+// not used to choose the package. Every school offer is priced as a
+// mobilisation fee plus a per-student rate, so group size moves the quote
+// rather than the recommendation.
 const Q3_GROUP_LABEL: Record<AnswerKey, string> = {
   A: 'your group of up to 30 students',
   B: 'your group of 30–60 students',
@@ -33,17 +63,35 @@ const Q3_GROUP_LABEL: Record<AnswerKey, string> = {
   D: 'a group your size',
 }
 
-// Shared across every tier — base includes up to 60 students, then per-head to 100
-export const PRICE_NOTE = 'Additional students from ₦50,000 each — max group of 100.'
+/**
+ * Shared closing note. Individual packages carry their own mobilisation +
+ * per-student breakdown, surfaced as `TierResult.priceNote`; this is the
+ * blanket caveat that applies to all of them.
+ */
+export const PRICE_NOTE =
+  'Prices are indicative and confirmed on group size, dates and location.'
 
-function buildTier(
-  key: TierKey,
-  name: string,
-  summary: string,
-  includes: string[],
-  price: string,
-): TierResult {
-  return { key, name, summary, includes, price, priceNote: PRICE_NOTE }
+/** Assessment-specific prose. The package's own `summary` is written for a
+ *  browsing reader; these address someone who has just answered four
+ *  questions, and weave in their group size. */
+const SUMMARY_TEMPLATES: Record<TierKey, (groupLabel: string) => string> = {
+  'field-day': (g) =>
+    `A single facilitated day on your own campus is the right place to start. We bring the equipment, the facilitators and the safety paperwork, your teachers supervise, and ${g} gets a full programme without anyone having to travel.`,
+  'campus-expedition': (g) =>
+    `Two days and a night on campus gives ${g} a real expedition without leaving the school gates. Students pitch and strike their own camp, sleep in it, and you get the overnight supervision plan, the certificates and the impact report that come with it.`,
+  'outdoor-year': (g) =>
+    `You are planning at the calendar level, not the event level. The Outdoor Year locks two to three programmes for ${g} before the school year fills up, designed so each year group builds on the last.`,
+}
+
+function toTierResult(pkg: OfferPackage, summary: string): TierResult {
+  return {
+    key: pkg.slug as TierKey,
+    name: pkg.name,
+    summary,
+    includes: pkg.includes,
+    price: formatPackagePrice(pkg),
+    priceNote: getPackagePriceNote(pkg) ?? PRICE_NOTE,
+  }
 }
 
 export function isValidAnswerKey(v: unknown): v is AnswerKey {
@@ -69,8 +117,8 @@ export function isValidGroupSize(v: unknown): v is number {
 }
 
 /**
- * Map a raw student count to the assessment's A/B/C/D bucket so the existing
- * `getRecommendedTier(q2, q3, q4)` engine continues to work unchanged.
+ * Map a raw student count to the assessment's A/B/C/D bucket so the copy
+ * helpers have a label to use.
  *
  * Boundaries match the original Q3 labels (Under 30 / 30 to 60 / 60 to 100 /
  * More than 100). The labels overlap at the edges (60 is in both B and C);
@@ -84,6 +132,13 @@ export function bucketGroupSizeToAnswerKey(n: number): AnswerKey {
   return 'D'
 }
 
+/**
+ * Q4 selects the package by time commitment:
+ *   A → Field Day (one day)
+ *   B → The Campus Expedition (two days, one night)
+ *   C → The Outdoor Year (programmes across the year)
+ *   D / unanswered → The Campus Expedition, the middle option
+ */
 export function getRecommendedTier(
   q2: AnswerKey | undefined,
   q3: AnswerKey | undefined,
@@ -92,74 +147,17 @@ export function getRecommendedTier(
   const prefix = q2 ? Q2_SUMMARY_PREFIX[q2] : ''
   const groupLabel = q3 ? Q3_GROUP_LABEL[q3] : 'your group'
 
-  // Helper that lowercases the first character of the base summary when a prefix is present
-  const summary = (base: string) =>
-    prefix ? prefix + base.charAt(0).toLowerCase() + base.slice(1) : base
+  const key: TierKey =
+    q4 === 'A' ? 'field-day' : q4 === 'C' ? 'outdoor-year' : 'campus-expedition'
 
-  const tier = (k: TierKey): TierResult => {
-    switch (k) {
-      case 'base-camp':
-        return buildTier(
-          'base-camp',
-          'Base Camp',
-          summary(
-            `You are in a good position to run the expedition yourself. What ${groupLabel} needs is reliable, quality equipment that is delivered, set up, and collected without drama.`,
-          ),
-          [
-            'Tent rental, sleeping bags, mats, and camping lights',
-            'Equipment delivery and collection',
-            'Setup guidance from our team',
-            'Safety checklist document',
-          ],
-          'From ₦3,000,000 for up to 60 students',
-        )
-      case 'trail-ready':
-        return buildTier(
-          'trail-ready',
-          'Trail Ready',
-          summary(
-            `You need more than equipment. You need a structured program delivered by people who know what they are doing. Trail Ready puts our facilitators on-site alongside your team so ${groupLabel} has the expedition it should.`,
-          ),
-          [
-            'Everything in Base Camp',
-            'Camping Nigeria facilitators on-site throughout',
-            'Structured program: eco-awareness, team challenges, evening experience',
-            'Parent communication pack ready to send',
-            'Post-event summary report',
-            'Photo documentation',
-          ],
-          'From ₦5,000,000 for up to 60 students',
-        )
-      case 'summit-partner':
-        return buildTier(
-          'summit-partner',
-          'Summit Partner',
-          summary(
-            `You want it done. Summit Partner means you hand over the operational weight for ${groupLabel} and we carry it. Equipment, facilitation, catering, first aid, certificates, documentation. Your school provides a teacher on-site and the student list. We handle the rest.`,
-          ),
-          [
-            'Everything in Trail Ready',
-            'Full custom program design',
-            'Catering coordination',
-            'On-site first aid trained staff',
-            'Branded participant certificates',
-            'Professional photo and video recap',
-            'Full written debrief with school leadership',
-            'Priority annual slot',
-          ],
-          'From ₦8,000,000 for up to 60 students',
-        )
-    }
-  }
+  const pkg = getOfferGroup('schools').packages.find((p) => p.slug === key)
+  if (!pkg) throw new Error(`Recommendation references a missing package: ${key}`)
 
-  switch (q4) {
-    case 'A':
-      return tier('base-camp')
-    case 'C':
-      return tier('summit-partner')
-    case 'B':
-    case 'D':
-    default:
-      return tier('trail-ready')
-  }
+  const base = SUMMARY_TEMPLATES[key](groupLabel)
+  // Lowercase the first character of the base summary when a prefix is present
+  const summary = prefix
+    ? prefix + base.charAt(0).toLowerCase() + base.slice(1)
+    : base
+
+  return toTierResult(pkg, summary)
 }

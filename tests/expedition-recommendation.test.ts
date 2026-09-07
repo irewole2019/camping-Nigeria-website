@@ -5,6 +5,7 @@ import {
   bucketGroupSizeToAnswerKey,
   getRecommendedTier,
 } from '@/lib/expedition-recommendation'
+import { getOfferGroup } from '@/lib/offers-data'
 
 describe('isValidAnswerKey', () => {
   it('accepts A, B, C, D', () => {
@@ -24,25 +25,42 @@ describe('isValidAnswerKey', () => {
   })
 })
 
-describe('getRecommendedTier — Q4 drives tier selection', () => {
-  it('A -> Base Camp', () => {
-    expect(getRecommendedTier(undefined, undefined, 'A').key).toBe('base-camp')
+describe('getRecommendedTier — Q4 drives package selection', () => {
+  it('A -> Field Day (a single day)', () => {
+    expect(getRecommendedTier(undefined, undefined, 'A').key).toBe('field-day')
   })
 
-  it('B -> Trail Ready', () => {
-    expect(getRecommendedTier(undefined, undefined, 'B').key).toBe('trail-ready')
+  it('B -> The Campus Expedition (two days, one night)', () => {
+    expect(getRecommendedTier(undefined, undefined, 'B').key).toBe('campus-expedition')
   })
 
-  it('C -> Summit Partner', () => {
-    expect(getRecommendedTier(undefined, undefined, 'C').key).toBe('summit-partner')
+  it('C -> The Outdoor Year (programmes across the year)', () => {
+    expect(getRecommendedTier(undefined, undefined, 'C').key).toBe('outdoor-year')
   })
 
-  it('D (unsure) -> Trail Ready as safe middle ground', () => {
-    expect(getRecommendedTier(undefined, undefined, 'D').key).toBe('trail-ready')
+  it('D (unsure) -> The Campus Expedition as safe middle ground', () => {
+    expect(getRecommendedTier(undefined, undefined, 'D').key).toBe('campus-expedition')
   })
 
-  it('missing Q4 -> Trail Ready default', () => {
-    expect(getRecommendedTier(undefined, undefined, undefined).key).toBe('trail-ready')
+  it('missing Q4 -> The Campus Expedition default', () => {
+    expect(getRecommendedTier(undefined, undefined, undefined).key).toBe('campus-expedition')
+  })
+})
+
+describe('getRecommendedTier — stays in step with the offers catalogue', () => {
+  it('every recommendable key is a real school package', () => {
+    const slugs = getOfferGroup('schools').packages.map((p) => p.slug)
+    for (const q4 of ['A', 'B', 'C', 'D'] as const) {
+      expect(slugs).toContain(getRecommendedTier(undefined, undefined, q4).key)
+    }
+  })
+
+  it('name, price and includes are read from the catalogue, not restated', () => {
+    const pkg = getOfferGroup('schools').packages.find((p) => p.slug === 'field-day')!
+    const tier = getRecommendedTier(undefined, undefined, 'A')
+    expect(tier.name).toBe(pkg.name)
+    expect(tier.includes).toEqual(pkg.includes)
+    expect(tier.price).toContain(pkg.facts[pkg.facts.length - 1].value)
   })
 })
 

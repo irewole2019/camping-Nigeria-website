@@ -2,19 +2,33 @@
  * Types and helpers for the dedicated DoE proposal flow.
  *
  * Unlike the school-programmes proposal (which scores answers and picks a
- * program/tier), this is a structured contact form. The user picks the tier
- * directly — Base Camp / Trail Ready / Summit Partner — or "Not sure" if
- * they want the team to recommend one. No engine.
+ * program/tier), this is a structured contact form. The user picks the
+ * package directly — Field Day / The Campus Expedition / The Outdoor Year —
+ * or "Not sure" if they want the team to recommend one. No engine.
+ *
+ * Package names, prices and inclusions come from `lib/offers-data.ts`; this
+ * module never restates them. The retired Base Camp / Trail Ready / Summit
+ * Partner tiers are still accepted as legacy `?tier=` values by the form —
+ * see `AwardProposalForm` — but are not valid payload values.
  */
 
 import { MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
+import {
+  formatPackagePrice,
+  getOfferGroup,
+  type OfferPackage,
+} from '@/lib/offers-data'
 
 // ─── Form Types ─────────────────────────────────────────────────────────────
 
 export type RequesterType = 'school' | 'parent'
 export type AwardLevel = 'bronze' | 'silver' | 'gold'
 export type ParentAwardLevel = AwardLevel | 'unsure'
-export type TierInterest = 'base-camp' | 'trail-ready' | 'summit-partner' | 'unsure'
+export type TierInterest =
+  | 'field-day'
+  | 'campus-expedition'
+  | 'outdoor-year'
+  | 'unsure'
 
 export interface SchoolRequester {
   requesterType: 'school'
@@ -65,9 +79,9 @@ const VALID_PARENT_AWARD_LEVELS: readonly ParentAwardLevel[] = [
   'unsure',
 ]
 const VALID_TIER_INTERESTS: readonly TierInterest[] = [
-  'base-camp',
-  'trail-ready',
-  'summit-partner',
+  'field-day',
+  'campus-expedition',
+  'outdoor-year',
   'unsure',
 ]
 
@@ -199,70 +213,44 @@ export const AWARD_LEVEL_LABELS: Record<AwardLevel | 'unsure', string> = {
   unsure: 'Not sure yet',
 }
 
+// ─── Package data (derived from the offers catalogue) ───────────────────────
+
+/**
+ * The school packages a requester can express interest in, in the order they
+ * are offered. Read straight from `lib/offers-data.ts` so the form, the email
+ * and `/offers/schools` can never disagree about a name or a price.
+ */
+export const SCHOOL_PACKAGES: OfferPackage[] = getOfferGroup('schools').packages
+
+/** Package slugs in offer order, plus the "Not sure" escape hatch last. */
+export const TIER_KEYS: readonly TierInterest[] = [
+  ...SCHOOL_PACKAGES.map((p) => p.slug as TierInterest),
+  'unsure',
+]
+
+/** Radio labels, e.g. "Field Day · From ₦3,000,000". */
 export const TIER_INTEREST_LABELS: Record<TierInterest, string> = {
-  'base-camp': 'Base Camp · From ₦3,000,000 for up to 60 students',
-  'trail-ready': 'Trail Ready · From ₦5,000,000 for up to 60 students',
-  'summit-partner': 'Summit Partner · From ₦8,000,000 for up to 60 students',
+  ...(Object.fromEntries(
+    SCHOOL_PACKAGES.map((p) => [p.slug, `${p.name} · ${formatPackagePrice(p)}`]),
+  ) as Record<Exclude<TierInterest, 'unsure'>, string>),
   unsure: 'Not sure — recommend on our call',
 }
 
-// ─── Tier Static Data (for email templates) ─────────────────────────────────
-
-/**
- * Snapshot of the three DoE tier descriptions used in the customer email.
- * Mirrors the visible content on /schools/international-award and the live
- * tier data in lib/expedition-recommendation.ts. Lifted here so the email
- * template can render multiple tier cards (when the user picked "Not sure")
- * without depending on the assessment-specific summary helpers.
- */
 export interface TierStaticData {
-  key: 'base-camp' | 'trail-ready' | 'summit-partner'
+  key: Exclude<TierInterest, 'unsure'>
   name: string
   price: string
   includes: string[]
 }
 
-export const DOE_TIERS: TierStaticData[] = [
-  {
-    key: 'base-camp',
-    name: 'Base Camp',
-    price: 'From ₦3,000,000 for up to 60 students',
-    includes: [
-      'Tent rental, sleeping bags, mats, and camping lights',
-      'Equipment delivery and collection',
-      'Setup guidance from our team',
-      'Safety checklist document',
-    ],
-  },
-  {
-    key: 'trail-ready',
-    name: 'Trail Ready',
-    price: 'From ₦5,000,000 for up to 60 students',
-    includes: [
-      'Everything in Base Camp',
-      'Camping Nigeria facilitators on-site throughout',
-      'Structured programme: eco-awareness, team challenges, evening experience',
-      'Parent communication pack ready to send',
-      'Post-event summary report',
-      'Photo documentation',
-    ],
-  },
-  {
-    key: 'summit-partner',
-    name: 'Summit Partner',
-    price: 'From ₦8,000,000 for up to 60 students',
-    includes: [
-      'Everything in Trail Ready',
-      'Full custom programme design',
-      'Catering coordination',
-      'On-site first aid trained staff',
-      'Branded participant certificates',
-      'Professional photo and video recap',
-      'Full written debrief with school leadership',
-      'Priority annual slot',
-    ],
-  },
-]
+/** Card data for the customer email. One entry per package, offer order. */
+export const DOE_TIERS: TierStaticData[] = SCHOOL_PACKAGES.map((p) => ({
+  key: p.slug as Exclude<TierInterest, 'unsure'>,
+  name: p.name,
+  price: formatPackagePrice(p),
+  includes: p.includes,
+}))
 
-// Shared across every tier — base includes up to 60 students, then per-head to 100
-export const DOE_PRICE_NOTE = 'Additional students from ₦50,000 each — max group of 100.'
+/** Blanket caveat under the package cards in the customer email. */
+export const DOE_PRICE_NOTE =
+  'Prices are indicative and confirmed on group size, dates and location. Quotes are issued within 72 hours of a planning call.'

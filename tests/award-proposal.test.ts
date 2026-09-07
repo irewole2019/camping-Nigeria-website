@@ -9,7 +9,7 @@ const validSchoolPayload = {
     studentCount: 60,
     awardLevels: ['bronze', 'silver'],
   },
-  tierInterest: 'trail-ready',
+  tierInterest: 'campus-expedition',
   scheduling: {
     eventStartDate: '',
     eventStartTime: '',
@@ -150,7 +150,7 @@ describe('isValidPayload — shared fields', () => {
   })
 
   it('accepts every valid tierInterest', () => {
-    for (const t of ['base-camp', 'trail-ready', 'summit-partner', 'unsure'] as const) {
+    for (const t of ['field-day', 'campus-expedition', 'outdoor-year', 'unsure'] as const) {
       expect(isValidPayload({ ...validSchoolPayload, tierInterest: t })).toBe(true)
     }
   })

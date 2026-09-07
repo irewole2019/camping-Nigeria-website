@@ -290,7 +290,7 @@ function buildCustomerEmail(payload: AwardProposalPayload): string {
 
 function tierLabelForSubject(t: TierInterest): string {
   if (t === 'unsure') return 'Tiers TBD'
-  // Just the name from "Base Camp · From ₦…" — split on the bullet
+  // Just the name from "Field Day · From ₦…" — split on the bullet
   return TIER_INTEREST_LABELS[t].split('·')[0]?.trim() ?? t
 }
 

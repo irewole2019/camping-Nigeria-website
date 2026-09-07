@@ -426,3 +426,32 @@ export function getOfferGroup(slug: OfferGroupSlug): OfferGroup {
   if (!group) throw new Error(`Unknown offer group: ${slug}`)
   return group
 }
+
+/** Package slugs within a group, e.g. 'field-day'. */
+export type SchoolPackageSlug = 'field-day' | 'campus-expedition' | 'outdoor-year'
+
+export function getOfferPackage(
+  groupSlug: OfferGroupSlug,
+  packageSlug: string,
+): OfferPackage | undefined {
+  return getOfferGroup(groupSlug).packages.find((p) => p.slug === packageSlug)
+}
+
+/**
+ * The headline price as one string, e.g. "From ₦3,000,000". The price always
+ * sits in the last facts column — that is the convention `FactsStrip` relies
+ * on for its emphasis treatment too.
+ */
+export function formatPackagePrice(pkg: OfferPackage): string {
+  const fact = pkg.facts[pkg.facts.length - 1]
+  return `${fact.label} ${fact.value}`
+}
+
+/**
+ * The package's own pricing breakdown, e.g. "₦1,200,000 mobilisation plus
+ * ₦18,000 per student." Matched by note label; every package carries a
+ * "Price" note today, but callers should handle undefined rather than assume.
+ */
+export function getPackagePriceNote(pkg: OfferPackage): string | undefined {
+  return pkg.notes.find((n) => n.label === 'Price')?.body
+}
