@@ -10,11 +10,12 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/base-camp-kids.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
+  - **Event photography from a phone needs converting.** iPhone `.heic` files are not single images — they are a grid of 512×512 tiles plus assembly instructions. ffmpeg assembles the grid through an *internal complex filtergraph*, so a simple `-vf` cannot attach to the decode and `ffmpeg -i x.heic -vf scale=... out.webp` fails with "Simple and complex filtering cannot be used together". **Decode to a full-size PNG first, then scale and encode WebP from that PNG.** Worked example with sizes and quality settings: the header of `lib/events/kiddies-hike.ts`. Long edge 1400px (hero ~1750px) at quality 82 took ten Kiddies Hike frames from ~57 MB of originals to 2.8 MB.
   - `public/pdf/...`
   - Video referenced via `MEDIA_VIDEO` from `lib/media.ts` (not raw paths)
   - Images registered in `lib/media.ts` with `{ src, alt }` tuples — components import the registry, never raw paths
   - **Gear-rental item photos** are the exception: they live on Google Drive (column `image_url` in the pricing sheet) and the parser auto-rewrites `drive.google.com/file/d/<ID>/…` to `https://lh3.googleusercontent.com/d/<ID>`. Static fallback path is `/public/images/gear-rental/items/<id>.webp` keyed by catalogue `id`. See `EquipmentTable.tsx#ItemThumb` for the three-tier fallback chain (sheet URL → static file → Package icon).
-- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-agrandir` / `--font-inter`. Agrandir is a local `.otf` via `next/font/local`; Inter comes from `next/font/google` and is self-hosted at build time. Either way no request leaves the origin at runtime, so `font-src 'self'` in the CSP covers both without edits. **`public/fonts/Helvetica.ttf` is dead weight** — unreferenced since 31/08/2026, still publicly served, and proprietary. Delete it.
+- **Fonts**: loaded in `app/layout.tsx`, exposed via CSS vars `--font-agrandir` / `--font-dm-sans`. Both are local files in `public/fonts/` via `next/font/local`. **Do not reach for `next/font/google`** — it downloads at *build* time, which makes every build depend on `fonts.googleapis.com` being reachable, and that has already broken builds here. Add a font by putting the file in `public/fonts/` with its licence beside it. `font-src 'self'` in the CSP covers local files without edits. **`public/fonts/Helvetica.ttf` is dead weight** — unreferenced since 31/08/2026, still publicly served, and proprietary. Delete it.
 
 ## Components
 
@@ -38,7 +39,7 @@ Keep the routes explicit — do **not** collapse them into a `[slug]` dynamic se
 
 - **Tailwind v4** with `@theme inline` in `app/globals.css` — do **not** create `tailwind.config.js`. If you need a new design token, add it to both `:root` and `@theme inline` in `globals.css`.
 - Brand classes: `bg-brand-dark`, `text-brand-dark`, `bg-brand-accent`, `text-brand-accent-readable` (use for gold text on cream — the regular gold fails contrast), `bg-brand-light`, `bg-brand-dark-tint`, `bg-brand-accent-tint`.
-- Fonts: `font-serif` (**Agrandir**) for headings, `font-sans` (**Inter**) for body and UI. `font-serif` is just the Tailwind slot name every headline already uses — Agrandir is a geometric sans, and renaming the slot would mean touching every heading in the codebase. **The pairing has changed four times; check `globals.css` rather than trusting memory or an older doc.**
+- Fonts: `font-serif` (**Agrandir**) for headings, `font-sans` (**DM Sans**) for body and UI. `font-serif` is just the Tailwind slot name every headline already uses — neither face is a serif, and renaming the slot would mean touching every heading in the codebase. **The pairing has changed five times; check `globals.css` rather than trusting memory or an older doc.**
 - **No emojis in UI** — use `lucide-react` icons. (Exception: none. This has come up before.)
 
 ## Forms

@@ -725,3 +725,45 @@ Hero, explainer, expedition overview and FAQ still speak about the Duke of Edinb
 Not resolved here — this was a scope call, not an oversight. Either the copy needs rewriting to explain how the school offers serve an Award expedition, or the Award needs its own package in `lib/offers-data.ts` with expedition-appropriate terms. Raise with the founders; it is a positioning question, not a coding one.
 
 ---
+## Fonts are local files; `next/font/google` is banned
+
+Both faces now load through `next/font/local` from `public/fonts/`:
+
+```
+font-serif (headings)  Agrandir-Regular.otf
+font-sans  (body, UI)  DMSans-Variable.woff2
+```
+
+DM Sans replaced Inter on 11/09/2026. The swap itself was a preference; moving *both* faces off `next/font/google` was forced by a real failure.
+
+**What happened.** `next/font/google` downloads the font at **build** time and bakes a copy into the output. That is good for visitors — nothing is fetched from Google at runtime, and `font-src 'self'` in the CSP covers it without edits. But it makes every production build depend on `fonts.googleapis.com` being reachable from the build machine. For several hours that host was unreachable from the dev machine and `npm run build` failed outright:
+
+```
+next/font: error: Failed to fetch `Inter` from Google Fonts.
+```
+
+Swapping Inter for DM Sans through the same loader failed identically, with a different font name. The dev server kept working, because Next had a copy cached in `.next` — which is exactly how this hides until a clean build.
+
+**The diagnosis worth keeping:** only `fonts.googleapis.com` (the stylesheet lookup) was blocked. `fonts.gstatic.com` (the font binaries) and `registry.npmjs.org` both returned 200, and `google.com` loaded fine. So this was not a Google outage and not a general network fault — it was one host, blocked by something local. Check hosts individually before concluding a service is down.
+
+**The fix.** `DMSans-Variable.woff2` is the latin weight-axis variable cut from `@fontsource-variable/dm-sans` v5.3.0, which repackages Google's own DM Sans release. 37 KB covers the entire 100–1000 weight range. Pulled as a tarball with `npm pack`, one file kept, the rest discarded — **no dependency was added**, in keeping with this project's dependency-light stance.
+
+**Licensing.** DM Sans is OFL-1.1, which explicitly permits redistribution, so shipping it in the repo is fine. `public/fonts/DMSans-LICENSE.txt` sits beside it — keep licence files next to any font added this way. Note the contrast with `public/fonts/Helvetica.ttf`, which is proprietary Monotype, unreferenced since 31/08, and still publicly served. It should go.
+
+**Consequence:** builds now work with no internet at all. Adding a font means putting the file in `public/fonts/`, not adding a loader call.
+
+## `/events/kiddies-hike` is built from an approved copy deck, and honours its house style
+
+The page is a section-for-section mirror of Base Camp Kids, built from `docs/events/CampingNigeria_KiddiesHike_EventBreakdown_v3.docx`. Two conventions come from that document and should not be "corrected":
+
+**No em dashes in the copy.** The deck states this as a house preference for this page. Base Camp Kids uses them freely, so the two event pages differ typographically on purpose.
+
+**The venue is "Abuja" and nothing more.** The hill is not named and MagicLand is not mentioned, per an explicit decision recorded in the deck. The flyer's 20-slot cap is also left off — only the real turnout (50 children, 35 adults) is published.
+
+**An unresolved flag was honoured rather than published.** The deck marks `[CONFIRM THEY KEPT THE BAGS]` as unconfirmed. The souvenir card therefore says "No two were alike" with no take-home claim, and the matching FAQ answer lists only the booklet and the name tag. Both sites are commented with exactly what to add once confirmed. Publishing an unverified claim about what children took home is not worth the sentence.
+
+**No `Offer` in the Event JSON-LD.** The edition was free *and* has already run. An Offer priced at zero would read as an open free booking.
+
+**Photography provenance is kept in the data.** Each `GALLERY` entry records its `sourceFile` and `capturedAt`, so any frame traces back to an original. Two of the nine are stills pulled from video (`IMG_9786 (1).mov`, `IMG_9806.mov`) rather than photographs — the deck lists both as "(still)". Coverage stops at 11:30: there is no image of the descent, the potluck, or the bag painting, which is the gap to close at the next edition.
+
+---

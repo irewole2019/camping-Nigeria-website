@@ -16,7 +16,7 @@ The site is the main acquisition surface: it books individuals into trips (via M
 - **lucide-react** for icons (no emojis in UI)
 - **Resend REST API** via direct `fetch()` (not the SDK) in 5 API routes
 - **@vercel/analytics** for traffic analytics
-- Fonts: **Agrandir** (headings, `var(--font-agrandir)` → `font-serif`, local `.otf` via `next/font/local`) + **Inter** (body/UI, `var(--font-inter)` → `font-sans`, `next/font/google`, self-hosted at build time). `font-serif` is only Tailwind's slot name — Agrandir is a geometric sans, not a serif.
+- Fonts: **Agrandir** (headings, `var(--font-agrandir)` → `font-serif`) + **DM Sans** (body/UI, `var(--font-dm-sans)` → `font-sans`). Both are local files in `public/fonts/` via `next/font/local` — **no `next/font/google`**, so builds never depend on Google being reachable. `font-serif` is only Tailwind's slot name; neither face is a serif.
 
 ## Key routes
 
@@ -32,6 +32,7 @@ Public pages (all App Router `page.tsx`):
 - `/schools/proposal` — deterministic smart form (9 questions, `proposal-engine.ts` picks a program from qualitative answers; an optional Step 6 date+time picker captures preferred timing for the team but doesn't drive scoring) → `/api/proposal`
 - `/gear-rental` — equipment rental page + structured quote form → POSTs **direct to `quote.campingnigeria.com/api/submit-quote`** (separate project). Confirmation page at `/gear-rental/submitted`. The website project no longer has a `/api/gear-quote` route — pricing, persistence, and email all live in the quote tool.
 - `/events` — hub listing upcoming and past editions, driven entirely by the registry in `lib/events/index.ts`. Adding an event = a detail module + one registry entry; no page edits. With nothing upcoming it renders an empty state pointing at `/contact` and `/schools/proposal`.
+- `/events/kiddies-hike` — the 21 August 2026 potluck family hike, a **past edition** with real photography. Source of truth: `lib/events/kiddies-hike.ts`. Built from the approved copy deck at `docs/events/CampingNigeria_KiddiesHike_EventBreakdown_v3.docx`; that deck's no-em-dash house style is deliberate on this page and differs from Base Camp Kids.
 - `/events/base-camp-kids` — the 30 May 2026 Children's Day camp, now a **past edition**. `EVENT_STATUS` in `lib/events/base-camp-kids.ts` drives everything: `'past'` closes the registration form, drops the ticket `Offer` from the Event JSON-LD, switches Hero/Pricing/metadata to recap copy, and makes `/api/event-registration` return 403. Deliberately a flag rather than a date comparison — the pages are statically rendered, so `Date.now()` bakes in at build time. Confirmation page at `/events/base-camp-kids/registered`.
 - `/contact` — contact form → `/api/contact`
 - `/privacy-policy`, `/terms`
