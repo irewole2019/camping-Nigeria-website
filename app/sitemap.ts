@@ -124,6 +124,14 @@ const ROUTES: RouteEntry[] = [
     priority: 0.4,
     image: `${SITE_URL}/images/events/base-camp-kids/hero-v2.webp`,
   },
+  // Past edition — kept indexed for the recap, demoted like Base Camp Kids
+  // now that there is nothing to book on it.
+  {
+    path: '/events/kiddies-hike',
+    changeFrequency: 'yearly',
+    priority: 0.4,
+    image: `${SITE_URL}/images/events/kiddies-hike/hero.webp`,
+  },
   { path: '/privacy-policy', changeFrequency: 'yearly', priority: 0.3 },
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
 ]

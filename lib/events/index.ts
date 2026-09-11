@@ -36,6 +36,24 @@ import {
   type EventStatus,
 } from './base-camp-kids'
 
+import {
+  ADULTS_ATTENDED as KH_ADULTS,
+  CHILDREN_ATTENDED as KH_CHILDREN,
+  EVENT_DATE_LABEL as KH_DATE_LABEL,
+  EVENT_END_ISO as KH_END_ISO,
+  EVENT_PATH as KH_PATH,
+  EVENT_START_ISO as KH_START_ISO,
+  EVENT_STATUS as KH_STATUS,
+  EVENT_TAGLINE as KH_TAGLINE,
+  EVENT_TITLE as KH_TITLE,
+  HERO_IMAGE as KH_HERO_IMAGE,
+  HERO_IMAGE_ALT as KH_HERO_IMAGE_ALT,
+  MAX_AGE as KH_MAX_AGE,
+  MIN_AGE as KH_MIN_AGE,
+  VENUE_CITY as KH_CITY,
+  VENUE_LABEL as KH_VENUE_LABEL,
+} from './kiddies-hike'
+
 export type { EventStatus }
 
 /** Icon key rather than a component — this module is imported by server components. */
@@ -113,7 +131,29 @@ const BASE_CAMP_KIDS: EventSummary = {
   },
 }
 
-export const EVENTS: EventSummary[] = [BASE_CAMP_KIDS]
+/**
+ * No `banner` — it has already run, so it can never drive the homepage
+ * banner. Base Camp Kids keeps its banner copy as the worked example for the
+ * next edition; one is enough.
+ */
+const KIDDIES_HIKE: EventSummary = {
+  slug: 'kiddies-hike',
+  title: KH_TITLE,
+  tagline: KH_TAGLINE,
+  blurb: `A potluck family hike above Abuja. ${KH_CHILDREN} children and ${KH_ADULTS} parents walked a trail through farmland, scrambled up bare rock, and shared a picnic everybody brought a dish to. Free to attend.`,
+  path: KH_PATH,
+  status: KH_STATUS,
+  dateLabel: KH_DATE_LABEL,
+  startIso: KH_START_ISO,
+  endIso: KH_END_ISO,
+  venueLabel: KH_VENUE_LABEL,
+  city: KH_CITY,
+  ageRange: `Ages ${KH_MIN_AGE}–${KH_MAX_AGE}`,
+  image: KH_HERO_IMAGE,
+  imageAlt: KH_HERO_IMAGE_ALT,
+}
+
+export const EVENTS: EventSummary[] = [BASE_CAMP_KIDS, KIDDIES_HIKE]
 
 /** Soonest first — the next thing to happen leads the hub. */
 export const UPCOMING_EVENTS: EventSummary[] = EVENTS.filter(
