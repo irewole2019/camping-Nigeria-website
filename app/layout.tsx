@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
-import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -17,14 +16,23 @@ const agrandir = localFont({
   display: 'swap',
 })
 
-// Body and UI. Mapped to Tailwind's `font-sans` slot. next/font/google
-// downloads and self-hosts at build time, so nothing is fetched from Google
-// at runtime and `font-src 'self'` in the CSP keeps covering it. Inter is
-// variable — one file serves the whole 400–700 range the site uses.
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
+// Body and UI. Mapped to Tailwind's `font-sans` slot.
+//
+// Loaded from a local file rather than `next/font/google`, deliberately.
+// The Google loader downloads the font at *build* time, which makes every
+// production build depend on `fonts.googleapis.com` being reachable — and a
+// build machine that cannot reach it fails outright with "Failed to fetch".
+// A file in the repo has no such dependency and builds offline.
+//
+// The file is the latin weight-axis variable cut from `@fontsource-variable/
+// dm-sans` v5.3.0, which packages Google's own DM Sans release. OFL-1.1
+// licensed, so redistributing it here is fine; the licence sits beside it.
+// 37 KB covers the whole 100–1000 weight range.
+const dmSans = localFont({
+  src: '../public/fonts/DMSans-Variable.woff2',
+  variable: '--font-dm-sans',
   display: 'swap',
+  weight: '100 1000',
 })
 
 const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
@@ -75,7 +83,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-NG" className={`${agrandir.variable} ${inter.variable} scroll-smooth`}>
+    <html lang="en-NG" className={`${agrandir.variable} ${dmSans.variable} scroll-smooth`}>
       <body className="font-sans antialiased bg-brand-light text-brand-dark">
         <JsonLd id="organization-jsonld" data={buildOrganizationJsonLd()} />
         <JsonLd id="website-jsonld" data={buildWebsiteJsonLd()} />
