@@ -767,3 +767,26 @@ The page is a section-for-section mirror of Base Camp Kids, built from `docs/eve
 **Photography provenance is kept in the data.** Each `GALLERY` entry records its `sourceFile` and `capturedAt`, so any frame traces back to an original. Two of the nine are stills pulled from video (`IMG_9786 (1).mov`, `IMG_9806.mov`) rather than photographs — the deck lists both as "(still)". Coverage stops at 11:30: there is no image of the descent, the potluck, or the bag painting, which is the gap to close at the next edition.
 
 ---
+## The DoE surface is hidden behind one flag, not deleted
+
+`DOE_ENABLED` in `lib/feature-flags.ts` is `false`. It gates the two pages, their four OG and Twitter card routes, both API routes, the `/schools` callout, the homepage link and DoE clause, both sitemap entries, and the `Duke of Edinburgh Nigeria` SEO keyword. Nothing was deleted; flipping the flag to `true` restores all of it, which was tested as a round trip rather than assumed.
+
+**A flag rather than deletion** because the ask was explicitly temporary. Reconstructing a page, an assessment engine, a proposal form and two API routes out of git history months later is a different and worse job than flipping a boolean.
+
+**Three things a naive hide would have missed**, all found by sweeping the rendered output rather than trusting the source:
+
+1. **`notFound()` in the page does not suppress `og:image:alt`.** Next parses the `alt` export from each route's `opengraph-image.tsx` statically from the AST, so it is emitted into that route's metadata even when the page 404s, and it cannot be gated behind an imported flag (the same constraint that forces those exports to be inline literals). The 404 response still carried "Bring the Duke of Edinburgh's International Award to your school".
+2. **A prerendered `notFound()` answers 200.** The body was the not-found page but the status was 200, which crawlers read as a soft 404. `export const dynamic = 'force-dynamic'` fixes the status but not the alt, and costs static rendering on restore.
+3. **The keyword was site-wide.** `Duke of Edinburgh Nigeria` sat in `DEFAULT_KEYWORDS` in `lib/seo.ts`, so it was in the meta keywords of all 22 pages, not only the DoE ones.
+
+**The mechanism is therefore a redirect in `next.config.mjs`**, which intercepts before anything renders, so neither the alt nor the status can leak. `next.config.mjs` cannot import TypeScript, so rather than duplicating the flag it reads `lib/feature-flags.ts` and regex-tests for `= true`. Two hand-maintained copies of a flag is how a surface comes back half on.
+
+**307, deliberately.** `permanent: false` parks the URLs. A 404, a 410, or a 308 tells Google the pages are gone and they get dropped from the index, so restoring would mean re-earning that ranking. A temporary redirect keeps them. If the decision later becomes permanent, change this to a 308 or let them 404 and the index will clear.
+
+**The `notFound()` guards stay** as defence in depth: if the redirect block is ever removed without flipping the flag, the pages still refuse to render rather than quietly coming back. The metadata is gated alongside them so that path does not leak a DoE `<title>` either.
+
+**What a flag cannot reach.** Anything under `public/` is served whether or not the site links to it, so the offer PDF was moved to `docs/doe-hidden/` with a README covering the restore. `public/images/schools/doe-award.webp` was left in place: it is a photograph of students, now unreferenced, and its filename is the only tell.
+
+**Out of scope, but true:** this repository is public on GitHub, and `Camping_Nigeria_DoE_Website_Strategy.md`, `Camping_Nigeria_DoE_Build_Sequence.md` and these context files all still discuss the programme. The ask was to hide it from the website, which this does. Hiding it from anyone who finds the repo is a different job.
+
+---

@@ -7,7 +7,8 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **Pages**: `app/<route>/page.tsx` (App Router)
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
 - **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `individuals/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
-- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/base-camp-kids.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
+- **Feature flags**: `lib/feature-flags.ts`. Use a flag to hide a whole surface rather than deleting it, so it comes back with one edit. Annotate the type (`export const X: boolean = false`) — without it TypeScript narrows to the literal and every downstream `if (X)` becomes a compile error the moment the flag is flipped. Same reason `EVENT_STATUS` routes through `isRegistrationOpen()`.
+- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/base-camp-kids.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - **Event photography from a phone needs converting.** iPhone `.heic` files are not single images — they are a grid of 512×512 tiles plus assembly instructions. ffmpeg assembles the grid through an *internal complex filtergraph*, so a simple `-vf` cannot attach to the decode and `ffmpeg -i x.heic -vf scale=... out.webp` fails with "Simple and complex filtering cannot be used together". **Decode to a full-size PNG first, then scale and encode WebP from that PNG.** Worked example with sizes and quality settings: the header of `lib/events/kiddies-hike.ts`. Long edge 1400px (hero ~1750px) at quality 82 took ten Kiddies Hike frames from ~57 MB of originals to 2.8 MB.
@@ -204,6 +205,8 @@ export default function Image() {
 ```
 
 **Critical constraint:** `runtime`, `size`, `contentType`, and `alt` must be **inline literals** — Next parses route-segment config from the source AST and rejects imported constants or re-exports. The renderer function is the only shareable part. See decisions.md for the full explanation.
+
+**Consequence when hiding a route:** because `alt` is read statically, it is emitted into that route's `og:image:alt` **even when the page itself returns 404**, and it cannot be gated behind a feature flag. Hiding a surface by returning `notFound()` from the page therefore still leaks the `alt` text. Intercept the request before it renders — see the `redirects()` block in `next.config.mjs`. Same trap applies to any route-segment config you might want to make conditional.
 
 **Pairing:** the OG and Twitter files for a given route are usually byte-identical (same hero, same copy, same dimensions). Both are needed because Next does not auto-mirror — Twitter cards default to the OG image only as a fallback when twitter-image is absent at the route level, but for predictable rendering across crawlers we explicitly emit both.
 
