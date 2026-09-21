@@ -1,3 +1,15 @@
+import { readFileSync } from 'node:fs'
+
+/**
+ * Mirror of `DOE_ENABLED` in `lib/feature-flags.ts`, read rather than
+ * duplicated: this file is `.mjs` and cannot import TypeScript, and two
+ * hand-maintained copies of a flag is exactly how a surface comes back half
+ * on. Flip the flag in that one file; this follows.
+ */
+const DOE_ENABLED = /export const DOE_ENABLED:\s*boolean\s*=\s*true\b/.test(
+  readFileSync(new URL('./lib/feature-flags.ts', import.meta.url), 'utf8'),
+)
+
 /** @type {import('next').NextConfig} */
 
 /**
@@ -59,6 +71,35 @@ const nextConfig = {
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+    ]
+  },
+
+  /**
+   * While the DoE surface is hidden, intercept its URLs before anything
+   * renders.
+   *
+   * A `notFound()` inside the page is not enough on its own. Next reads the
+   * `alt` export from each route's `opengraph-image.tsx` statically, from the
+   * AST, so it cannot be gated behind an imported flag — the 404 response
+   * still carried "Duke of Edinburgh" in its `og:image:alt`. A statically
+   * prerendered `notFound()` also answered 200, which reads as a soft 404.
+   * Redirecting means the route is never rendered, so neither can happen.
+   *
+   * `permanent: false` issues a 307. That is deliberate for a temporary
+   * hide: a 308 or a 404 tells Google the URL is gone and it gets dropped,
+   * so restoring would mean re-earning the indexing. A 307 parks it.
+   *
+   * `:path*` matches zero or more segments, so this covers the base page,
+   * the proposal page, and all four OG and Twitter card routes.
+   */
+  async redirects() {
+    if (DOE_ENABLED) return []
+    return [
+      {
+        source: '/schools/international-award/:path*',
+        destination: '/schools',
+        permanent: false,
       },
     ]
   },

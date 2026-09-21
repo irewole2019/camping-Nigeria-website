@@ -8,6 +8,7 @@ import BackgroundVideo from '@/components/home/BackgroundVideo'
 import EventBanner from '@/components/home/EventBanner'
 import { FEATURED_UPCOMING_EVENT } from '@/lib/events'
 import { buildPageMetadata } from '@/lib/seo'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 
 export const metadata = buildPageMetadata({
   title: 'Camping Nigeria — Real Growth Happens Outside',
@@ -100,8 +101,9 @@ export default function GatewayPage() {
           </h2>
           <p className="mt-4 max-w-3xl text-white/75 leading-relaxed text-base md:text-lg">
             Camping Nigeria designs structured outdoor experiences that build confidence,
-            leadership, and collaboration. We support school camps, Duke of Edinburgh expedition
-            delivery, team retreats, and premium gear rental with safety-first operations.
+            leadership, and collaboration. We support school camps,{' '}
+            {DOE_ENABLED && <>Duke of Edinburgh expedition delivery, </>}team retreats, and premium
+            gear rental with safety-first operations.
           </p>
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link
@@ -116,12 +118,14 @@ export default function GatewayPage() {
             >
               Explore School Programmes
             </Link>
-            <Link
-              href="/schools/international-award"
-              className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"
-            >
-              Duke of Edinburgh Support
-            </Link>
+            {DOE_ENABLED && (
+              <Link
+                href="/schools/international-award"
+                className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"
+              >
+                Duke of Edinburgh Support
+              </Link>
+            )}
             <Link
               href="/schools/proposal"
               className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"

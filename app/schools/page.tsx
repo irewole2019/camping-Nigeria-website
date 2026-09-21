@@ -11,6 +11,7 @@ import HowItWorks from '@/components/home/HowItWorks'
 import SecondaryAudiences from '@/components/home/SecondaryAudiences'
 import FinalCta from '@/components/home/FinalCta'
 import { getOfferGroup } from '@/lib/offers-data'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 
@@ -47,7 +48,7 @@ export default function SchoolsPage() {
       <Navbar />
       <Hero />
       <WhyOutdoorLearning />
-      <DoECallout />
+      {DOE_ENABLED && <DoECallout />}
       <OfferShowcase
         group={schoolOffers}
         eyebrow="Structured for Schools"

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { SITE_URL } from '@/lib/seo'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 
 /**
  * Read NEXT_PUBLIC_SEO_LAST_MODIFIED defensively. `??` only falls back on
@@ -136,8 +137,16 @@ const ROUTES: RouteEntry[] = [
   { path: '/terms', changeFrequency: 'yearly', priority: 0.3 },
 ]
 
+/**
+ * The DoE surface is temporarily hidden (lib/feature-flags.ts) and its pages
+ * return 404, so advertising them here would feed crawlers dead URLs.
+ */
+const VISIBLE_ROUTES = ROUTES.filter(
+  (r) => DOE_ENABLED || !r.path.startsWith('/schools/international-award'),
+)
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  return ROUTES.map(({ path, changeFrequency, priority, image }) => ({
+  return VISIBLE_ROUTES.map(({ path, changeFrequency, priority, image }) => ({
     url: path === '/' ? SITE_URL : `${SITE_URL}${path}`,
     lastModified: LAST_MODIFIED,
     changeFrequency,

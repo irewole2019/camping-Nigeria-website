@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 import { CONTACT } from '@/lib/constants'
 import { escapeHtml, isHoneypotTripped } from '@/lib/html'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -296,6 +297,14 @@ function tierLabelForSubject(t: TierInterest): string {
 
 export async function POST(request: Request) {
   try {
+    // The DoE surface is temporarily hidden (lib/feature-flags.ts), so the
+    // form that posts here is not rendered. Refuse independently anyway, for
+    // stale caches and for anything hitting the endpoint directly. 404 rather
+    // than 403 so the route reads as absent, matching the pages.
+    if (!DOE_ENABLED) {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+
     const raw: unknown = await request.json().catch(() => null)
     if (isHoneypotTripped(raw)) {
       return NextResponse.json({ success: true })

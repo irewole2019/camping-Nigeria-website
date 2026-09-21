@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import JsonLd from '@/components/seo/JsonLd'
@@ -11,18 +12,30 @@ import ExpeditionFaq from '@/components/schools/ExpeditionFaq'
 import { AWARD_FAQS } from '@/lib/award-faq'
 import { getOfferGroup } from '@/lib/offers-data'
 import { buildPageMetadata } from '@/lib/seo'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 import { buildBreadcrumbJsonLd, buildFaqJsonLd, buildServiceJsonLd } from '@/lib/structured-data'
 
 const schoolOffers = getOfferGroup('schools')
 
-export const metadata = buildPageMetadata({
-  title: 'Duke of Edinburgh Expedition Support | Camping Nigeria',
-  description:
-    'Camping Nigeria supports schools running the Duke of Edinburgh Award in Nigeria. Equipment, facilitators, and structured outdoor programming for school expeditions.',
-  path: '/schools/international-award',
-})
+/** Metadata is gated too: otherwise the 404 still carries a DoE <title>. */
+const HIDDEN_METADATA = {
+  title: 'Not Found',
+  robots: { index: false, follow: false },
+}
+
+export const metadata = DOE_ENABLED
+  ? buildPageMetadata({
+      title: 'Duke of Edinburgh Expedition Support | Camping Nigeria',
+      description:
+        'Camping Nigeria supports schools running the Duke of Edinburgh Award in Nigeria. Equipment, facilitators, and structured outdoor programming for school expeditions.',
+      path: '/schools/international-award',
+    })
+  : HIDDEN_METADATA
 
 export default function InternationalAwardPage() {
+  // The whole DoE surface is temporarily hidden. See lib/feature-flags.ts.
+  if (!DOE_ENABLED) notFound()
+
   return (
     <main id="main-content">
       <JsonLd

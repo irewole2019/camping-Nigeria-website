@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { DOE_ENABLED } from '@/lib/feature-flags'
 
 export const SITE_NAME = 'Camping Nigeria'
 export const SITE_URL = 'https://www.campingnigeria.com'
@@ -6,11 +7,14 @@ export const SITE_LOCALE = 'en_NG'
 export const DEFAULT_OG_IMAGE_URL = `${SITE_URL}/opengraph-image`
 export const DEFAULT_TWITTER_IMAGE_URL = `${SITE_URL}/twitter-image`
 
+// 'Duke of Edinburgh Nigeria' is conditional: it rode on every page's keywords,
+// so leaving it in would keep the term on the site after the DoE surface was
+// hidden. See lib/feature-flags.ts.
 const DEFAULT_KEYWORDS = [
   'Camping Nigeria',
   'outdoor education Nigeria',
   'school camping Nigeria',
-  'Duke of Edinburgh Nigeria',
+  ...(DOE_ENABLED ? ['Duke of Edinburgh Nigeria'] : []),
   'student leadership camps',
   'camping gear rental Nigeria',
   'team building retreats Nigeria',
