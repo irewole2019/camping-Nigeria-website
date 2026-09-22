@@ -804,6 +804,39 @@ Both were live options and the founders chose the Sheet. The reasoning on each s
 
 **The Base Camp Kids precedent was followed deliberately** rather than generalised into a shared module. The two events have different fields, different sheets and different lifetimes; an abstraction over two shapes that will never converge costs more than the duplication saves.
 
-**Two gaps left open on purpose.** The form takes no payment despite ₦20,000–₦30,000 tickets, so sign-ups arrive unpaid and `Paid?` is reconciled by hand. And nothing enforces the 50-tent capacity — sign-up 51 succeeds. Both are product decisions for the founders, not oversights.
+---
+## Camp Night takes no payment, because payment happens before sign-up
+
+The founders' model is that money changes hands offline — transfer or in person — and the form is filled in *afterwards*. A sign-up is therefore a **record of someone who has already paid**, not an order. Nothing on the site is a checkout, and no payment provider is integrated.
+
+**This inverts the sheet default.** `Paid?` arrives as `Yes`, not `No`. A default that asserts something the site cannot see would normally be wrong, so it is backed by a required "I have already paid for my tent" checkbox that the API re-checks and refuses the sign-up without. The column then records something the camper actually stated rather than something the code assumed. The team still corrects the odd row by hand; the site has no way to see a bank account.
+
+**The page has to say it, or the model breaks.** If the page reads like a booking form, people sign up intending to pay later, the cap fills with non-payers and the sheet lies. So it is stated three times — under the tent prices, in a panel above the form, and on the checkbox itself — each pointing at the Camp Night number to pay on.
+
+**If a checkout is ever added**, `PAYMENT_IS_OFFLINE`, `PAYMENT_NOTE`, the checkbox, the sheet default and the page copy all move together. The flag exists to make that a single findable thing rather than five.
+
+---
+## Camp Night's capacity cap lives in the Apps Script, not the site
+
+Fifty tents, and the site cannot enforce it. `/events/camp-night` is statically rendered, so it has no count of sign-ups; only the sheet knows. The script therefore counts rows and returns `event-full` once it holds 50.
+
+**The API returns 409 before sending any email.** Every other thing the sheet can say is non-blocking — the confirmation email is the source of truth that a sign-up happened, and the internal notification carries every field so a missing row can be added by hand. Capacity is the exception, because telling camper 51 "You are in" is a promise the team cannot keep. Nothing is sent.
+
+**`doPost` takes a `LockService` lock.** Both the capacity check and the duplicate-code check read the sheet and then write to it. Without a lock, two sign-ups arriving together could both read 49 rows and both be let in, or both claim the same code. The lock is what makes either guarantee real.
+
+**`TENT_CAP` exists twice** — in `lib/events/camp-night.ts` and at the top of the script — because the script runs inside Google and cannot import from the repo. Both are commented as copies of each other. This is the one duplication in the feature and it is unavoidable.
+
+**The cap does not exist until the sheet does.** With `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` unset there is no count, so sign-up 51 succeeds. Recorded in the constant's doc comment, the route, and the setup guide.
+
+**Deleting a row frees a place**, since rows are what get counted. That is the cancellation path, and it needs no code.
+
+---
+## The Camp Night enquiries number is not a site contact detail
+
+`07040538528` is for Camp Night enquiries and bookings only and has nothing to do with the main site. It therefore lives in `lib/events/camp-night.ts`, **not** in `lib/constants.ts#CONTACT`, and a test asserts it is not equal to `CONTACT.phone` — the natural instinct on seeing a phone number in an event module is to "tidy" it into the shared constant, which would put it on every page and outlive the event.
+
+It replaces the site WhatsApp line in the Camp Night confirmation email and the `/contact` link on the confirmation page, because a camper with a question about that night should reach the people running it.
+
+Rendered international (`+234 704 053 8528`) though it was given as local, following the same convention as the site number for the same reasons: `tel:` links that work from abroad, and consistency. **No WhatsApp link** — the site number uses a click-to-chat short link and nobody has confirmed this line is on WhatsApp, so inventing a `wa.me/<digits>` URL for it would be a guess presented as a fact.
 
 ---
