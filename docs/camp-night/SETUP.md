@@ -77,11 +77,15 @@ sort, filter and check people in from.
 Paste the Web app URL into a browser on its own. You should get:
 
 ```json
-{"ok":true,"service":"camp-night-signups","sheet":"Sign-ups"}
+{"ok":true,"service":"camp-night-signups","sheet":"Sign-ups",
+ "signups":0,"capacity":50,"remaining":50}
 ```
 
 If you get that, the deployment is live. Then sign yourself up through
 `/events/camp-night` and watch a row appear.
+
+That same URL is how you check the count at any time — `remaining` is how
+many tents are left.
 
 ---
 
@@ -109,11 +113,29 @@ different URL, and you'd have to update Vercel again.
 
 ---
 
-## Two things this does not do
+## The 50-tent cap lives in here
 
-- **It does not take payment.** Tickets are ₦20,000–₦30,000 and the form
-  collects no money. Sign-ups arrive unpaid, and `Paid?` is a column you fill
-  in as transfers land. If you want payment on the form, that's a separate
-  piece of work.
-- **It does not cap at 50 tents.** Nothing stops sign-up 51. Watch the row
-  count, or ask for a cap to be built.
+Once the sheet holds 50 sign-ups, the script refuses the next one and the
+website shows "all 50 tents are taken" instead of confirming. **No
+confirmation email goes out**, so nobody is ever told they are in when they
+are not.
+
+This is the only place the cap can work — the website is a static page and
+has no idea how many people have signed up. Two consequences:
+
+- **Until the steps above are done, there is no cap.** With no sheet there is
+  no count, so sign-up 51 would succeed.
+- **To free up a place after a cancellation, delete that row.** Rows are
+  counted, so deleting one reopens a tent.
+
+To change the number, edit `TENT_CAP` at the top of the script *and*
+`TENT_CAP` in `lib/events/camp-night.ts`. They are two copies of the same
+number — the script runs inside Google and can't read the website's code.
+
+---
+
+## What this still does not do
+
+**It does not take payment.** Tickets are ₦20,000–₦30,000 and the form
+collects no money. Sign-ups arrive unpaid, and `Paid?` is a column you tick as
+transfers land. Adding payment to the form is a separate piece of work.

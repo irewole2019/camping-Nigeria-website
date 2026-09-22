@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, MapPin } from 'lucide-react'
+import { ArrowRight, MapPin, Phone } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
@@ -12,6 +12,8 @@ import {
   EVENT_DATE_LABEL,
   EVENT_FULL_TITLE,
   EVENT_PATH,
+  EVENT_PHONE_DISPLAY,
+  EVENT_PHONE_TEL,
   EVENT_TIME_LABEL,
   REGISTERED_PATH,
   VENUE_LABEL,
@@ -144,12 +146,15 @@ export default async function CampNightRegisteredPage({
               Back to Camp Night
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-            <Link
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-lg border border-brand-dark/25 px-6 py-3.5 font-sans text-sm font-semibold tracking-wide text-brand-dark transition-colors duration-200 hover:border-brand-dark hover:bg-brand-dark hover:text-white"
+            {/* The Camp Night line rather than /contact — this event has its
+                own enquiries and bookings number. */}
+            <a
+              href={EVENT_PHONE_TEL}
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-brand-dark/25 px-6 py-3.5 font-sans text-sm font-semibold tracking-wide text-brand-dark transition-colors duration-200 hover:border-brand-dark hover:bg-brand-dark hover:text-white"
             >
-              Ask us something
-            </Link>
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              {EVENT_PHONE_DISPLAY}
+            </a>
           </div>
         </div>
       </Section>

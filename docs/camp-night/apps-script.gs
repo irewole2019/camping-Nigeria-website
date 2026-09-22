@@ -21,6 +21,11 @@
  *     Built for a phone, where Ctrl+F is awkward.
  *   - GET the Web app URL with ?code=SCN-XXXXXX for a JSON answer.
  *
+ * CAPACITY is enforced here and nowhere else. The site is statically rendered
+ * and has no count of its own, so once the sheet holds TENT_CAP sign-ups this
+ * script answers `event-full` and the site refuses the sign-up without sending
+ * a confirmation. Deleting a cancelled row frees the place back up.
+ *
  * THE DUPLICATE GUARD is the important part. Codes are generated randomly by
  * the site (a Sheet has no atomic counter to hand out sequential numbers), so
  * this script refuses to append a code that already exists and returns
@@ -31,6 +36,19 @@
 
 const SHEET_NAME = 'Sign-ups'
 const LOOKUP_SHEET_NAME = 'Lookup'
+
+/**
+ * 50 tents. Once the sheet holds this many sign-ups, doPost refuses the next
+ * one with `event-full` and the site sends no confirmation email.
+ *
+ * This is the ONLY place the cap can be enforced — the website is statically
+ * rendered and has no count of its own. It is a second copy of TENT_CAP in
+ * lib/events/camp-night.ts; change both together.
+ *
+ * To reopen sign-ups after a cancellation, delete the cancelled row (or raise
+ * this number). Rows are counted, so a deleted row frees a place.
+ */
+const TENT_CAP = 50
 
 const HEADERS = [
   'Timestamp',
@@ -79,6 +97,11 @@ function getOrCreateSheet() {
   return sheet
 }
 
+/** How many sign-ups are in the sheet, excluding the header row. */
+function countSignups(sheet) {
+  return Math.max(0, sheet.getLastRow() - 1)
+}
+
 /** Returns the 1-indexed row for a code, or -1. */
 function findRowByCode(sheet, code) {
   const last = sheet.getLastRow()
@@ -99,11 +122,28 @@ function jsonOut(obj) {
 }
 
 function doPost(e) {
+  // Serialise appends. Both the capacity check and the duplicate-code check
+  // read the sheet and then write to it, so without a lock two sign-ups
+  // arriving together could both read 49 rows and both be let in — or both
+  // claim the same code. 30s is far longer than an append takes.
+  const lock = LockService.getScriptLock()
+  try {
+    lock.waitLock(30000)
+  } catch (err) {
+    return jsonOut({ ok: false, error: 'busy' })
+  }
+
   try {
     const body = JSON.parse(e.postData.contents)
     const sheet = getOrCreateSheet()
 
     if (!body.code) return jsonOut({ ok: false, error: 'missing-code' })
+
+    // Capacity. Checked before the duplicate guard so a full event answers
+    // 'event-full' rather than sending the site into its retry loop.
+    if (countSignups(sheet) >= TENT_CAP) {
+      return jsonOut({ ok: false, error: 'event-full', capacity: TENT_CAP })
+    }
 
     // The guarantee the random code generator cannot make on its own.
     if (findRowByCode(sheet, body.code) !== -1) {
@@ -124,9 +164,15 @@ function doPost(e) {
       '',     // Notes
     ])
 
-    return jsonOut({ ok: true, code: body.code })
+    return jsonOut({
+      ok: true,
+      code: body.code,
+      remaining: Math.max(0, TENT_CAP - countSignups(sheet)),
+    })
   } catch (err) {
     return jsonOut({ ok: false, error: String(err) })
+  } finally {
+    lock.releaseLock()
   }
 }
 
@@ -137,11 +183,20 @@ function doPost(e) {
  */
 function doGet(e) {
   const code = e && e.parameter && e.parameter.code
+  const sheet = getOrCreateSheet()
+
   if (!code) {
-    return jsonOut({ ok: true, service: 'camp-night-signups', sheet: SHEET_NAME })
+    const used = countSignups(sheet)
+    return jsonOut({
+      ok: true,
+      service: 'camp-night-signups',
+      sheet: SHEET_NAME,
+      signups: used,
+      capacity: TENT_CAP,
+      remaining: Math.max(0, TENT_CAP - used),
+    })
   }
 
-  const sheet = getOrCreateSheet()
   const row = findRowByCode(sheet, code)
   if (row === -1) return jsonOut({ ok: false, error: 'not-found', code: code })
 

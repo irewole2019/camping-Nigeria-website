@@ -66,6 +66,7 @@ import {
   HERO_IMAGE as CN_HERO_IMAGE,
   HERO_IMAGE_ALT as CN_HERO_IMAGE_ALT,
   LOWEST_PRICE as CN_LOWEST_PRICE,
+  MIN_AGE as CN_MIN_AGE,
   TENT_CAP as CN_TENT_CAP,
   VENUE_CITY as CN_CITY,
   VENUE_LABEL as CN_VENUE_LABEL,
@@ -177,9 +178,9 @@ const KIDDIES_HIKE: EventSummary = {
  * `FEATURED_UPCOMING_EVENT`. Drop the `banner` block, or flip EVENT_STATUS to
  * 'past' after the night, and the homepage goes quiet again on its own.
  *
- * `ageRange` reads "18+" rather than a span: Camp Night is an adults' night
- * out, unlike the two children's events, and the hub card would otherwise
- * imply a minimum we have not been given. Confirm the real policy.
+ * `ageRange` reads "Adults 18+" rather than a span: Camp Night is an adults'
+ * night out, unlike the two children's events. The minimum is confirmed by
+ * the founders and enforced on the sign-up form — see MIN_AGE in ./camp-night.
  */
 const CAMP_NIGHT: EventSummary = {
   slug: 'camp-night',
@@ -194,7 +195,7 @@ const CAMP_NIGHT: EventSummary = {
   endIso: CN_END_ISO,
   venueLabel: CN_VENUE_LABEL,
   city: CN_CITY,
-  ageRange: 'Adults',
+  ageRange: `Adults ${CN_MIN_AGE}+`,
   image: CN_HERO_IMAGE,
   imageAlt: CN_HERO_IMAGE_ALT,
   banner: {

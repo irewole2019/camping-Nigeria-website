@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import Honeypot from '@/components/ui/Honeypot'
 import {
+  MIN_AGE,
   REGISTERED_PATH,
   TENT_PACKAGES,
   formatNaira,
@@ -20,6 +21,7 @@ interface FormErrors {
   name?: string
   email?: string
   phone?: string
+  age?: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -37,6 +39,7 @@ export default function SignupForm() {
   const [phone, setPhone] = useState('')
   const [instagram, setInstagram] = useState('')
   const [packageId, setPackageId] = useState<TentPackageId>('shared')
+  const [ageConfirmed, setAgeConfirmed] = useState(false)
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [sending, setSending] = useState(false)
@@ -49,6 +52,7 @@ export default function SignupForm() {
     else if (!EMAIL_RE.test(email.trim())) next.email = 'That email does not look right.'
     if (!phone.trim()) next.phone = 'We need a phone number.'
     else if (countDigits(phone) < 7) next.phone = 'That phone number looks too short.'
+    if (!ageConfirmed) next.age = `Camp Night is for adults ${MIN_AGE} and over.`
     return next
   }
 
@@ -71,6 +75,7 @@ export default function SignupForm() {
           phone: phone.trim(),
           instagram: instagram.trim(),
           packageId,
+          ageConfirmed,
           website_confirm: honeypotRef.current?.value || '',
         }),
       })
@@ -94,6 +99,10 @@ export default function SignupForm() {
         )
       } else if (res.status === 403) {
         setSubmitError(body.error || 'Sign-ups are closed. Email hello@campingnigeria.com.')
+      } else if (res.status === 409) {
+        // Sold out. The sheet counts the rows, so this is the real answer —
+        // it can arrive even though the form was still on screen.
+        setSubmitError(body.error || 'Every tent is taken. Email hello@campingnigeria.com.')
       } else {
         setSubmitError(
           body.error || 'We could not save your sign-up. Please email hello@campingnigeria.com or try again.',
@@ -202,6 +211,33 @@ export default function SignupForm() {
           optional
           hint="So we can tag you in the photos."
         />
+      </div>
+
+      {/* Adults-only night. Required, and re-checked by the API. */}
+      <div>
+        <label htmlFor="cn-age" className="flex cursor-pointer items-start gap-3">
+          <input
+            id="cn-age"
+            name="ageConfirmed"
+            type="checkbox"
+            checked={ageConfirmed}
+            onChange={(e) => setAgeConfirmed(e.target.checked)}
+            aria-invalid={errors.age ? true : undefined}
+            aria-describedby={errors.age ? 'cn-age-error' : undefined}
+            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-brand-dark/25 text-brand-dark accent-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+          />
+          <span className="font-sans text-sm leading-relaxed text-brand-dark/80">
+            I am {MIN_AGE} or over. <span className="text-brand-accent">*</span>
+            <span className="mt-0.5 block text-xs text-brand-dark/55">
+              Camp Night is an adults-only night.
+            </span>
+          </span>
+        </label>
+        {errors.age && (
+          <p id="cn-age-error" role="alert" className="mt-1.5 font-sans text-sm text-red-600">
+            {errors.age}
+          </p>
+        )}
       </div>
 
       {submitError && (

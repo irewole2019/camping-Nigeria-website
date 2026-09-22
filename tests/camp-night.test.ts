@@ -5,11 +5,18 @@ import {
   normaliseInstagram,
 } from '@/lib/events/camp-night-records'
 import {
+  EVENT_END_ISO,
+  EVENT_PHONE_DISPLAY,
+  EVENT_PHONE_TEL,
+  EVENT_START_ISO,
   LOWEST_PRICE,
+  MIN_AGE,
+  PLEASE_NOTE,
   TENT_PACKAGES,
   getTentPackage,
   isValidPackageId,
 } from '@/lib/events/camp-night'
+import { CONTACT } from '@/lib/constants'
 
 describe('generateSignupCode', () => {
   it('uses the SCN tag and six characters', () => {
@@ -97,5 +104,44 @@ describe('tent packages', () => {
   it('resolves a package to the label the sheet and email use', () => {
     expect(getTentPackage('single').label).toBe('Single tent (1 person)')
     expect(getTentPackage('couple').price).toBe(30_000)
+  })
+})
+
+describe('event timing', () => {
+  it('runs overnight, 6pm Saturday to 9am Sunday, in Lagos time', () => {
+    expect(EVENT_START_ISO).toBe('2026-09-26T18:00:00+01:00')
+    expect(EVENT_END_ISO).toBe('2026-09-27T09:00:00+01:00')
+  })
+
+  it('ends after it starts, and spans a single night', () => {
+    const start = new Date(EVENT_START_ISO).getTime()
+    const end = new Date(EVENT_END_ISO).getTime()
+    expect(end).toBeGreaterThan(start)
+    expect((end - start) / 3_600_000).toBe(15)
+  })
+})
+
+describe('age policy', () => {
+  it('is 18 and over', () => {
+    expect(MIN_AGE).toBe(18)
+  })
+
+  it('states the minimum in PLEASE_NOTE, which the confirmation email renders', () => {
+    expect(PLEASE_NOTE.some((n) => n.includes(String(MIN_AGE)))).toBe(true)
+  })
+})
+
+describe('event enquiries line', () => {
+  // The founders were explicit that this number belongs to Camp Night alone
+  // and has nothing to do with the main site. If someone ever "tidies" it into
+  // CONTACT, or points the event at the site number, these fail.
+  it('is the Camp Night number, not the site-wide one', () => {
+    expect(EVENT_PHONE_DISPLAY).toBe('+234 704 053 8528')
+    expect(EVENT_PHONE_DISPLAY).not.toBe(CONTACT.phone)
+  })
+
+  it('has a tel: link whose digits match the displayed number', () => {
+    expect(EVENT_PHONE_TEL).toBe('tel:+2347040538528')
+    expect(EVENT_PHONE_TEL.replace('tel:', '')).toBe(EVENT_PHONE_DISPLAY.replace(/\s/g, ''))
   })
 })

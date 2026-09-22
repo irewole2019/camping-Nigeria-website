@@ -16,20 +16,49 @@ export const EVENT_TAGLINE = 'A Night Outdoors'
 export const EVENT_STRAPLINE = 'Camp · Connect · Celebrate'
 export const EVENT_HOST = 'DJ SARZ'
 
+/**
+ * African Dream Community is a community **under Camping Nigeria**, not a
+ * third-party partner, and the founders asked for it on the hero. Credit it
+ * as ours rather than as a co-host.
+ */
+export const COMMUNITY_NAME = 'African Dream Community'
+
 export const EVENT_DESCRIPTION =
-  'A one-night outdoor camp at Brooks Garden and Events Centre, Abuja, on Saturday 26 September 2026. Tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games. From ₦20,000.'
+  'A one-night outdoor camp at Brooks Garden and Events Centre, Abuja, from 6pm on Saturday 26 September 2026 until 9am the next morning. Adults 18 and over. Tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games. From ₦20,000.'
 
 // 26 September 2026, Saturday — Africa/Lagos is UTC+1, no DST.
-// Runs from 6pm through the night; the end stamp is the morning after.
 //
 // 6pm is the flyer's own time ("SEPT 26TH 6PM"), which is already circulating.
 // An earlier brief said 4pm; the flyer won because it is what campers have
-// actually seen. The end stamp is an assumption — nobody has given a closing
-// time, and schema.org requires one — so correct it if there is a real one.
+// actually seen. The 9am close is confirmed by the founders — it is an
+// overnight event that ends on the Sunday morning.
 export const EVENT_START_ISO = '2026-09-26T18:00:00+01:00'
 export const EVENT_END_ISO = '2026-09-27T09:00:00+01:00'
 export const EVENT_DATE_LABEL = 'Saturday, 26 September 2026'
-export const EVENT_TIME_LABEL = '6:00 PM, through the night'
+export const EVENT_TIME_LABEL = '6:00 PM until 9:00 AM the next morning'
+/** Compact form for the hero spec strip, where the long label wraps badly. */
+export const EVENT_TIME_SHORT = '6 PM – 9 AM'
+
+/**
+ * Minimum age. An adult event: the bar is on the page, in the Event JSON-LD
+ * as `suggestedMinAge`, in PLEASE_NOTE, and behind a required checkbox on the
+ * sign-up form that the API re-checks.
+ */
+export const MIN_AGE = 18
+
+/**
+ * Enquiries and bookings line **for this event only**.
+ *
+ * Deliberately NOT in `lib/constants.ts#CONTACT`: the founders were explicit
+ * that this number has nothing to do with the main site. It belongs to Camp
+ * Night and should disappear with it. Do not promote it, and do not let the
+ * site-wide number replace it here.
+ *
+ * Given as local `07040538528`; rendered international to match the site's
+ * existing convention (see decisions.md) and to stay dialable from abroad.
+ */
+export const EVENT_PHONE_DISPLAY = '+234 704 053 8528'
+export const EVENT_PHONE_TEL = 'tel:+2347040538528'
 
 export const VENUE_NAME = 'Brooks Garden and Events Centre'
 export const VENUE_CITY = 'Abuja'
@@ -43,6 +72,16 @@ export const VENUE_MAP_URL = 'https://maps.app.goo.gl/Mm2LJwSE5USiVgdU6?g_st=ic'
  * shared tent more, so the headcount is deliberately not derived from it.
  * That is also why the Event JSON-LD omits `maximumAttendeeCapacity` — it is
  * a people field, and publishing a tent count there would be wrong data.
+ *
+ * **Where the cap is actually enforced:** in the Apps Script, not here. The
+ * sheet is the only place that knows how many sign-ups exist, so it counts
+ * rows and returns `event-full` once it holds this many; the API then refuses
+ * the sign-up and sends no email. This constant and the `TENT_CAP` in
+ * `docs/camp-night/apps-script.gs` must be changed together — two copies,
+ * because the script runs inside Google and cannot import from here.
+ *
+ * Corollary: while `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` is unset there is
+ * no count and therefore no cap. Sign-up 51 will succeed.
  */
 export const TENT_CAP = 50
 
@@ -154,6 +193,7 @@ export const BRING: readonly string[] = [
 ] as const
 
 export const PLEASE_NOTE: readonly string[] = [
+  `This is an adults-only night. You must be ${MIN_AGE} or over to camp.`,
   'Do not bring laptops or expensive gadgets.',
   'Pets are allowed, but only domesticated and well-behaved ones. No aggressive pets.',
   'If it rains, there is a covered sit-out and canopy where everyone stays safely.',

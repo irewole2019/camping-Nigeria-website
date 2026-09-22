@@ -10,20 +10,25 @@ import { buildPageMetadata, SITE_URL } from '@/lib/seo'
 import { buildBreadcrumbJsonLd, buildEventJsonLd } from '@/lib/structured-data'
 import {
   BRING,
+  COMMUNITY_NAME,
   EVENT_DATE_LABEL,
   EVENT_DESCRIPTION,
   EVENT_END_ISO,
   EVENT_FULL_TITLE,
   EVENT_HOST,
   EVENT_PATH,
+  EVENT_PHONE_DISPLAY,
+  EVENT_PHONE_TEL,
   EVENT_START_ISO,
   EVENT_STRAPLINE,
   EVENT_TAGLINE,
+  EVENT_TIME_SHORT,
   FLYER_IMAGE,
   FLYER_IMAGE_ALT,
   HERO_IMAGE,
   HERO_IMAGE_ALT,
   LOWEST_PRICE,
+  MIN_AGE,
   PLEASE_NOTE,
   SIGNUP_OPEN,
   TENT_CAP,
@@ -89,6 +94,7 @@ export default function CampNightPage() {
             : {}),
           // No maximumAttendeeCapacity: the cap is 50 *tents*, and that field
           // counts people. A couple tent holds two, so the two numbers differ.
+          audience: { suggestedMinAge: MIN_AGE },
           image: `${SITE_URL}${HERO_IMAGE}`,
         })}
       />
@@ -127,6 +133,16 @@ export default function CampNightPage() {
               {EVENT_TAGLINE}. Hosted by {EVENT_HOST}.
             </p>
 
+            {/* African Dream Community is ours, not a third-party partner —
+                credited on the hero at the founders' request. */}
+            <p className="mt-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-white/25 px-4 py-2 font-sans text-xs font-semibold uppercase tracking-[0.15em] text-white/80 sm:text-[13px]">
+              Camping Nigeria
+              <span className="text-brand-accent" aria-hidden="true">
+                &middot;
+              </span>
+              <span className="text-brand-accent">{COMMUNITY_NAME}</span>
+            </p>
+
             <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-white/75 sm:text-lg">
               One night under canvas, with the city behind you and a bonfire in front of you. We
               pitch the tents and put a mattress in each one. You bring a bedsheet and a hoodie.
@@ -135,7 +151,7 @@ export default function CampNightPage() {
 
             <dl className="mt-10 flex flex-wrap items-stretch gap-y-4 divide-x divide-white/20 border-y border-white/20 py-5">
               <Spec first label="When" value={EVENT_DATE_LABEL.replace('Saturday, ', 'Sat 26 Sep')} />
-              <Spec label="Starts" value="6:00 PM" />
+              <Spec label="Time" value={EVENT_TIME_SHORT} />
               <Spec label="Where" value={VENUE_CITY} />
               <Spec label="From" value={formatNaira(LOWEST_PRICE)} />
             </dl>
@@ -160,7 +176,17 @@ export default function CampNightPage() {
             </div>
 
             <p className="mt-8 font-sans text-xs leading-relaxed text-white/55 sm:text-sm">
-              {TENT_CAP} tents only. {VENUE_LABEL}.
+              {TENT_CAP} tents only. Adults {MIN_AGE}+. {VENUE_LABEL}.
+              <br className="hidden sm:block" />
+              <span className="mt-1 block sm:mt-2">
+                Enquiries and bookings:{' '}
+                <a
+                  href={EVENT_PHONE_TEL}
+                  className="font-semibold text-brand-accent underline-offset-4 hover:underline"
+                >
+                  {EVENT_PHONE_DISPLAY}
+                </a>
+              </span>
             </p>
           </div>
         </div>
@@ -257,9 +283,21 @@ export default function CampNightPage() {
             </h2>
             <p className="mt-4 font-sans text-base leading-relaxed text-brand-dark/70">
               {SIGNUP_OPEN
-                ? 'Fill this in and your camp code lands in your inbox straight away, with everything to bring on the night.'
+                ? `Fill this in and your camp code lands in your inbox straight away, with everything to bring on the night. Adults ${MIN_AGE} and over.`
                 : 'Camp Night ran on 26 September 2026. Tell us you want in on the next one.'}
             </p>
+
+            {SIGNUP_OPEN && (
+              <p className="mt-3 font-sans text-sm text-brand-dark/55">
+                Prefer to talk to someone? Enquiries and bookings:{' '}
+                <a
+                  href={EVENT_PHONE_TEL}
+                  className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+                >
+                  {EVENT_PHONE_DISPLAY}
+                </a>
+              </p>
+            )}
           </div>
 
           {SIGNUP_OPEN ? (

@@ -8,9 +8,13 @@ import {
   EVENT_DATE_LABEL,
   EVENT_FULL_TITLE,
   EVENT_PATH,
+  EVENT_PHONE_DISPLAY,
+  EVENT_PHONE_TEL,
   EVENT_TIME_LABEL,
+  MIN_AGE,
   PLEASE_NOTE,
   SIGNUP_OPEN,
+  TENT_CAP,
   VENUE_LABEL,
   VENUE_MAP_URL,
   WE_PROVIDE,
@@ -35,6 +39,8 @@ interface SignupPayload {
   phone: string
   instagram: string
   packageId: TentPackageId
+  /** Ticked the "I am 18 or over" box. Re-checked here, not trusted from the UI. */
+  ageConfirmed: boolean
 }
 
 // Same shape as the other routes: check every field's type and enum before
@@ -47,6 +53,7 @@ function isValidPayload(raw: unknown): raw is SignupPayload {
   if (typeof r.phone !== 'string') return false
   // Instagram is optional, but must be a string when present.
   if (typeof r.instagram !== 'string') return false
+  if (typeof r.ageConfirmed !== 'boolean') return false
   if (!isValidPackageId(r.packageId)) return false
   return true
 }
@@ -197,9 +204,11 @@ function buildCustomerEmail(data: SignupPayload, code: string): string {
 
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
 
+    <!-- The Camp Night line, not the site-wide number: this event has its own
+         enquiries and bookings line. See EVENT_PHONE_DISPLAY. -->
     <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
-      Questions before the night? Reply to this email, or message us on WhatsApp at
-      <a href="${escapeHtml(CONTACT.whatsapp)}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${escapeHtml(CONTACT.phone)}</a>.
+      Questions before the night? Reply to this email, or call the Camp Night line on
+      <a href="${EVENT_PHONE_TEL}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${escapeHtml(EVENT_PHONE_DISPLAY)}</a>.
     </p>
 
   </td></tr>
@@ -282,6 +291,14 @@ export async function POST(request: Request) {
     if (countDigits(phone) < 7) {
       return NextResponse.json({ error: 'Invalid phone' }, { status: 400 })
     }
+    // Adults-only night. The form makes this a required checkbox; this is the
+    // check that actually holds, for direct posts and stale clients.
+    if (!raw.ageConfirmed) {
+      return NextResponse.json(
+        { success: false, error: `Camp Night is for adults ${MIN_AGE} and over.` },
+        { status: 400 },
+      )
+    }
     if (
       !withinLengthCaps([
         [name, MAX_LENGTHS.name],
@@ -293,7 +310,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Field too long' }, { status: 400 })
     }
 
-    const payload: SignupPayload = { name, email, phone, instagram, packageId: raw.packageId }
+    const payload: SignupPayload = {
+      name,
+      email,
+      phone,
+      instagram,
+      packageId: raw.packageId,
+      ageConfirmed: true,
+    }
     const pkg = getTentPackage(payload.packageId)
 
     // Record first, so the code in the email is one the sheet has accepted.
@@ -327,10 +351,26 @@ export async function POST(request: Request) {
       })
     }
 
+    // Capacity is the one refusal that must stop the sign-up. Everything else
+    // the sheet can say is non-blocking, but sending "You are in" for tent 51
+    // would be a promise we cannot keep, so this returns before any email.
+    if (!recorded.ok && recorded.error === 'event-full') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `All ${TENT_CAP} tents are taken. Call ${EVENT_PHONE_DISPLAY} to join the waiting list.`,
+        },
+        { status: 409 },
+      )
+    }
+
     if (!recorded.ok) {
       // Non-blocking, matching Base Camp Kids: the email is the source of
       // truth that a sign-up happened, and the internal notification carries
       // every field so the row can be added by hand.
+      //
+      // Note this means capacity is only enforced once the webhook is
+      // configured — with no sheet there is no count. See TENT_CAP.
       console.error('Camp Night sheet append failed:', recorded.error)
     }
 
