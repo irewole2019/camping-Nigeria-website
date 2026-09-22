@@ -11,6 +11,8 @@ import {
   EVENT_START_ISO,
   LOWEST_PRICE,
   MIN_AGE,
+  PAYMENT_IS_OFFLINE,
+  PAYMENT_NOTE,
   PLEASE_NOTE,
   TENT_PACKAGES,
   getTentPackage,
@@ -128,6 +130,19 @@ describe('age policy', () => {
 
   it('states the minimum in PLEASE_NOTE, which the confirmation email renders', () => {
     expect(PLEASE_NOTE.some((n) => n.includes(String(MIN_AGE)))).toBe(true)
+  })
+})
+
+describe('payment model', () => {
+  // Payment is offline and made BEFORE sign-up, which is the only reason the
+  // sheet can record a row as paid. If a checkout is ever added, this flag and
+  // the sheet default have to move together.
+  it('is offline, so the form is not a checkout', () => {
+    expect(PAYMENT_IS_OFFLINE).toBe(true)
+  })
+
+  it('tells campers to pay before signing up', () => {
+    expect(PAYMENT_NOTE).toMatch(/already paid/i)
   })
 })
 

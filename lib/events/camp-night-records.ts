@@ -20,6 +20,12 @@ export interface CampNightSheetPayload {
   packageId: TentPackageId
   packageLabel: string
   price: number
+  /**
+   * Goes straight into the sheet's `Paid?` column. Payment happens offline
+   * before sign-up, so this is `Yes` whenever the camper ticked the box that
+   * says so — see PAYMENT_IS_OFFLINE in ./camp-night.
+   */
+  paid: 'Yes' | 'No'
 }
 
 export interface RecordResult {

@@ -134,8 +134,19 @@ number — the script runs inside Google and can't read the website's code.
 
 ---
 
-## What this still does not do
+## How payment works
 
-**It does not take payment.** Tickets are ₦20,000–₦30,000 and the form
-collects no money. Sign-ups arrive unpaid, and `Paid?` is a column you tick as
-transfers land. Adding payment to the form is a separate piece of work.
+**Payment is strictly offline and happens before sign-up.** The form is not a
+checkout and never touches money. Campers pay the team by transfer or in
+person, and *then* fill in the form to get their code.
+
+So the sheet's **`Paid?` column arrives as `Yes`**, not `No`. It is not an
+assumption — the form makes the camper tick "I have already paid for my tent"
+before it will submit, and the API refuses the sign-up without it.
+
+The page says this in three places (under the tent prices, above the form, and
+on the checkbox itself), each pointing at the Camp Night number for paying.
+
+**What you still do by hand:** if someone ticks the box without having paid,
+change their `Paid?` cell to `No`. That is the one case the site cannot catch,
+because it has no way to see your bank.

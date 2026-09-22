@@ -159,7 +159,10 @@ function doPost(e) {
       body.instagram || '',
       body.packageLabel || body.packageId || '',
       body.price || '',
-      'No',   // Paid? — set by hand as payments land
+      // Paid? — payment happens offline BEFORE sign-up, and the form makes the
+      // camper confirm it, so this arrives as 'Yes'. Correct it by hand in the
+      // rare case someone signs up without having paid.
+      body.paid || 'No',
       'No',   // Checked In? — set by hand on the night
       '',     // Notes
     ])

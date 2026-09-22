@@ -47,6 +47,24 @@ export const EVENT_TIME_SHORT = '6 PM – 9 AM'
 export const MIN_AGE = 18
 
 /**
+ * **Payment is strictly offline.** The form is not a checkout and takes no
+ * money: campers pay the team first, by transfer or in person, and the
+ * sign-up is the record of someone who has *already* paid.
+ *
+ * That is why the sheet's `Paid?` column defaults to `Yes` rather than `No`,
+ * and why the form carries a required "I have already paid" checkbox — the
+ * default is only defensible because the camper is asked to state it, and the
+ * API re-checks it. Correct the cell by hand in the rare case someone signs
+ * up without having paid.
+ *
+ * If this ever becomes a real checkout, this note, the checkbox, the sheet
+ * default and the page copy all have to change together.
+ */
+export const PAYMENT_IS_OFFLINE = true
+export const PAYMENT_NOTE =
+  'Sign-ups are for campers who have already paid. Pay the team first, then fill this in to get your camp code.'
+
+/**
  * Enquiries and bookings line **for this event only**.
  *
  * Deliberately NOT in `lib/constants.ts#CONTACT`: the founders were explicit

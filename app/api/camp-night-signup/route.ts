@@ -41,6 +41,11 @@ interface SignupPayload {
   packageId: TentPackageId
   /** Ticked the "I am 18 or over" box. Re-checked here, not trusted from the UI. */
   ageConfirmed: boolean
+  /**
+   * Ticked "I have already paid". Payment is offline and happens before
+   * sign-up, so this is what lets the sheet's `Paid?` column say Yes.
+   */
+  paidConfirmed: boolean
 }
 
 // Same shape as the other routes: check every field's type and enum before
@@ -54,6 +59,7 @@ function isValidPayload(raw: unknown): raw is SignupPayload {
   // Instagram is optional, but must be a string when present.
   if (typeof r.instagram !== 'string') return false
   if (typeof r.ageConfirmed !== 'boolean') return false
+  if (typeof r.paidConfirmed !== 'boolean') return false
   if (!isValidPackageId(r.packageId)) return false
   return true
 }
@@ -177,6 +183,15 @@ function buildCustomerEmail(data: SignupPayload, code: string): string {
         <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;border-bottom:1px solid #f0f0f0;">Tent</td>
         <td style="padding:10px 14px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${escapeHtml(pkg.label)} &middot; ${escapeHtml(formatNaira(pkg.price))}</td>
       </tr>
+      <!-- Payment is offline and already made — this records what they told
+           us, so a mismatch surfaces now rather than at the gate. -->
+      <tr>
+        <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;border-bottom:1px solid #f0f0f0;">Payment</td>
+        <td style="padding:10px 14px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">
+          Paid &middot; nothing to pay on the night.<br>
+          <span style="color:#888;">If you have not paid yet, call ${escapeHtml(EVENT_PHONE_DISPLAY)} &mdash; your tent is not held until you have.</span>
+        </td>
+      </tr>
       <tr>
         <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#0e3e2e;white-space:nowrap;border-bottom:1px solid #f0f0f0;">When</td>
         <td style="padding:10px 14px;font-size:13px;color:#3d3d3d;border-bottom:1px solid #f0f0f0;">${escapeHtml(EVENT_DATE_LABEL)}, ${escapeHtml(EVENT_TIME_LABEL)}</td>
@@ -299,6 +314,17 @@ export async function POST(request: Request) {
         { status: 400 },
       )
     }
+    // Payment is offline and happens before sign-up. Without this the sheet
+    // could not honestly mark the row paid.
+    if (!raw.paidConfirmed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Tents are paid for before you sign up. Call ${EVENT_PHONE_DISPLAY} to pay, then come back and fill this in.`,
+        },
+        { status: 400 },
+      )
+    }
     if (
       !withinLengthCaps([
         [name, MAX_LENGTHS.name],
@@ -317,15 +343,15 @@ export async function POST(request: Request) {
       instagram,
       packageId: raw.packageId,
       ageConfirmed: true,
+      paidConfirmed: true,
     }
     const pkg = getTentPackage(payload.packageId)
 
     // Record first, so the code in the email is one the sheet has accepted.
     // The script rejects a code it already holds; retry a few times rather
     // than issue two campers the same code.
-    let code = generateSignupCode()
-    let recorded = await recordCampNightSignup({
-      code,
+    const rowFor = (signupCode: string) => ({
+      code: signupCode,
       name: payload.name,
       email: payload.email,
       phone: payload.phone,
@@ -333,22 +359,18 @@ export async function POST(request: Request) {
       packageId: payload.packageId,
       packageLabel: pkg.label,
       price: pkg.price,
+      // Offline payment, made before sign-up and confirmed above.
+      paid: 'Yes' as const,
     })
+
+    let code = generateSignupCode()
+    let recorded = await recordCampNightSignup(rowFor(code))
 
     let attempts = 0
     while (!recorded.ok && recorded.error === 'duplicate-code' && attempts < 4) {
       attempts += 1
       code = generateSignupCode()
-      recorded = await recordCampNightSignup({
-        code,
-        name: payload.name,
-        email: payload.email,
-        phone: payload.phone,
-        instagram,
-        packageId: payload.packageId,
-        packageLabel: pkg.label,
-        price: pkg.price,
-      })
+      recorded = await recordCampNightSignup(rowFor(code))
     }
 
     // Capacity is the one refusal that must stop the sign-up. Everything else

@@ -29,6 +29,7 @@ import {
   HERO_IMAGE_ALT,
   LOWEST_PRICE,
   MIN_AGE,
+  PAYMENT_NOTE,
   PLEASE_NOTE,
   SIGNUP_OPEN,
   TENT_CAP,
@@ -224,6 +225,17 @@ export default function CampNightPage() {
               </li>
             ))}
           </ul>
+
+          <p className="mt-8 font-sans text-sm leading-relaxed text-brand-dark/60">
+            Tents are paid for before you sign up — call{' '}
+            <a
+              href={EVENT_PHONE_TEL}
+              className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+            >
+              {EVENT_PHONE_DISPLAY}
+            </a>{' '}
+            to pay, then fill in the form below to get your camp code. Nothing to pay on the night.
+          </p>
         </div>
       </Section>
 
@@ -288,15 +300,19 @@ export default function CampNightPage() {
             </p>
 
             {SIGNUP_OPEN && (
-              <p className="mt-3 font-sans text-sm text-brand-dark/55">
-                Prefer to talk to someone? Enquiries and bookings:{' '}
-                <a
-                  href={EVENT_PHONE_TEL}
-                  className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
-                >
-                  {EVENT_PHONE_DISPLAY}
-                </a>
-              </p>
+              <div className="mx-auto mt-6 max-w-xl rounded-xl border border-brand-accent/40 bg-brand-accent-tint px-5 py-4">
+                <p className="font-sans text-sm font-semibold text-brand-dark">Pay first, then sign up</p>
+                <p className="mt-1.5 font-sans text-sm leading-relaxed text-brand-dark/70">
+                  {PAYMENT_NOTE} To pay, call{' '}
+                  <a
+                    href={EVENT_PHONE_TEL}
+                    className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+                  >
+                    {EVENT_PHONE_DISPLAY}
+                  </a>
+                  .
+                </p>
+              </div>
             )}
           </div>
 

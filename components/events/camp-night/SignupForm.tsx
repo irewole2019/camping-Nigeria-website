@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Check } from 'lucide-react'
 import Honeypot from '@/components/ui/Honeypot'
 import {
+  EVENT_PHONE_DISPLAY,
   MIN_AGE,
   REGISTERED_PATH,
   TENT_PACKAGES,
@@ -22,6 +23,7 @@ interface FormErrors {
   email?: string
   phone?: string
   age?: string
+  paid?: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -40,6 +42,7 @@ export default function SignupForm() {
   const [instagram, setInstagram] = useState('')
   const [packageId, setPackageId] = useState<TentPackageId>('shared')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
+  const [paidConfirmed, setPaidConfirmed] = useState(false)
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [sending, setSending] = useState(false)
@@ -53,6 +56,9 @@ export default function SignupForm() {
     if (!phone.trim()) next.phone = 'We need a phone number.'
     else if (countDigits(phone) < 7) next.phone = 'That phone number looks too short.'
     if (!ageConfirmed) next.age = `Camp Night is for adults ${MIN_AGE} and over.`
+    if (!paidConfirmed) {
+      next.paid = `Tents are paid for before you sign up. Call ${EVENT_PHONE_DISPLAY} to pay.`
+    }
     return next
   }
 
@@ -76,6 +82,7 @@ export default function SignupForm() {
           instagram: instagram.trim(),
           packageId,
           ageConfirmed,
+          paidConfirmed,
           website_confirm: honeypotRef.current?.value || '',
         }),
       })
@@ -213,31 +220,28 @@ export default function SignupForm() {
         />
       </div>
 
-      {/* Adults-only night. Required, and re-checked by the API. */}
-      <div>
-        <label htmlFor="cn-age" className="flex cursor-pointer items-start gap-3">
-          <input
-            id="cn-age"
-            name="ageConfirmed"
-            type="checkbox"
-            checked={ageConfirmed}
-            onChange={(e) => setAgeConfirmed(e.target.checked)}
-            aria-invalid={errors.age ? true : undefined}
-            aria-describedby={errors.age ? 'cn-age-error' : undefined}
-            className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-brand-dark/25 text-brand-dark accent-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-          />
-          <span className="font-sans text-sm leading-relaxed text-brand-dark/80">
-            I am {MIN_AGE} or over. <span className="text-brand-accent">*</span>
-            <span className="mt-0.5 block text-xs text-brand-dark/55">
-              Camp Night is an adults-only night.
-            </span>
-          </span>
-        </label>
-        {errors.age && (
-          <p id="cn-age-error" role="alert" className="mt-1.5 font-sans text-sm text-red-600">
-            {errors.age}
-          </p>
-        )}
+      {/* Both required, and both re-checked by the API. The paid one is what
+          lets the sheet record the row as paid — payment happens offline
+          before sign-up, so the form has nothing to charge. */}
+      <div className="space-y-4 rounded-xl border border-brand-dark/10 bg-white p-5">
+        <Confirm
+          id="cn-paid"
+          name="paidConfirmed"
+          checked={paidConfirmed}
+          onChange={setPaidConfirmed}
+          error={errors.paid}
+          label="I have already paid for my tent."
+          hint={`Tents are paid for before you sign up. Not paid yet? Call ${EVENT_PHONE_DISPLAY} first.`}
+        />
+        <Confirm
+          id="cn-age"
+          name="ageConfirmed"
+          checked={ageConfirmed}
+          onChange={setAgeConfirmed}
+          error={errors.age}
+          label={`I am ${MIN_AGE} or over.`}
+          hint="Camp Night is an adults-only night."
+        />
       </div>
 
       {submitError && (
@@ -262,6 +266,52 @@ export default function SignupForm() {
         </p>
       </div>
     </form>
+  )
+}
+
+function Confirm({
+  id,
+  name,
+  checked,
+  onChange,
+  error,
+  label,
+  hint,
+}: {
+  id: string
+  name: string
+  checked: boolean
+  onChange: (v: boolean) => void
+  error?: string
+  label: string
+  hint: string
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
+        <input
+          id={id}
+          name={name}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : `${id}-hint`}
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
+        />
+        <span className="font-sans text-sm leading-relaxed text-brand-dark/85">
+          {label} <span className="text-brand-accent">*</span>
+          <span id={`${id}-hint`} className="mt-0.5 block text-xs text-brand-dark/55">
+            {hint}
+          </span>
+        </span>
+      </label>
+      {error && (
+        <p id={`${id}-error`} role="alert" className="mt-1.5 font-sans text-sm text-red-600">
+          {error}
+        </p>
+      )}
+    </div>
   )
 }
 
