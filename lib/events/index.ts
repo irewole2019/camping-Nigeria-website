@@ -54,6 +54,24 @@ import {
   VENUE_LABEL as KH_VENUE_LABEL,
 } from './kiddies-hike'
 
+import {
+  EVENT_DATE_LABEL as CN_DATE_LABEL,
+  EVENT_END_ISO as CN_END_ISO,
+  EVENT_FULL_TITLE as CN_TITLE,
+  EVENT_HOST as CN_HOST,
+  EVENT_PATH as CN_PATH,
+  EVENT_START_ISO as CN_START_ISO,
+  EVENT_STATUS as CN_STATUS,
+  EVENT_TAGLINE as CN_TAGLINE,
+  HERO_IMAGE as CN_HERO_IMAGE,
+  HERO_IMAGE_ALT as CN_HERO_IMAGE_ALT,
+  LOWEST_PRICE as CN_LOWEST_PRICE,
+  TENT_CAP as CN_TENT_CAP,
+  VENUE_CITY as CN_CITY,
+  VENUE_LABEL as CN_VENUE_LABEL,
+  formatNaira as cnFormatNaira,
+} from './camp-night'
+
 export type { EventStatus }
 
 /** Icon key rather than a component — this module is imported by server components. */
@@ -153,7 +171,51 @@ const KIDDIES_HIKE: EventSummary = {
   imageAlt: KH_HERO_IMAGE_ALT,
 }
 
-export const EVENTS: EventSummary[] = [BASE_CAMP_KIDS, KIDDIES_HIKE]
+/**
+ * The first upcoming event since both others went past, so this entry is what
+ * switches the homepage `EventBanner` back on through
+ * `FEATURED_UPCOMING_EVENT`. Drop the `banner` block, or flip EVENT_STATUS to
+ * 'past' after the night, and the homepage goes quiet again on its own.
+ *
+ * `ageRange` reads "18+" rather than a span: Camp Night is an adults' night
+ * out, unlike the two children's events, and the hub card would otherwise
+ * imply a minimum we have not been given. Confirm the real policy.
+ */
+const CAMP_NIGHT: EventSummary = {
+  slug: 'camp-night',
+  title: CN_TITLE,
+  tagline: CN_TAGLINE,
+  blurb:
+    'One night under canvas above the city. Tents pitched and mattresses in before you arrive, three DJs, a bonfire, karaoke and movies until it burns down.',
+  path: CN_PATH,
+  status: CN_STATUS,
+  dateLabel: CN_DATE_LABEL,
+  startIso: CN_START_ISO,
+  endIso: CN_END_ISO,
+  venueLabel: CN_VENUE_LABEL,
+  city: CN_CITY,
+  ageRange: 'Adults',
+  image: CN_HERO_IMAGE,
+  imageAlt: CN_HERO_IMAGE_ALT,
+  banner: {
+    image: CN_HERO_IMAGE,
+    imageAlt: CN_HERO_IMAGE_ALT,
+    badge: `Now Booking · ${CN_TENT_CAP} Tents`,
+    eyebrow: 'Camp Night · Abuja · 2026',
+    headline: 'September Camp Night — a night outdoors, above the city.',
+    announcement: `Hosted by ${CN_HOST}`,
+    body: `Tents pitched and mattresses in before you arrive. Three DJs, a bonfire, karaoke, movies and games. ${CN_TENT_CAP} tents only, in ${CN_CITY}, from ${cnFormatNaira(CN_LOWEST_PRICE)}.`,
+    stats: [
+      { icon: 'calendar', label: 'When', value: CN_DATE_LABEL.replace('Saturday, ', '') },
+      { icon: 'map-pin', label: 'Where', value: CN_CITY },
+      { icon: 'users', label: 'Tents', value: `${CN_TENT_CAP} only` },
+    ],
+    primaryCta: { label: 'Save My Spot', href: `${CN_PATH}#signup` },
+    secondaryCta: { label: 'See the Night', href: CN_PATH },
+  },
+}
+
+export const EVENTS: EventSummary[] = [CAMP_NIGHT, BASE_CAMP_KIDS, KIDDIES_HIKE]
 
 /** Soonest first — the next thing to happen leads the hub. */
 export const UPCOMING_EVENTS: EventSummary[] = EVENTS.filter(

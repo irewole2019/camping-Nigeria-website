@@ -117,6 +117,13 @@ const ROUTES: RouteEntry[] = [
   },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.6 },
   { path: '/events', changeFrequency: 'monthly', priority: 0.6 },
+  // Live event, taking sign-ups — highest event priority until it has run.
+  {
+    path: '/events/camp-night',
+    changeFrequency: 'daily',
+    priority: 0.9,
+    image: `${SITE_URL}/images/events/camp-night/hero.webp`,
+  },
   // Past edition — kept indexed for the recap and its seasonal search equity,
   // demoted from 0.85 now that there is nothing to book on it.
   {
