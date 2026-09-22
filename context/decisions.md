@@ -790,3 +790,20 @@ The page is a section-for-section mirror of Base Camp Kids, built from `docs/eve
 **Out of scope, but true:** this repository is public on GitHub, and `Camping_Nigeria_DoE_Website_Strategy.md`, `Camping_Nigeria_DoE_Build_Sequence.md` and these context files all still discuss the programme. The ask was to hide it from the website, which this does. Hiding it from anyone who finds the repo is a different job.
 
 ---
+## Camp Night sign-ups are stored in a Google Sheet, not in Redis
+
+Both were live options and the founders chose the Sheet. The reasoning on each side is worth keeping, because the trade-off returns with every future event.
+
+**Redis was already available and would have needed nothing.** `@upstash/redis` is a dependency, and the Upstash credentials are already set in Vercel production for the rate limiter — so a Redis-backed store would have worked the moment it deployed. It also offers an atomic `INCR`, which would have produced sequential `SCN-0001` codes instead of random ones.
+
+**The Sheet was chosen anyway, and the reason is operational rather than technical.** A spreadsheet is something the team can open, sort, filter, annotate and hand to whoever is on the gate. Redis is a key-value store with no interface; browsing it would have meant building an admin page, and checking somebody in would have meant building a write path for that page too. The Sheet ships those for free, and the two columns that matter on the night — `Paid?` and `Checked In?` — are hand-edited, which is exactly what a spreadsheet is good at and exactly what a KV store is not.
+
+**The cost is a one-time manual setup.** Creating the sheet and deploying the Apps Script Web App happens inside the founders' own Google account and cannot be automated from here. `docs/camp-night/SETUP.md` is the walkthrough. Until it is done, `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` is unset — sign-ups still send both emails and the internal notification carries every field, so nothing is lost in the gap, but there is no list.
+
+**Random codes are a consequence of this choice, not a preference.** A Sheet has no atomic counter, so the site cannot hand out consecutive numbers without a race. Codes are therefore drawn randomly from a 32-character alphabet (`SCN-B8K2MQ`), and the *real* uniqueness guarantee lives in the Apps Script, which refuses to append a code already present and returns `duplicate-code`; the route then retries with a fresh one, up to four times. Without that guard a collision would silently hand two campers the same code and there would be no way to tell them apart at the gate. **If this ever moves to Redis, the codes can and should become sequential**, and the retry loop becomes dead code.
+
+**The Base Camp Kids precedent was followed deliberately** rather than generalised into a shared module. The two events have different fields, different sheets and different lifetimes; an abstraction over two shapes that will never converge costs more than the duplication saves.
+
+**Two gaps left open on purpose.** The form takes no payment despite ₦20,000–₦30,000 tickets, so sign-ups arrive unpaid and `Paid?` is reconciled by hand. And nothing enforces the 50-tent capacity — sign-up 51 succeeds. Both are product decisions for the founders, not oversights.
+
+---
