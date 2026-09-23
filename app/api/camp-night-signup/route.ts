@@ -5,8 +5,6 @@ import { checkRateLimit } from '@/lib/rate-limit'
 import { sendPairedMail } from '@/lib/mail'
 import {
   BRING,
-  CHILDREN_RULES,
-  CHILDREN_WELCOME,
   EVENT_DATE_LABEL,
   EVENT_FULL_TITLE,
   EVENT_PATH,
@@ -218,21 +216,6 @@ function buildCustomerEmail(data: SignupPayload, code: string): string {
     <!-- Please note -->
     <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#888;font-weight:600;">Please note</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">${bulletList(PLEASE_NOTE)}</table>
-
-    ${
-      CHILDREN_WELCOME
-        ? `<!-- Bringing children. Repeated from the page on purpose: this is the
-             copy someone reads while packing, and the supervision and behaviour
-             rules are the ones that must not be a surprise on the night. -->
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;background:#fdf6e3;border-radius:8px;">
-      <tr><td style="padding:18px 20px;">
-        <p style="margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#b8880a;font-weight:600;">Bringing children</p>
-        <p style="margin:0 0 10px;font-size:14px;color:#3d3d3d;line-height:1.6;">Children are welcome. Call ${escapeHtml(EVENT_PHONE_DISPLAY)} before you pay so we can size your tent.</p>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${bulletList(CHILDREN_RULES)}</table>
-      </td></tr>
-    </table>`
-        : ''
-    }
 
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
 
