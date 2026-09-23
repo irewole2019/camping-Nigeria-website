@@ -831,6 +831,21 @@ Camp Night shipped with its own hero — text over a full-bleed dark photograph 
 **The fix is a literal beside the long form**, plus tests asserting the short one is genuinely shorter, carries no year or long month, and agrees with the long one on the day and month. The same reasoning produced `DATE_STAMP` — a display string that silently depends on the data being short is a trap, not a shortcut.
 
 ---
+## The Camp Night venue is disclosed to signees, not published
+
+The founders' call: the exact venue goes out in the confirmation email, and the public page says the city. So `lib/events/camp-night.ts` carries **two labels**, and which one you reach for depends on who is reading — `VENUE_PUBLIC_LABEL` for anything a stranger can load, `VENUE_NAME` / `VENUE_LABEL` / `VENUE_MAP_URL` for the reveal.
+
+**The venue was in six places, and the body copy was the least important of them.** Hero copy and trust line, the tent section's map link, the `/events` hub card, `EVENT_DESCRIPTION` (which feeds the meta description and the OG card copy), and — the one that actually mattered — the **Event JSON-LD `location`**. That is the most public surface on the page: Google indexes it and renders it in event rich results, so a page that reads "venue shared with signees" while its structured data names the venue is not hiding anything. It is now city-level; `buildEventJsonLd` falls back to `"Abuja, NG"` when `name` is omitted.
+
+**The confirmation page was the leak that would have undone it.** `/events/camp-night/registered` showed the venue to anyone who typed the URL, with no code. It now renders the venue only alongside a code.
+
+**That gate is shape-only, and worth being honest about.** The page is statically rendered, so it cannot ask the sheet whether a code was ever issued — it can only check the code *looks* like one. A determined person who knows the format can forge one. This raises the bar against the casual visitor rather than closing the door, and **the email remains the channel we actually rely on**. Making it real would mean rendering that page dynamically and looking the code up, which is a different piece of work and was not worth it for a one-night event.
+
+**Verification was a sweep of rendered HTML, not of source.** Every public page fetched and grepped for `Brooks`, `Events Centre` and the maps host. Same habit as the garbled-date bug: a string that is wrong or leaked is invisible to tsc, eslint and the tests.
+
+**Note for the next edition:** anything already shared or indexed keeps the old text until caches refresh, and confirmation emails already sent contain the venue. Hiding a detail after publishing it is always partial.
+
+---
 ## Camp Night takes no payment, because payment happens before sign-up
 
 The founders' model is that money changes hands offline — transfer or in person — and the form is filled in *afterwards*. A sign-up is therefore a **record of someone who has already paid**, not an order. Nothing on the site is a checkout, and no payment provider is integrated.

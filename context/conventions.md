@@ -137,6 +137,23 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 - Entrance delays ladder `0.1 → 1.1` on `premiumEase`; the image does a slow `scale: 1.08 → 1.0`.
 - The overlay gradient is **tuned per photograph**, not copied: darken a bright daylight scene, lift a night one. The date stamp has to stay legible against whatever is behind it.
 
+## Detail that is not public needs a second, public label
+
+When a fact is disclosed to some readers and withheld from others — the Camp Night venue is the worked example — keep **both** strings in the data module with a doc comment saying which surface each belongs to, rather than deciding at each call site. `VENUE_PUBLIC_LABEL` beside `VENUE_NAME` / `VENUE_LABEL` / `VENUE_MAP_URL`.
+
+Then check every surface, because the visible copy is the least of them:
+
+- Page body and component copy
+- The `EVENT_DESCRIPTION`-style constant, which usually feeds **both** the meta description and the OG card copy
+- The `/events` hub card (`venueLabel` on the registry entry)
+- OG and Twitter card `alt` text — statically analysed, so it cannot be flag-gated
+- **The JSON-LD.** This is the one that gets missed and the one that matters most: Google indexes it and renders it into rich results, so structured data that names the thing makes the hidden copy pointless.
+- Any confirmation or "success" page reachable by URL without a token
+
+Verify by fetching the **rendered HTML** of every public page and grepping for the secret. A leaked or wrong string is invisible to `tsc`, `eslint` and the tests — they check that a string is valid, not that it is right.
+
+Where a confirmation page is gated on a code, be honest in the comment about how strong the gate is. Ours is shape-only: the page is statically rendered and cannot ask the sheet whether a code was ever issued.
+
 ## Display strings are written out, never derived
 
 A short label is not a transformation of a long one. Build it as its own constant.
