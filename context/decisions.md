@@ -805,6 +805,32 @@ Both were live options and the founders chose the Sheet. The reasoning on each s
 **The Base Camp Kids precedent was followed deliberately** rather than generalised into a shared module. The two events have different fields, different sheets and different lifetimes; an abstraction over two shapes that will never converge costs more than the duplication saves.
 
 ---
+## Every event hero is the same shape, and the shape lives in the components
+
+Camp Night shipped with its own hero — text over a full-bleed dark photograph — and was rebuilt on the Base Camp Kids layout so the two pages read as one family rather than two designs that happen to share a colour palette.
+
+**The format is set by `base-camp-kids/Hero.tsx` and copied, not abstracted.** There is no shared `EventHero` component taking a dozen props. Three events now exist and the heroes differ in ways a prop interface would handle badly — one is a children's day, one a past free hike, one an adults' night with a ticket price. Copying 200 lines and changing the content is cheaper than a component with a `variant` union that has to be widened for every edition. The convention is written down in [conventions.md](conventions.md) instead; that is what keeps them in line.
+
+**Two things are deliberately *not* copied between them.**
+
+*The overlay gradient is tuned per photograph.* Base Camp Kids darkens the top of a bright daylight scene so its date stamp stays readable. Camp Night's photograph is a night scene, so the same gradient would put a dark stamp on near-black sky — it lifts instead. Copying the gradient verbatim would have been the wrong kind of consistency.
+
+*The date stamp reads from a constant, not from the label.* Base Camp Kids splits `EVENT_DATE_LABEL` on `', '` and `' '` to get its three lines, which works only because `May` fits the box. `September` does not. Camp Night uses an explicit `DATE_STAMP` object.
+
+**The italic line under the title is the collaborator slot**, and `×` means two separate organisations. Base Camp Kids reads "Camping Nigeria × Discovery Haven", a genuine partnership. African Dream Community is a community *under* Camping Nigeria, so Camp Night reads "with the African Dream Community". The symbol is doing real work; don't use it decoratively.
+
+---
+## A short display string is written out, never derived from a long one
+
+`EVENT_DATE_LABEL.replace('Saturday, ', 'Sat 26 Sep')` looked like it produced a short date. It replaced the weekday with an *already-complete* short date and left the rest of the sentence attached, so the hero shipped to production reading **"Sat 26 Sep26 September 2026"**.
+
+**It reached production because it was only ever read as source.** Type-checking, linting and 106 tests all passed — the expression is valid TypeScript producing a valid string. Nothing catches a wrong string except looking at the output. It was found by fetching the live page and listing every date-shaped string on it, which is now the habit worth keeping: after a deploy, grep the *rendered HTML*, not the source.
+
+**Stripping is fine; substituting is not.** The same `.replace('Saturday, ', '')` appears three more times — in both registry banner entries and on the Base Camp Kids page — and all three are correct, because they remove a prefix rather than inserting a value into the middle of a sentence.
+
+**The fix is a literal beside the long form**, plus tests asserting the short one is genuinely shorter, carries no year or long month, and agrees with the long one on the day and month. The same reasoning produced `DATE_STAMP` — a display string that silently depends on the data being short is a trap, not a shortcut.
+
+---
 ## Camp Night takes no payment, because payment happens before sign-up
 
 The founders' model is that money changes hands offline — transfer or in person — and the form is filled in *afterwards*. A sign-up is therefore a **record of someone who has already paid**, not an order. Nothing on the site is a checkout, and no payment provider is integrated.

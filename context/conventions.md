@@ -8,7 +8,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
 - **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `individuals/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
 - **Feature flags**: `lib/feature-flags.ts`. Use a flag to hide a whole surface rather than deleting it, so it comes back with one edit. Annotate the type (`export const X: boolean = false`) — without it TypeScript narrows to the literal and every downstream `if (X)` becomes a compile error the moment the flag is flipped. Same reason `EVENT_STATUS` routes through `isRegistrationOpen()`.
-- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/base-camp-kids.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
+- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/index.ts` (the event registry), `events/base-camp-kids.ts`, `events/kiddies-hike.ts`, `events/camp-night.ts`, `events/camp-night-records.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - **Event photography from a phone needs converting.** iPhone `.heic` files are not single images — they are a grid of 512×512 tiles plus assembly instructions. ffmpeg assembles the grid through an *internal complex filtergraph*, so a simple `-vf` cannot attach to the decode and `ffmpeg -i x.heic -vf scale=... out.webp` fails with "Simple and complex filtering cannot be used together". **Decode to a full-size PNG first, then scale and encode WebP from that PNG.** Worked example with sizes and quality settings: the header of `lib/events/kiddies-hike.ts`. Long edge 1400px (hero ~1750px) at quality 82 took ten Kiddies Hike frames from ~57 MB of originals to 2.8 MB.
@@ -120,9 +120,32 @@ Both are pure; both accept validated inputs; both are imported by the client (fo
 
 ## Heroes
 
-- Always go through `components/shared/PageHero.tsx`.
+- Marketing pages always go through `components/shared/PageHero.tsx`.
 - Height prop is typed: `'min-h-dvh' | 'h-[70dvh]' | 'h-[60dvh]'` — add a new variant to the type if you need another size.
 - Hero copy uses the eyebrow pattern: `tracking-widest uppercase text-xs` with horizontal divider lines on either side of a short label.
+
+### Event heroes are their own format
+
+`/events/*` pages do **not** use `PageHero`. Each has a bespoke `Hero.tsx` in `components/events/<slug>/`, and they all follow the same split layout, set by `base-camp-kids/Hero.tsx` and copied by `camp-night/Hero.tsx`. Copy the existing one rather than inventing a third shape:
+
+- `grid lg:grid-cols-[1fr_1.05fr] lg:min-h-[90dvh]` — content left, photograph right. Mobile reverses with `order-1` / `order-2` so the image leads.
+- Eyebrow with a single leading rule, then a **masked H1** (`overflow-hidden` wrapper, child `y: '100%' → '0%'`), with the last word in `text-brand-accent-readable`.
+- Serif italic line under the title. This is the **partnership / collaborator slot** — use `×` only between genuinely separate organisations.
+- Magazine spec strip: `<dl>` of four `SpecItem`s, `divide-x` and `border-y`, on the cream ground.
+- Two CTAs, then a small **trust line** — credentials on school-facing events, practical detail (capacity, age, venue, phone) on consumer ones.
+- On the photograph: a rotated **passport date stamp** top-right (top offset must clear the navbar) and a **status pill** bottom-left that flips on the event's status flag.
+- Entrance delays ladder `0.1 → 1.1` on `premiumEase`; the image does a slow `scale: 1.08 → 1.0`.
+- The overlay gradient is **tuned per photograph**, not copied: darken a bright daylight scene, lift a night one. The date stamp has to stay legible against whatever is behind it.
+
+## Display strings are written out, never derived
+
+A short label is not a transformation of a long one. Build it as its own constant.
+
+This has bitten twice. `EVENT_DATE_LABEL.replace('Saturday, ', 'Sat 26 Sep')` swapped the weekday for an already-complete short date and left the rest of the sentence behind, shipping `Sat 26 Sep26 September 2026` to production. The hero date stamp had the same shape of bug waiting: Base Camp Kids splits its label into three parts for the stamp, which works only because `May` happens to fit the box — `September` would overflow it.
+
+- Short forms live beside the long one: `EVENT_DATE_SHORT`, `EVENT_TIME_SHORT`, `DATE_STAMP`.
+- `.replace(x, '')` to **strip** a prefix is fine — that is what the registry banner entries do. Substituting a value into the middle of a sentence is not.
+- Pin them with a test that asserts the short form is short and agrees with the long one on the facts. `tests/camp-night.test.ts` has the pattern.
 
 ## Icons
 
