@@ -18,6 +18,7 @@ import {
   REGISTERED_PATH,
   VENUE_LABEL,
   VENUE_MAP_URL,
+  VENUE_PUBLIC_LABEL,
   getTentPackage,
   isValidPackageId,
 } from '@/lib/events/camp-night'
@@ -97,24 +98,41 @@ export default async function CampNightRegisteredPage({
           <dl className="mt-8 divide-y divide-brand-dark/10 overflow-hidden rounded-2xl border border-brand-dark/10 bg-white">
             {pkg && <Row label="Tent" value={pkg.label} />}
             <Row label="When" value={`${EVENT_DATE_LABEL}, ${EVENT_TIME_LABEL}`} />
-            <Row
-              label="Where"
-              value={
-                <>
-                  {VENUE_LABEL}
-                  <br />
-                  <a
-                    href={VENUE_MAP_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center gap-1.5 font-semibold text-brand-accent-readable hover:underline"
-                  >
-                    <MapPin className="h-4 w-4" aria-hidden="true" />
-                    Open in Google Maps
-                  </a>
-                </>
-              }
-            />
+            {/* The venue is not public — it is shown here only alongside a
+                code, so that loading this URL bare does not reveal it. The
+                check is shape-only (the page is static and cannot ask the
+                sheet whether a code was really issued), so the email remains
+                the channel we actually rely on. */}
+            {code ? (
+              <Row
+                label="Where"
+                value={
+                  <>
+                    {VENUE_LABEL}
+                    <br />
+                    <a
+                      href={VENUE_MAP_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-flex items-center gap-1.5 font-semibold text-brand-accent-readable hover:underline"
+                    >
+                      <MapPin className="h-4 w-4" aria-hidden="true" />
+                      Open in Google Maps
+                    </a>
+                  </>
+                }
+              />
+            ) : (
+              <Row
+                label="Where"
+                value={
+                  <>
+                    {VENUE_PUBLIC_LABEL}. The full address and map link are in your confirmation
+                    email.
+                  </>
+                }
+              />
+            )}
           </dl>
 
           <div className="mt-10">

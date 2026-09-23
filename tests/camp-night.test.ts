@@ -7,6 +7,7 @@ import {
 import {
   EVENT_DATE_LABEL,
   EVENT_DATE_SHORT,
+  EVENT_DESCRIPTION,
   EVENT_END_ISO,
   EVENT_PHONE_DISPLAY,
   EVENT_PHONE_TEL,
@@ -18,6 +19,10 @@ import {
   PAYMENT_NOTE,
   PLEASE_NOTE,
   TENT_PACKAGES,
+  VENUE_LABEL,
+  VENUE_MAP_URL,
+  VENUE_NAME,
+  VENUE_PUBLIC_LABEL,
   getTentPackage,
   isValidPackageId,
 } from '@/lib/events/camp-night'
@@ -153,6 +158,28 @@ describe('age policy', () => {
 
   it('states the minimum in PLEASE_NOTE, which the confirmation email renders', () => {
     expect(PLEASE_NOTE.some((n) => n.includes(String(MIN_AGE)))).toBe(true)
+  })
+})
+
+describe('the venue is not public', () => {
+  // The exact venue is disclosed to signees only — confirmation email and
+  // confirmation page. Everything a stranger can load says the city.
+  it('has a public label carrying the city and not the venue', () => {
+    expect(VENUE_PUBLIC_LABEL).toBe('Abuja')
+    expect(VENUE_PUBLIC_LABEL).not.toContain(VENUE_NAME)
+    expect(VENUE_PUBLIC_LABEL.toLowerCase()).not.toContain('brooks')
+  })
+
+  it('keeps the venue out of the public description, which feeds meta and JSON-LD', () => {
+    expect(EVENT_DESCRIPTION).not.toContain(VENUE_NAME)
+    expect(EVENT_DESCRIPTION.toLowerCase()).not.toContain('brooks')
+    expect(EVENT_DESCRIPTION).toContain('Abuja')
+  })
+
+  it('still holds the full venue and map link, for the email and the confirmation page', () => {
+    expect(VENUE_NAME).toBe('Brooks Garden and Events Centre')
+    expect(VENUE_LABEL).toContain(VENUE_NAME)
+    expect(VENUE_MAP_URL).toMatch(/^https:\/\//)
   })
 })
 

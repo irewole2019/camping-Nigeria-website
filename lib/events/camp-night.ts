@@ -23,8 +23,10 @@ export const EVENT_HOST = 'DJ SARZ'
  */
 export const COMMUNITY_NAME = 'African Dream Community'
 
+// Names the city only — this is the public description, used for the meta
+// description, the OG copy and the Event JSON-LD. The venue goes to signees.
 export const EVENT_DESCRIPTION =
-  'A one-night outdoor camp at Brooks Garden and Events Centre, Abuja, from 6pm on Saturday 26 September 2026 until 9am the next morning. Adults 18 and over. Tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games. From ₦20,000.'
+  'A one-night outdoor camp in Abuja, from 6pm on Saturday 26 September 2026 until 9am the next morning. Adults 18 and over. Tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games. Venue shared with everyone who signs up. From ₦20,000.'
 
 // 26 September 2026, Saturday — Africa/Lagos is UTC+1, no DST.
 //
@@ -102,6 +104,24 @@ export const PAYMENT_NOTE =
  */
 export const EVENT_PHONE_DISPLAY = '+234 704 053 8528'
 export const EVENT_PHONE_TEL = 'tel:+2347040538528'
+
+/**
+ * **The exact venue is not public.** It is disclosed only to people who have
+ * signed up — in the confirmation email and on the confirmation page.
+ *
+ * So there are two labels, and which one you reach for depends on who is
+ * reading:
+ *
+ * - `VENUE_PUBLIC_LABEL` (just the city) — anything a stranger can see: the
+ *   event page, the `/events` hub card, OG cards, metadata, the Event JSON-LD.
+ * - `VENUE_NAME` / `VENUE_LABEL` / `VENUE_MAP_URL` — the reveal. Confirmation
+ *   email and `/events/camp-night/registered` only.
+ *
+ * Before putting any of the latter three on a page, check who can load that
+ * page without a code. `tests/camp-night.test.ts` asserts the public label
+ * does not carry the venue name, but a test cannot see where you rendered it.
+ */
+export const VENUE_PUBLIC_LABEL = 'Abuja'
 
 export const VENUE_NAME = 'Brooks Garden and Events Centre'
 export const VENUE_CITY = 'Abuja'

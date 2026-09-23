@@ -262,7 +262,8 @@ export default function SignupForm() {
           {sending ? 'Saving your spot…' : 'Save my spot'}
         </button>
         <p className="mt-3 font-sans text-xs leading-relaxed text-brand-dark/55">
-          You will get your camp code by email straight away, with everything to bring on the night.
+          You will get your camp code by email straight away, with the venue, a map link and
+          everything to bring on the night.
         </p>
       </div>
     </form>

@@ -69,7 +69,7 @@ import {
   MIN_AGE as CN_MIN_AGE,
   TENT_CAP as CN_TENT_CAP,
   VENUE_CITY as CN_CITY,
-  VENUE_LABEL as CN_VENUE_LABEL,
+  VENUE_PUBLIC_LABEL as CN_VENUE_PUBLIC_LABEL,
   formatNaira as cnFormatNaira,
 } from './camp-night'
 
@@ -193,7 +193,9 @@ const CAMP_NIGHT: EventSummary = {
   dateLabel: CN_DATE_LABEL,
   startIso: CN_START_ISO,
   endIso: CN_END_ISO,
-  venueLabel: CN_VENUE_LABEL,
+  // Public label only — the hub is a stranger-facing page and the Camp Night
+  // venue is disclosed to signees, not published. See ./camp-night.
+  venueLabel: CN_VENUE_PUBLIC_LABEL,
   city: CN_CITY,
   ageRange: `Adults ${CN_MIN_AGE}+`,
   image: CN_HERO_IMAGE,

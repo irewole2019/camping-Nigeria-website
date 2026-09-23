@@ -21,8 +21,7 @@ import {
   MIN_AGE,
   SIGNUP_OPEN,
   TENT_CAP,
-  VENUE_CITY,
-  VENUE_LABEL,
+  VENUE_PUBLIC_LABEL,
   formatNaira,
 } from '@/lib/events/camp-night'
 
@@ -82,9 +81,9 @@ export default function Hero() {
             >
               {SIGNUP_OPEN ? (
                 <>
-                  One night under canvas at {VENUE_LABEL}. We pitch the tents and put a mattress in
-                  each one. You bring a bedsheet and a hoodie. Three DJs, karaoke, movies and games
-                  until the fire burns down.
+                  One night under canvas at a private garden venue in {VENUE_PUBLIC_LABEL}. We pitch
+                  the tents and put a mattress in each one. You bring a bedsheet and a hoodie. Three
+                  DJs, karaoke, movies and games until the fire burns down.
                 </>
               ) : (
                 <>{EVENT_DESCRIPTION} Here’s how the night ran.</>
@@ -99,7 +98,7 @@ export default function Hero() {
               transition={{ duration: 0.8, ease: premiumEase, delay: 0.7 }}
             >
               <SpecItem first label="Time" value={EVENT_TIME_SHORT} />
-              <SpecItem label="Where" value={VENUE_CITY} />
+              <SpecItem label="Where" value={VENUE_PUBLIC_LABEL} />
               <SpecItem label="Ages" value={`${MIN_AGE}+`} />
               <SpecItem
                 label={SIGNUP_OPEN ? 'From' : 'Tents'}
@@ -136,7 +135,8 @@ export default function Hero() {
               animate={{ opacity: 1 }}
               transition={{ duration: 1, ease: premiumEase, delay: 1.1 }}
             >
-              {TENT_CAP} tents only. Adults {MIN_AGE}+. {VENUE_LABEL}.
+              {TENT_CAP} tents only. Adults {MIN_AGE}+. The exact venue goes out to everyone who
+              signs up.
               <br />
               Enquiries and bookings:{' '}
               <a

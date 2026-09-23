@@ -31,9 +31,7 @@ import {
   TENT_PACKAGES,
   VENUE_CITY,
   VENUE_COUNTRY,
-  VENUE_LABEL,
-  VENUE_MAP_URL,
-  VENUE_NAME,
+  VENUE_PUBLIC_LABEL,
   VENUE_REGION,
   WE_PROVIDE,
   formatNaira,
@@ -71,8 +69,11 @@ export default function CampNightPage() {
           path: EVENT_PATH,
           startDate: EVENT_START_ISO,
           endDate: EVENT_END_ISO,
+          // City-level only, deliberately. This is the most public surface of
+          // the lot — Google indexes it and shows it in event rich results —
+          // so naming the venue here would undo the whole point. The builder
+          // falls back to "Abuja, NG" when `name` is omitted.
           location: {
-            name: VENUE_NAME,
             locality: VENUE_CITY,
             region: VENUE_REGION,
             country: VENUE_COUNTRY,
@@ -113,17 +114,10 @@ export default function CampNightPage() {
               Every tent comes pitched, with a mattress in it, before you arrive. The only
               difference is how much of it is yours.
             </p>
-            <p className="mt-4 font-sans text-sm text-brand-dark/60">
-              {VENUE_LABEL}.{' '}
-              <a
-                href={VENUE_MAP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
-              >
-                <MapPin className="h-4 w-4" aria-hidden="true" />
-                Open in Google Maps
-              </a>
+            <p className="mt-4 inline-flex items-center gap-2 font-sans text-sm text-brand-dark/60">
+              <MapPin className="h-4 w-4 shrink-0 text-brand-accent-readable" aria-hidden="true" />
+              A private garden venue in {VENUE_PUBLIC_LABEL}. The address and map link go out to
+              everyone who signs up.
             </p>
           </div>
 
