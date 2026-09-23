@@ -17,6 +17,7 @@ import {
   MIN_AGE,
   PAYMENT_IS_OFFLINE,
   PAYMENT_NOTE,
+  ON_SITE,
   PLEASE_NOTE,
   SECURITY_INTRO,
   SECURITY_POINTS,
@@ -201,30 +202,51 @@ describe('safety section', () => {
     expect(all).toContain('asked to leave') // the behaviour rule in PLEASE_NOTE
   })
 
-  it('claims nothing about guards, medics, lighting or facilities', () => {
-    // None of these have been confirmed by the team. This test exists to stop
-    // a well-meaning edit adding reassurance we cannot actually deliver — on
-    // a page people read when deciding whether it is safe to sleep somewhere.
-    // If any become true, confirm with the founders, then loosen this.
-    const all = SECURITY_POINTS.map((p) => `${p.title} ${p.detail}`)
-      .concat(SECURITY_INTRO)
+})
+
+describe('on-site facilities', () => {
+  it('lists the five the founders confirmed', () => {
+    expect(ON_SITE.map((i) => i.icon)).toEqual([
+      'shield',
+      'first-aid',
+      'light',
+      'toilet',
+      'parking',
+    ])
+  })
+
+  it('claims no detail beyond what was confirmed', () => {
+    // Confirmed on 23/09/2026: security personnel, first aid, lighting,
+    // toilets, ample parking — and nothing more specific than that. Nobody
+    // said whether the security is armed or posted all night, whether anyone
+    // is first-aid trained or it is a kit on a shelf, how many toilets there
+    // are, or whether the parking is watched.
+    //
+    // This is the page someone reads when deciding whether it is safe to
+    // sleep somewhere, or to let a friend. An unverified detail here is worse
+    // than no detail. Confirm with the founders before loosening this.
+    const all = ON_SITE.map((i) => `${i.title} ${i.detail}`)
+      .concat(SECURITY_INTRO, ...SECURITY_POINTS.map((p) => `${p.title} ${p.detail}`))
       .join(' ')
       .toLowerCase()
     for (const claim of [
-      'security guard',
-      'guards',
+      'armed',
+      'police',
       'bouncer',
-      'first aid',
-      'medic',
+      'cctv',
+      'patrol',
+      'round the clock',
+      '24/7',
+      'all night',
+      'trained',
+      'paramedic',
       'ambulance',
       'nurse',
-      'cctv',
+      'doctor',
       'floodlit',
-      'well lit',
-      'patrol',
-      'fenced',
-      'gated',
-      'police',
+      'guarded',
+      'supervised',
+      'monitored',
     ]) {
       expect(all).not.toContain(claim)
     }

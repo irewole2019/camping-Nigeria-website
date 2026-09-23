@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Car, HeartPulse, Lamp, MapPin, ShieldCheck, Toilet } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
@@ -25,10 +25,12 @@ import {
   LOWEST_PRICE,
   MIN_AGE,
   PAYMENT_NOTE,
+  ON_SITE,
   PLEASE_NOTE,
   SECURITY_INTRO,
   SECURITY_POINTS,
   SIGNUP_OPEN,
+  type OnSiteIcon,
   TENT_CAP,
   TENT_PACKAGES,
   VENUE_CITY,
@@ -225,9 +227,39 @@ export default function CampNightPage() {
             ))}
           </ul>
 
+          {/* What is physically there, as distinct from who gets in. */}
+          <div className="mt-14 rounded-2xl border border-white/15 bg-white/[0.04] p-7 md:p-9">
+            <p className="font-sans text-sm font-semibold uppercase tracking-widest text-white/60">
+              On site
+            </p>
+            <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {ON_SITE.map((item) => {
+                const Icon = ON_SITE_ICONS[item.icon]
+                return (
+                  <li key={item.title} className="flex gap-3.5">
+                    <span
+                      className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-accent/15"
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-[18px] w-[18px] text-brand-accent" />
+                    </span>
+                    <div>
+                      <h3 className="font-sans text-[15px] font-semibold text-white">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1 font-sans text-sm leading-relaxed text-white/60">
+                        {item.detail}
+                      </p>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+
           <p className="mt-12 font-sans text-sm leading-relaxed text-white/55">
-            Anything you want to ask before you commit — who else is coming, how you get home, what
-            the sleeping set-up is — call{' '}
+            Anything else you want to ask before you commit — who else is coming, how you get home,
+            what the sleeping set-up is — call{' '}
             <a
               href={EVENT_PHONE_TEL}
               className="font-semibold text-brand-accent underline-offset-4 hover:underline"
@@ -307,6 +339,15 @@ export default function CampNightPage() {
       <Footer />
     </main>
   )
+}
+
+/** Icon keys resolved here — `lib/events/camp-night.ts` stays JSX-free. */
+const ON_SITE_ICONS: Record<OnSiteIcon, React.ComponentType<{ className?: string }>> = {
+  shield: ShieldCheck,
+  'first-aid': HeartPulse,
+  light: Lamp,
+  toilet: Toilet,
+  parking: Car,
 }
 
 function Bullet({ children }: { children: React.ReactNode }) {

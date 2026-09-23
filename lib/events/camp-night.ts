@@ -231,12 +231,18 @@ export function formatNaira(amount: number): string {
  * often on someone else's behalf, so an aspirational claim here is worse than
  * no claim at all.
  *
- * Each point below follows from how the night is already built — the closed
+ * `SECURITY_POINTS` follows from how the night is already built — the closed
  * guest list from the SCN code system, the undisclosed venue, the 50-tent cap,
- * the 18+ rule, the behaviour rule in PLEASE_NOTE. Nothing is asserted about
- * guards, lighting, first aid or facilities, because nobody has confirmed
- * them. Add them here once they are confirmed; do not add them to be
- * reassuring.
+ * the 18+ rule, the behaviour rule in PLEASE_NOTE. `ON_SITE` is what is
+ * physically there, confirmed by the founders on 23/09/2026.
+ *
+ * **The ON_SITE wording is deliberately flat**, and matches what was actually
+ * confirmed rather than what would sell best. The founders said security
+ * personnel, first aid, lighting, toilets and ample parking — so that is what
+ * it says. Nobody confirmed whether the security is the venue's or ours,
+ * armed or unarmed, or posted all night; whether anyone on site is first-aid
+ * trained or it is a kit; how many toilets; or whether parking is watched.
+ * Do not let those details appear here until someone confirms them.
  */
 export const SECURITY_INTRO =
   'Sleeping somewhere new should feel easy rather than risky, so here is exactly how the night is set up.'
@@ -265,6 +271,37 @@ export const SECURITY_POINTS: readonly { title: string; detail: string }[] = [
     title: 'Behaviour is not negotiable',
     detail:
       'Respecting other campers is a condition of being there. Anyone disruptive is asked to leave, and that applies for the whole night, not just while the music is on.',
+  },
+]
+
+/** Icon key rather than a component — this module is imported by server components. */
+export type OnSiteIcon = 'shield' | 'first-aid' | 'light' | 'toilet' | 'parking'
+
+export const ON_SITE: readonly { icon: OnSiteIcon; title: string; detail: string }[] = [
+  {
+    icon: 'shield',
+    title: 'Security personnel',
+    detail: 'Security staff are on site for the event.',
+  },
+  {
+    icon: 'first-aid',
+    title: 'First aid',
+    detail: 'First aid is available on site if anyone needs it.',
+  },
+  {
+    icon: 'light',
+    title: 'Lighting',
+    detail: 'The grounds are lit, so you are not walking back to your tent in the dark.',
+  },
+  {
+    icon: 'toilet',
+    title: 'Toilets',
+    detail: 'Toilets on site, no trek and no bush.',
+  },
+  {
+    icon: 'parking',
+    title: 'Parking',
+    detail: 'Ample parking space if you are driving.',
   },
 ]
 
