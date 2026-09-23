@@ -36,7 +36,17 @@ export const EVENT_START_ISO = '2026-09-26T18:00:00+01:00'
 export const EVENT_END_ISO = '2026-09-27T09:00:00+01:00'
 export const EVENT_DATE_LABEL = 'Saturday, 26 September 2026'
 export const EVENT_TIME_LABEL = '6:00 PM until 9:00 AM the next morning'
-/** Compact form for the hero spec strip, where the long label wraps badly. */
+
+/**
+ * Compact forms for the hero spec strip, where the long labels wrap badly.
+ *
+ * `EVENT_DATE_SHORT` is a literal rather than something derived from
+ * EVENT_DATE_LABEL. It used to be `EVENT_DATE_LABEL.replace('Saturday, ',
+ * 'Sat 26 Sep')`, which replaced only the weekday and left the rest, so the
+ * hero shipped reading "Sat 26 Sep26 September 2026". A short label is not a
+ * transformation of a long one — write it out.
+ */
+export const EVENT_DATE_SHORT = 'Sat 26 Sep'
 export const EVENT_TIME_SHORT = '6 PM – 9 AM'
 
 /**

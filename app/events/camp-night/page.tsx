@@ -11,7 +11,7 @@ import { buildBreadcrumbJsonLd, buildEventJsonLd } from '@/lib/structured-data'
 import {
   BRING,
   COMMUNITY_NAME,
-  EVENT_DATE_LABEL,
+  EVENT_DATE_SHORT,
   EVENT_DESCRIPTION,
   EVENT_END_ISO,
   EVENT_FULL_TITLE,
@@ -151,7 +151,7 @@ export default function CampNightPage() {
             </p>
 
             <dl className="mt-10 flex flex-wrap items-stretch gap-y-4 divide-x divide-white/20 border-y border-white/20 py-5">
-              <Spec first label="When" value={EVENT_DATE_LABEL.replace('Saturday, ', 'Sat 26 Sep')} />
+              <Spec first label="When" value={EVENT_DATE_SHORT} />
               <Spec label="Time" value={EVENT_TIME_SHORT} />
               <Spec label="Where" value={VENUE_CITY} />
               <Spec label="From" value={formatNaira(LOWEST_PRICE)} />

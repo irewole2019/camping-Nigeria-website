@@ -5,10 +5,13 @@ import {
   normaliseInstagram,
 } from '@/lib/events/camp-night-records'
 import {
+  EVENT_DATE_LABEL,
+  EVENT_DATE_SHORT,
   EVENT_END_ISO,
   EVENT_PHONE_DISPLAY,
   EVENT_PHONE_TEL,
   EVENT_START_ISO,
+  EVENT_TIME_SHORT,
   LOWEST_PRICE,
   MIN_AGE,
   PAYMENT_IS_OFFLINE,
@@ -120,6 +123,26 @@ describe('event timing', () => {
     const end = new Date(EVENT_END_ISO).getTime()
     expect(end).toBeGreaterThan(start)
     expect((end - start) / 3_600_000).toBe(15)
+  })
+})
+
+describe('short labels for the hero spec strip', () => {
+  // These shipped garbled once: the short date was built with
+  // EVENT_DATE_LABEL.replace('Saturday, ', 'Sat 26 Sep'), which swapped the
+  // weekday and kept the rest, rendering "Sat 26 Sep26 September 2026".
+  it('is a short date, not a long one with the weekday swapped', () => {
+    expect(EVENT_DATE_SHORT).toBe('Sat 26 Sep')
+    expect(EVENT_DATE_SHORT.length).toBeLessThan(EVENT_DATE_LABEL.length)
+    expect(EVENT_DATE_SHORT).not.toMatch(/September|2026/)
+  })
+
+  it('agrees with the full label on the day and month', () => {
+    expect(EVENT_DATE_LABEL).toContain('26 September')
+    expect(EVENT_DATE_SHORT).toContain('26 Sep')
+  })
+
+  it('has a short time label covering both ends of the night', () => {
+    expect(EVENT_TIME_SHORT).toBe('6 PM – 9 AM')
   })
 })
 
