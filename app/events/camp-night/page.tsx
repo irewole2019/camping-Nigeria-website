@@ -5,28 +5,23 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
 import JsonLd from '@/components/seo/JsonLd'
+import Hero from '@/components/events/camp-night/Hero'
 import SignupForm from '@/components/events/camp-night/SignupForm'
 import { buildPageMetadata, SITE_URL } from '@/lib/seo'
 import { buildBreadcrumbJsonLd, buildEventJsonLd } from '@/lib/structured-data'
 import {
   BRING,
-  COMMUNITY_NAME,
-  EVENT_DATE_SHORT,
   EVENT_DESCRIPTION,
   EVENT_END_ISO,
   EVENT_FULL_TITLE,
-  EVENT_HOST,
   EVENT_PATH,
   EVENT_PHONE_DISPLAY,
   EVENT_PHONE_TEL,
   EVENT_START_ISO,
-  EVENT_STRAPLINE,
   EVENT_TAGLINE,
-  EVENT_TIME_SHORT,
   FLYER_IMAGE,
   FLYER_IMAGE_ALT,
   HERO_IMAGE,
-  HERO_IMAGE_ALT,
   LOWEST_PRICE,
   MIN_AGE,
   PAYMENT_NOTE,
@@ -102,96 +97,7 @@ export default function CampNightPage() {
 
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative isolate bg-brand-dark" aria-labelledby="camp-night-hero">
-        <div className="absolute inset-0 -z-10 overflow-hidden">
-          <Image
-            src={HERO_IMAGE}
-            alt={HERO_IMAGE_ALT}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-brand-dark/75" aria-hidden="true" />
-        </div>
-
-        <div className="mx-auto max-w-7xl px-4 pb-20 pt-32 sm:px-6 md:pb-28 md:pt-44 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="mb-6 inline-flex items-center gap-3 font-sans text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent sm:text-sm">
-              <span className="block h-px w-10 bg-brand-accent" aria-hidden="true" />
-              {EVENT_STRAPLINE}
-            </p>
-
-            <h1
-              id="camp-night-hero"
-              className="font-serif text-5xl font-bold leading-[1.02] tracking-tight text-white text-balance sm:text-6xl lg:text-7xl"
-            >
-              September <span className="text-brand-accent">Camp Night</span>
-            </h1>
-
-            <p className="mt-5 font-serif text-xl italic leading-snug text-white/85">
-              {EVENT_TAGLINE}. Hosted by {EVENT_HOST}.
-            </p>
-
-            {/* African Dream Community is ours, not a third-party partner —
-                credited on the hero at the founders' request. */}
-            <p className="mt-4 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-white/25 px-4 py-2 font-sans text-xs font-semibold uppercase tracking-[0.15em] text-white/80 sm:text-[13px]">
-              Camping Nigeria
-              <span className="text-brand-accent" aria-hidden="true">
-                &middot;
-              </span>
-              <span className="text-brand-accent">{COMMUNITY_NAME}</span>
-            </p>
-
-            <p className="mt-6 max-w-xl font-sans text-base leading-relaxed text-white/75 sm:text-lg">
-              One night under canvas, with the city behind you and a bonfire in front of you. We
-              pitch the tents and put a mattress in each one. You bring a bedsheet and a hoodie.
-              Three DJs, karaoke, movies on the big screen, and games until the fire burns down.
-            </p>
-
-            <dl className="mt-10 flex flex-wrap items-stretch gap-y-4 divide-x divide-white/20 border-y border-white/20 py-5">
-              <Spec first label="When" value={EVENT_DATE_SHORT} />
-              <Spec label="Time" value={EVENT_TIME_SHORT} />
-              <Spec label="Where" value={VENUE_CITY} />
-              <Spec label="From" value={formatNaira(LOWEST_PRICE)} />
-            </dl>
-
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="#signup"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-accent px-7 py-4 font-sans text-base font-semibold tracking-wide text-brand-dark transition-transform duration-200 hover:brightness-105 active:scale-[0.98] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"
-              >
-                Save my spot
-                <ArrowRight className="h-5 w-5" aria-hidden="true" />
-              </Link>
-              <a
-                href={VENUE_MAP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 px-7 py-4 font-sans text-base font-semibold tracking-wide text-white transition-colors duration-200 hover:bg-white hover:text-brand-dark"
-              >
-                <MapPin className="h-5 w-5" aria-hidden="true" />
-                See the venue
-              </a>
-            </div>
-
-            <p className="mt-8 font-sans text-xs leading-relaxed text-white/55 sm:text-sm">
-              {TENT_CAP} tents only. Adults {MIN_AGE}+. {VENUE_LABEL}.
-              <br className="hidden sm:block" />
-              <span className="mt-1 block sm:mt-2">
-                Enquiries and bookings:{' '}
-                <a
-                  href={EVENT_PHONE_TEL}
-                  className="font-semibold text-brand-accent underline-offset-4 hover:underline"
-                >
-                  {EVENT_PHONE_DISPLAY}
-                </a>
-              </span>
-            </p>
-          </div>
-        </div>
-      </section>
+      <Hero />
 
       {/* Tent packages */}
       <Section id="tents" className="bg-brand-light">
@@ -206,6 +112,18 @@ export default function CampNightPage() {
             <p className="mt-4 font-sans text-base leading-relaxed text-brand-dark/70">
               Every tent comes pitched, with a mattress in it, before you arrive. The only
               difference is how much of it is yours.
+            </p>
+            <p className="mt-4 font-sans text-sm text-brand-dark/60">
+              {VENUE_LABEL}.{' '}
+              <a
+                href={VENUE_MAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+              >
+                <MapPin className="h-4 w-4" aria-hidden="true" />
+                Open in Google Maps
+              </a>
             </p>
           </div>
 
@@ -350,19 +268,6 @@ export default function CampNightPage() {
 
       <Footer />
     </main>
-  )
-}
-
-function Spec({ label, value, first = false }: { label: string; value: string; first?: boolean }) {
-  return (
-    <div className={first ? 'pr-5 sm:pr-6' : 'px-5 sm:px-6'}>
-      <dt className="mb-1 font-sans text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">
-        {label}
-      </dt>
-      <dd className="whitespace-nowrap font-serif text-base font-bold text-white sm:text-lg">
-        {value}
-      </dd>
-    </div>
   )
 }
 

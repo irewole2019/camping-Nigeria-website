@@ -50,6 +50,21 @@ export const EVENT_DATE_SHORT = 'Sat 26 Sep'
 export const EVENT_TIME_SHORT = '6 PM – 9 AM'
 
 /**
+ * The three lines of the hero's passport date stamp, written out rather than
+ * parsed from EVENT_DATE_LABEL.
+ *
+ * Base Camp Kids splits its label on ', ' and ' ' to get the same three parts,
+ * which works only because "May" is already short enough for the stamp.
+ * "September" is not — it would overflow the box — and a stamp that silently
+ * depends on the month being short is a trap. Same lesson as EVENT_DATE_SHORT.
+ */
+export const DATE_STAMP = {
+  weekday: 'Saturday',
+  day: '26',
+  monthYear: 'Sep 2026',
+} as const
+
+/**
  * Minimum age. An adult event: the bar is on the page, in the Event JSON-LD
  * as `suggestedMinAge`, in PLEASE_NOTE, and behind a required checkbox on the
  * sign-up form that the API re-checks.
