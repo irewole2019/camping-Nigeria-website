@@ -223,6 +223,51 @@ export function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString('en-NG')}`
 }
 
+// ─── Safety and security ────────────────────────────────────────────────────
+
+/**
+ * **Every line here must be something we actually do.** This is the section
+ * people read when deciding whether it is safe to sleep somewhere overnight,
+ * often on someone else's behalf, so an aspirational claim here is worse than
+ * no claim at all.
+ *
+ * Each point below follows from how the night is already built — the closed
+ * guest list from the SCN code system, the undisclosed venue, the 50-tent cap,
+ * the 18+ rule, the behaviour rule in PLEASE_NOTE. Nothing is asserted about
+ * guards, lighting, first aid or facilities, because nobody has confirmed
+ * them. Add them here once they are confirmed; do not add them to be
+ * reassuring.
+ */
+export const SECURITY_INTRO =
+  'Sleeping somewhere new should feel easy rather than risky, so here is exactly how the night is set up.'
+
+export const SECURITY_POINTS: readonly { title: string; detail: string }[] = [
+  {
+    title: 'A closed guest list',
+    detail:
+      'No walk-ins and nothing sold at the gate. Everyone camping signed up in advance with a name, phone number and email, and arrives with a code we check against that list.',
+  },
+  {
+    title: 'A private venue',
+    detail:
+      'The address is not published anywhere. It goes out by email to people who have signed up, so the only people who know where to turn up are the people who are meant to be there.',
+  },
+  {
+    title: 'A small, known group',
+    detail:
+      `${TENT_CAP} tents and no more. This is a capped group of campers who all signed up, not an open crowd that grows through the night.`,
+  },
+  {
+    title: 'Adults only',
+    detail: `Everyone on site is ${MIN_AGE} or over. There is no mixed-age crowd to manage.`,
+  },
+  {
+    title: 'Behaviour is not negotiable',
+    detail:
+      'Respecting other campers is a condition of being there. Anyone disruptive is asked to leave, and that applies for the whole night, not just while the music is on.',
+  },
+]
+
 // ─── What the night includes ────────────────────────────────────────────────
 
 /** Straight from the flyer's feature block. */

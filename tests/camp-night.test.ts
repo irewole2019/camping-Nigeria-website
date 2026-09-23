@@ -18,6 +18,9 @@ import {
   PAYMENT_IS_OFFLINE,
   PAYMENT_NOTE,
   PLEASE_NOTE,
+  SECURITY_INTRO,
+  SECURITY_POINTS,
+  TENT_CAP,
   TENT_PACKAGES,
   VENUE_LABEL,
   VENUE_MAP_URL,
@@ -180,6 +183,51 @@ describe('the venue is not public', () => {
     expect(VENUE_NAME).toBe('Brooks Garden and Events Centre')
     expect(VENUE_LABEL).toContain(VENUE_NAME)
     expect(VENUE_MAP_URL).toMatch(/^https:\/\//)
+  })
+})
+
+describe('safety section', () => {
+  it('leads on the closed guest list, which is the strongest thing we can say', () => {
+    expect(SECURITY_POINTS[0].title).toBe('A closed guest list')
+    expect(SECURITY_POINTS.map((p) => p.title)).toContain('A private venue')
+  })
+
+  it('every claim traces to something the site actually enforces', () => {
+    const all = SECURITY_POINTS.map((p) => `${p.title} ${p.detail}`).join(' ').toLowerCase()
+    expect(all).toContain('signed up in advance') // the SCN code system
+    expect(all).toContain('not published') // the venue split
+    expect(all).toContain(String(TENT_CAP)) // the cap in the Apps Script
+    expect(all).toContain(String(MIN_AGE)) // the age gate on the form
+    expect(all).toContain('asked to leave') // the behaviour rule in PLEASE_NOTE
+  })
+
+  it('claims nothing about guards, medics, lighting or facilities', () => {
+    // None of these have been confirmed by the team. This test exists to stop
+    // a well-meaning edit adding reassurance we cannot actually deliver — on
+    // a page people read when deciding whether it is safe to sleep somewhere.
+    // If any become true, confirm with the founders, then loosen this.
+    const all = SECURITY_POINTS.map((p) => `${p.title} ${p.detail}`)
+      .concat(SECURITY_INTRO)
+      .join(' ')
+      .toLowerCase()
+    for (const claim of [
+      'security guard',
+      'guards',
+      'bouncer',
+      'first aid',
+      'medic',
+      'ambulance',
+      'nurse',
+      'cctv',
+      'floodlit',
+      'well lit',
+      'patrol',
+      'fenced',
+      'gated',
+      'police',
+    ]) {
+      expect(all).not.toContain(claim)
+    }
   })
 })
 

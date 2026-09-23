@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MapPin } from 'lucide-react'
+import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
@@ -26,6 +26,8 @@ import {
   MIN_AGE,
   PAYMENT_NOTE,
   PLEASE_NOTE,
+  SECURITY_INTRO,
+  SECURITY_POINTS,
   SIGNUP_OPEN,
   TENT_CAP,
   TENT_PACKAGES,
@@ -192,6 +194,48 @@ export default function CampNightPage() {
               <Bullet key={item}>{item}</Bullet>
             ))}
           </ul>
+        </div>
+      </Section>
+
+      {/* Safety — placed immediately before the form, because this is the
+          question people answer for themselves right before signing up. */}
+      <Section id="safety" className="bg-brand-dark">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12 max-w-2xl">
+            <p className="inline-flex items-center gap-2 font-sans text-sm font-semibold uppercase tracking-widest text-brand-accent">
+              <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+              Safety
+            </p>
+            <h2 className="mt-3 font-serif text-3xl font-bold leading-tight text-white text-balance md:text-4xl">
+              Who is there, and how we keep it that way
+            </h2>
+            <p className="mt-4 font-sans text-base leading-relaxed text-white/70">
+              {SECURITY_INTRO}
+            </p>
+          </div>
+
+          <ul className="grid gap-x-10 gap-y-8 sm:grid-cols-2">
+            {SECURITY_POINTS.map((point) => (
+              <li key={point.title} className="border-t border-white/15 pt-5">
+                <h3 className="font-serif text-lg font-bold text-brand-accent">{point.title}</h3>
+                <p className="mt-2 font-sans text-[15px] leading-relaxed text-white/70">
+                  {point.detail}
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-12 font-sans text-sm leading-relaxed text-white/55">
+            Anything you want to ask before you commit — who else is coming, how you get home, what
+            the sleeping set-up is — call{' '}
+            <a
+              href={EVENT_PHONE_TEL}
+              className="font-semibold text-brand-accent underline-offset-4 hover:underline"
+            >
+              {EVENT_PHONE_DISPLAY}
+            </a>
+            . We would rather answer it now than have you wondering on the night.
+          </p>
         </div>
       </Section>
 
