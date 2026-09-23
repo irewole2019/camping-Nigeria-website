@@ -240,7 +240,7 @@ export default function SignupForm() {
           onChange={setAgeConfirmed}
           error={errors.age}
           label={`I am ${MIN_AGE} or over.`}
-          hint="Camp Night is an adults-only night."
+          hint="You need to be an adult to sign up. Bringing children is fine — call us so we can size your tent."
         />
       </div>
 

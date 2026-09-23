@@ -99,7 +99,9 @@ export default function Hero() {
             >
               <SpecItem first label="Time" value={EVENT_TIME_SHORT} />
               <SpecItem label="Where" value={VENUE_PUBLIC_LABEL} />
-              <SpecItem label="Ages" value={`${MIN_AGE}+`} />
+              {/* "Ages 18+" read as adults-only. The bar is on signing up,
+                  not on attending, and the nuance lives in the trust line. */}
+              <SpecItem label="Who" value="Families" />
               <SpecItem
                 label={SIGNUP_OPEN ? 'From' : 'Tents'}
                 value={SIGNUP_OPEN ? formatNaira(LOWEST_PRICE) : String(TENT_CAP)}
@@ -135,8 +137,8 @@ export default function Hero() {
               animate={{ opacity: 1 }}
               transition={{ duration: 1, ease: premiumEase, delay: 1.1 }}
             >
-              {TENT_CAP} tents only. Adults {MIN_AGE}+. The exact venue goes out to everyone who
-              signs up.
+              {TENT_CAP} tents only. {MIN_AGE}+ to sign up, children welcome with a parent. The
+              exact venue goes out to everyone who signs up.
               <br />
               Enquiries and bookings:{' '}
               <a

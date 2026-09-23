@@ -5,6 +5,9 @@ import {
   normaliseInstagram,
 } from '@/lib/events/camp-night-records'
 import {
+  CHILDREN_INTRO,
+  CHILDREN_RULES,
+  CHILDREN_WELCOME,
   EVENT_DATE_LABEL,
   EVENT_DATE_SHORT,
   EVENT_DESCRIPTION,
@@ -152,12 +155,46 @@ describe('short labels for the hero spec strip', () => {
 })
 
 describe('age policy', () => {
-  it('is 18 and over', () => {
+  it('is 18 and over to sign up', () => {
     expect(MIN_AGE).toBe(18)
   })
 
   it('states the minimum in PLEASE_NOTE, which the confirmation email renders', () => {
     expect(PLEASE_NOTE.some((n) => n.includes(String(MIN_AGE)))).toBe(true)
+  })
+
+  it('no longer calls the night adults-only, now that children are welcome', () => {
+    // The bar is on signing up, not attending. If this ever reverts to a
+    // blanket 18+, the CHILDREN_* block has to go with it.
+    const all = PLEASE_NOTE.join(' ').toLowerCase()
+    expect(all).not.toContain('adults-only')
+    expect(all).not.toContain('adults only')
+  })
+})
+
+describe('children', () => {
+  it('welcomes them, and says so before it says anything else', () => {
+    expect(CHILDREN_WELCOME).toBe(true)
+    expect(CHILDREN_INTRO.toLowerCase()).toContain('bring the kids')
+  })
+
+  it('carries the supervision rule, which is the load-bearing one', () => {
+    const all = CHILDREN_RULES.join(' ').toLowerCase()
+    expect(all).toContain('guardian')
+    expect(all).toContain('stays with them')
+  })
+
+  it('carries the behaviour warning the founders asked for', () => {
+    const all = CHILDREN_RULES.join(' ').toLowerCase()
+    expect(all).toContain('well behaved')
+    expect(all).toContain('asked to leave')
+  })
+
+  it('points at the event line rather than publishing a child price', () => {
+    // No child rate has been set. If one is, it belongs in TENT_PACKAGES.
+    const all = CHILDREN_RULES.join(' ').toLowerCase()
+    expect(all).toContain('call us')
+    expect(all).not.toMatch(/₦|naira/)
   })
 })
 

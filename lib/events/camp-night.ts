@@ -67,11 +67,44 @@ export const DATE_STAMP = {
 } as const
 
 /**
- * Minimum age. An adult event: the bar is on the page, in the Event JSON-LD
- * as `suggestedMinAge`, in PLEASE_NOTE, and behind a required checkbox on the
- * sign-up form that the API re-checks.
+ * Minimum age **to sign up**, not to attend.
+ *
+ * This started life as a blanket "adults only" bar. It is now narrower: the
+ * person filling in the form has to be an adult, and children are welcome
+ * when a parent or guardian brings them and stays with them (see CHILDREN_*
+ * below). So the checkbox still reads "I am 18 or over" and the API still
+ * enforces it — a fifteen-year-old cannot book a tent — but the page no
+ * longer says adults only, and the Event JSON-LD no longer publishes
+ * `suggestedMinAge`, which would tell Google to keep families away.
  */
 export const MIN_AGE = 18
+
+/**
+ * Children are welcome, with conditions. Kept as data rather than JSX so the
+ * page, the confirmation email and any future SMS all read from one place —
+ * the behaviour rules in particular are the kind of thing that must not drift
+ * between what someone read before paying and what they were sent after.
+ */
+export const CHILDREN_WELCOME: boolean = true
+
+export const CHILDREN_INTRO =
+  'Camp Night is as much a family night as a night out. Bring the kids — the bonfire, the movies, the games and the popcorn all land better with them there, and a tent full of children usually has the best time of anyone.'
+
+/**
+ * The conditions. Written to be read by a parent deciding, not by a lawyer:
+ * firm on supervision and behaviour, honest about what the night actually is.
+ *
+ * Children's places are arranged by phone rather than priced on the page —
+ * payment is offline anyway, and nobody has given a child rate. If one is set
+ * later, put it here and in TENT_PACKAGES rather than in the copy.
+ */
+export const CHILDREN_RULES: readonly string[] = [
+  'A parent or guardian signs up, comes along, and stays with them the whole night. We are running the night, not supervising children.',
+  'Children share your tent, so call us before you pay and we will make sure you have one that fits everybody.',
+  'It runs late. Music, movies and a bonfire go on well past bedtime, so it suits children who are happy to be up rather than ones who need an early night.',
+  'Same rule as everything else here: well behaved only. Anyone disruptive to other campers will be asked to leave, and that applies to children exactly as it does to adults.',
+  'They stay away from the bonfire and the equipment unless they are with you.',
+] as const
 
 /**
  * **Payment is strictly offline.** The form is not a checkout and takes no
@@ -256,7 +289,7 @@ export const BRING: readonly string[] = [
 ] as const
 
 export const PLEASE_NOTE: readonly string[] = [
-  `This is an adults-only night. You must be ${MIN_AGE} or over to camp.`,
+  `You must be ${MIN_AGE} or over to sign up. Children are welcome when a parent or guardian brings them and stays with them.`,
   'Do not bring laptops or expensive gadgets.',
   'Pets are allowed, but only domesticated and well-behaved ones. No aggressive pets.',
   'If it rains, there is a covered sit-out and canopy where everyone stays safely.',

@@ -197,7 +197,9 @@ const CAMP_NIGHT: EventSummary = {
   // venue is disclosed to signees, not published. See ./camp-night.
   venueLabel: CN_VENUE_PUBLIC_LABEL,
   city: CN_CITY,
-  ageRange: `Adults ${CN_MIN_AGE}+`,
+  // Not "Adults 18+": 18 is the bar to sign up, and children come with a
+  // parent. The hub card is often the first thing a family reads.
+  ageRange: `${CN_MIN_AGE}+ to book · families welcome`,
   image: CN_HERO_IMAGE,
   imageAlt: CN_HERO_IMAGE_ALT,
   banner: {

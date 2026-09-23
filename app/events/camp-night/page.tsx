@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MapPin } from 'lucide-react'
+import { ArrowRight, MapPin, Users } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Section from '@/components/ui/Section'
@@ -11,6 +11,9 @@ import { buildPageMetadata, SITE_URL } from '@/lib/seo'
 import { buildBreadcrumbJsonLd, buildEventJsonLd } from '@/lib/structured-data'
 import {
   BRING,
+  CHILDREN_INTRO,
+  CHILDREN_RULES,
+  CHILDREN_WELCOME,
   EVENT_DESCRIPTION,
   EVENT_END_ISO,
   EVENT_FULL_TITLE,
@@ -91,7 +94,11 @@ export default function CampNightPage() {
             : {}),
           // No maximumAttendeeCapacity: the cap is 50 *tents*, and that field
           // counts people. A couple tent holds two, so the two numbers differ.
-          audience: { suggestedMinAge: MIN_AGE },
+          //
+          // No suggestedMinAge either. 18 is the minimum to *sign up*, not to
+          // attend — children come with a parent — and publishing 18 here
+          // would have Google present this as an adults-only event and steer
+          // families away from exactly the thing we want them at.
           image: `${SITE_URL}${HERO_IMAGE}`,
         })}
       />
@@ -182,6 +189,48 @@ export default function CampNightPage() {
             </ul>
           </div>
         </div>
+
+        {/* Bringing children — the invitation and the conditions in one
+            block, so nobody reads the welcome without the rules. */}
+        {CHILDREN_WELCOME && (
+          <div className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-2xl border-2 border-brand-accent/40 bg-brand-accent-tint">
+            <div className="grid gap-8 p-7 md:grid-cols-[1fr_1.15fr] md:gap-10 md:p-9">
+              <div>
+                <p className="inline-flex items-center gap-2 font-sans text-sm font-semibold uppercase tracking-widest text-brand-accent-readable">
+                  <Users className="h-4 w-4" aria-hidden="true" />
+                  Bring the kids
+                </p>
+                <h2 className="mt-3 font-serif text-2xl font-bold leading-tight text-brand-dark md:text-3xl">
+                  Children are welcome
+                </h2>
+                <p className="mt-4 font-sans text-base leading-relaxed text-brand-dark/75">
+                  {CHILDREN_INTRO}
+                </p>
+                <p className="mt-5 font-sans text-sm text-brand-dark/65">
+                  To bring children, call{' '}
+                  <a
+                    href={EVENT_PHONE_TEL}
+                    className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+                  >
+                    {EVENT_PHONE_DISPLAY}
+                  </a>{' '}
+                  before you pay, so we get your tent right.
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-white/70 p-6">
+                <p className="font-sans text-sm font-semibold uppercase tracking-widest text-brand-dark/60">
+                  If you are bringing them
+                </p>
+                <ul className="mt-5 space-y-3">
+                  {CHILDREN_RULES.map((rule) => (
+                    <Bullet key={rule}>{rule}</Bullet>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="mx-auto mt-14 max-w-5xl rounded-2xl border border-brand-dark/10 bg-brand-dark-tint p-7 md:p-9">
           <p className="font-sans text-sm font-semibold uppercase tracking-widest text-brand-dark/60">
