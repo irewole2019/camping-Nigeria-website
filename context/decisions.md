@@ -861,13 +861,13 @@ The founders' model is that money changes hands offline — transfer or in perso
 
 Fifty tents, and the site cannot enforce it. `/events/camp-night` is statically rendered, so it has no count of sign-ups; only the sheet knows. The script therefore counts rows and returns `event-full` once it holds 50.
 
-**The API returns 409 before sending any email.** Every other thing the sheet can say is non-blocking — the confirmation email is the source of truth that a sign-up happened, and the internal notification carries every field so a missing row can be added by hand. Capacity is the exception, because telling camper 51 "You are in" is a promise the team cannot keep. Nothing is sent.
+**The API returns 409 before sending any email.** Every other thing the sheet can say is non-blocking — the confirmation email is the source of truth that a sign-up happened, and the internal notification carries every field so a missing row can be added by hand. Capacity is the exception, because telling camper 61 "You are in" is a promise the team cannot keep. Nothing is sent.
 
-**`doPost` takes a `LockService` lock.** Both the capacity check and the duplicate-code check read the sheet and then write to it. Without a lock, two sign-ups arriving together could both read 49 rows and both be let in, or both claim the same code. The lock is what makes either guarantee real.
+**`doPost` takes a `LockService` lock.** Both the capacity check and the duplicate-code check read the sheet and then write to it. Without a lock, two sign-ups arriving together could both read 59 rows and both be let in, or both claim the same code. The lock is what makes either guarantee real.
 
 **`TENT_CAP` exists twice** — in `lib/events/camp-night.ts` and at the top of the script — because the script runs inside Google and cannot import from the repo. Both are commented as copies of each other. This is the one duplication in the feature and it is unavoidable.
 
-**The cap does not exist until the sheet does.** With `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` unset there is no count, so sign-up 51 succeeds. Recorded in the constant's doc comment, the route, and the setup guide.
+**The cap does not exist until the sheet does.** With `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` unset there is no count, so sign-up 61 succeeds. Recorded in the constant's doc comment, the route, and the setup guide.
 
 **Deleting a row frees a place**, since rows are what get counted. That is the cancellation path, and it needs no code.
 
