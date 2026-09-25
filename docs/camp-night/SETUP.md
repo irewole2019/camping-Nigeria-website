@@ -78,7 +78,7 @@ Paste the Web app URL into a browser on its own. You should get:
 
 ```json
 {"ok":true,"service":"camp-night-signups","sheet":"Sign-ups",
- "signups":0,"capacity":50,"remaining":50}
+ "signups":0,"capacity":60,"remaining":60}
 ```
 
 If you get that, the deployment is live. Then sign yourself up through
@@ -113,10 +113,10 @@ different URL, and you'd have to update Vercel again.
 
 ---
 
-## The 50-tent cap lives in here
+## The 60-tent cap lives in here
 
-Once the sheet holds 50 sign-ups, the script refuses the next one and the
-website shows "all 50 tents are taken" instead of confirming. **No
+Once the sheet holds 60 sign-ups, the script refuses the next one and the
+website shows "all 60 tents are taken" instead of confirming. **No
 confirmation email goes out**, so nobody is ever told they are in when they
 are not.
 
@@ -124,7 +124,7 @@ This is the only place the cap can work — the website is a static page and
 has no idea how many people have signed up. Two consequences:
 
 - **Until the steps above are done, there is no cap.** With no sheet there is
-  no count, so sign-up 51 would succeed.
+  no count, so sign-up 61 would succeed.
 - **To free up a place after a cancellation, delete that row.** Rows are
   counted, so deleting one reopens a tent.
 

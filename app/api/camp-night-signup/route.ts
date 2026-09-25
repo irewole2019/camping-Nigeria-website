@@ -374,7 +374,7 @@ export async function POST(request: Request) {
     }
 
     // Capacity is the one refusal that must stop the sign-up. Everything else
-    // the sheet can say is non-blocking, but sending "You are in" for tent 51
+    // the sheet can say is non-blocking, but sending "You are in" for tent 61
     // would be a promise we cannot keep, so this returns before any email.
     if (!recorded.ok && recorded.error === 'event-full') {
       return NextResponse.json(

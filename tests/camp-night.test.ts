@@ -47,7 +47,7 @@ describe('generateSignupCode', () => {
   })
 
   it('does not repeat across a run many times the size of the event', () => {
-    // 50 tents; 2000 draws is a far harsher test than the real load.
+    // 60 tents; 2000 draws is a far harsher test than the real load.
     const codes = new Set(Array.from({ length: 2000 }, () => generateSignupCode()))
     expect(codes.size).toBe(2000)
   })

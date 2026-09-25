@@ -131,7 +131,7 @@ export const VENUE_LABEL = 'Brooks Garden and Events Centre, Abuja'
 export const VENUE_MAP_URL = 'https://maps.app.goo.gl/Mm2LJwSE5USiVgdU6?g_st=ic'
 
 /**
- * The cap is **50 tents**, not 50 people: a couple tent holds two and a
+ * The cap is **60 tents**, not 60 people: a couple tent holds two and a
  * shared tent more, so the headcount is deliberately not derived from it.
  * That is also why the Event JSON-LD omits `maximumAttendeeCapacity` — it is
  * a people field, and publishing a tent count there would be wrong data.
@@ -144,9 +144,9 @@ export const VENUE_MAP_URL = 'https://maps.app.goo.gl/Mm2LJwSE5USiVgdU6?g_st=ic'
  * because the script runs inside Google and cannot import from here.
  *
  * Corollary: while `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` is unset there is
- * no count and therefore no cap. Sign-up 51 will succeed.
+ * no count and therefore no cap. Sign-up 61 will succeed.
  */
-export const TENT_CAP = 50
+export const TENT_CAP = 60
 
 export const EVENT_PATH = '/events/camp-night'
 export const REGISTERED_PATH = '/events/camp-night/registered'
@@ -232,7 +232,7 @@ export function formatNaira(amount: number): string {
  * no claim at all.
  *
  * `SECURITY_POINTS` follows from how the night is already built — the closed
- * guest list from the SCN code system, the undisclosed venue, the 50-tent cap,
+ * guest list from the SCN code system, the undisclosed venue, the 60-tent cap,
  * the 18+ rule, the behaviour rule in PLEASE_NOTE. `ON_SITE` is what is
  * physically there, confirmed by the founders on 23/09/2026.
  *

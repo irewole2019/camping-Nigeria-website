@@ -38,7 +38,7 @@ const SHEET_NAME = 'Sign-ups'
 const LOOKUP_SHEET_NAME = 'Lookup'
 
 /**
- * 50 tents. Once the sheet holds this many sign-ups, doPost refuses the next
+ * 60 tents. Once the sheet holds this many sign-ups, doPost refuses the next
  * one with `event-full` and the site sends no confirmation email.
  *
  * This is the ONLY place the cap can be enforced — the website is statically
@@ -48,7 +48,7 @@ const LOOKUP_SHEET_NAME = 'Lookup'
  * To reopen sign-ups after a cancellation, delete the cancelled row (or raise
  * this number). Rows are counted, so a deleted row frees a place.
  */
-const TENT_CAP = 50
+const TENT_CAP = 60
 
 const HEADERS = [
   'Timestamp',

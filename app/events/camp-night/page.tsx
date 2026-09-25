@@ -93,7 +93,7 @@ export default function CampNightPage() {
                 },
               }
             : {}),
-          // No maximumAttendeeCapacity: the cap is 50 *tents*, and that field
+          // No maximumAttendeeCapacity: the cap is 60 *tents*, and that field
           // counts people. A couple tent holds two, so the two numbers differ.
           audience: { suggestedMinAge: MIN_AGE },
           image: `${SITE_URL}${HERO_IMAGE}`,
