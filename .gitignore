@@ -16,3 +16,6 @@ node_modules/
 
 # Claude Code per-developer settings
 .claude/settings.local.json
+
+# Private notes, e.g. contact numbers from event debriefs (repo is public)
+*.private.md
