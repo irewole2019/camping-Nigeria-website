@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-09-21
+Last updated: 2026-09-29
 
 ## Company
 
@@ -38,7 +38,8 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
 
 ### Events
 
-- **Events hub** — `/events` — lists upcoming then past editions from the registry in [lib/events/index.ts](../lib/events/index.ts). The registry holds only summary/card data; deep detail (schedule, FAQs, pricing, image registry) stays in each event's own module. Adding an event is a module plus one registry entry — the hub, the homepage banner, and the nav need no edits. `FEATURED_UPCOMING_EVENT` drives the homepage `EventBanner`, which is content-agnostic and only rendered when something is actually taking registrations.
+- **Events hub** — `/events` — lists upcoming then past editions from the registry in [lib/events/index.ts](../lib/events/index.ts). The registry holds only summary/card data; deep detail (schedule, FAQs, pricing, image registry) stays in each event's own module. Adding an event is a module plus one registry entry — the hub, the homepage banner, and the nav need no edits. `FEATURED_UPCOMING_EVENT` drives the homepage `EventBanner`, which is content-agnostic and only rendered when something is actually taking registrations. **Right now nothing is** — all three events are past, so the banner is off and the hub shows its empty upcoming state.
+- **September Camp Night** — `/events/camp-night` — adults' overnight camp, **Saturday 26 September 2026, 6:00 PM to 9:00 AM**, Abuja (venue disclosed to signees only), 60-tent cap, shared ₦20,000 / single ₦25,000 / couple ₦30,000. **Status: past** since 28/09/2026 — see entry 55. Source of truth [lib/events/camp-night.ts](../lib/events/camp-night.ts); debrief at [docs/camp-night/debrief-2026-09-26.md](../docs/camp-night/debrief-2026-09-26.md).
 - **Kiddies Hike and Fun Day** — `/events/kiddies-hike` — potluck family hike, **Friday 21 August 2026, 9:00 AM to 4:30 PM**, Abuja, ages 4 to 12, free entry. **Status: past** — built as a recap from the start. 50 children and 35 parents; 10 marshals, a 1-to-5 ratio that is tighter than Base Camp Kids' published 1-to-8 and leads the safety block. Source of truth: [lib/events/kiddies-hike.ts](../lib/events/kiddies-hike.ts). Sections mirror Base Camp Kids: hero, positioning, souvenirs, hour-by-hour schedule, gallery, safety, cost, FAQ, closing CTA.
   - **Real photography**, unlike Base Camp Kids' AI placeholders. Ten WebP frames in [public/images/events/kiddies-hike/](../public/images/events/kiddies-hike/), 2.8 MB total, converted from ~57 MB of iPhone HEIC and QuickTime originals. Each `GALLERY` entry records its `sourceFile` and `capturedAt`. Photo consent confirmed by the team on 11/09/2026.
   - Two of the nine gallery frames are stills pulled from video, not photographs. Coverage stops at 11:30 — nothing of the descent, the potluck or the bag painting. Capture those next time.
@@ -73,8 +74,9 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
 | `/schools/international-award/proposal` — **hidden, page 307s** | `components/schools/international-award/AwardProposalForm.tsx` | `app/api/award-proposal/route.ts` (Resend) — **returns 404 while `DOE_ENABLED` is false** | `hello@campingnigeria.com` |
 | `/gear-rental` | `components/gear-rental/QuoteForm.tsx` | **External** — POST to `https://quote.campingnigeria.com/api/submit-quote` | Quote tool handles persistence + email |
 | `/events/base-camp-kids` | `components/events/base-camp-kids/RegistrationForm.tsx` — **not rendered while `EVENT_STATUS = 'past'`** | `app/api/event-registration/route.ts` (Resend) — **returns 403 while closed** | `hello@campingnigeria.com` |
+| `/events/camp-night` | `components/events/camp-night/SignupForm.tsx` — **not rendered while `EVENT_STATUS = 'past'`** | `app/api/camp-night-signup/route.ts` (Resend + Google Sheet) — **returns 403 while closed** | `hello@campingnigeria.com` |
 
-The 5 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
+The 6 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
 
 The gear-rental form is different (Phase 2 quote tool integration) — see the dedicated section below.
 
@@ -265,12 +267,16 @@ Worked through the full code-review punch list plus a follow-up review:
 
     **The trap this exposed, worth remembering for the next event.** Editing `apps-script.gs` in this repo changes *nothing* in production — the script runs as a copy pasted into the founders' Google account, so a cap change is two jobs: a commit here, and a manual re-paste plus **Deploy → Manage deployments → New version** there. Saving the script is not enough; only a new version of the *existing* deployment keeps the URL Vercel knows about. Between the two jobs the site advertises the new number while the sheet still refuses at the old one, and the camper hits a dead end nobody gets alerted about. The founders confirmed on 25/09/2026 that they redeployed. That was **not independently verified from here** — the webhook URL lives only in Vercel, so there is no address to call from the repo. Symptom if it did not take: a camper reports "all 60 tents are taken" while the sheet holds fewer rows.
 
+55. ✅ **Camp Night ran (26/09/2026), debriefed, and retired to a past edition (28/09/2026).** The debrief — guest feedback, ideas and people to follow up — is at [docs/camp-night/debrief-2026-09-26.md](../docs/camp-night/debrief-2026-09-26.md), with phone numbers kept in the gitignored `debrief-2026-09-26.private.md` beside it because the repo is public. `EVENT_STATUS` flipped to `'past'`: sign-up form gone, `/api/camp-night-signup` returns 403, `Offer` dropped from the Event JSON-LD, hero switched to "This Edition Has Ended" / "See How the Night Ran", homepage banner off (nothing is upcoming now, so `FEATURED_UPCOMING_EVENT` is null and `/events` shows its empty upcoming state). **Four surfaces the flag did not reach** were fixed by hand — `EVENT_DESCRIPTION` (now a past/upcoming pair), the hero trust line, the OG/Twitter subtitles ("From ₦20,000" removed) and the sitemap (0.9 daily → 0.4 yearly). Why, and how to avoid it next time, in [decisions.md](decisions.md). 116 tests pass; build clean.
+
 ### Camp Night — what is outstanding
 
-- ✅ **The sheet is live and verified end to end** (confirmed by the founders, 23/09/2026): a test sign-up on the live site produced a row. That means the list, the `Paid?` column, the gate lookup **and the tent cap** are all working — the cap counts rows in the sheet, so it only exists once the webhook does. `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` is set in Vercel but **not** in `.env.local`, so local runs still skip the Sheet step and log it.
-- **Delete the test rows before the night.** Rows are what the cap counts, so every test sign-up permanently occupies one of the 60 tents until its row is removed. Deleting a row frees the place — that is also the cancellation path.
-- **The venue was public for about a day before being hidden**, so anything shared or indexed in that window still carries it, as do the confirmation emails already sent. Hiding a detail after publishing it is always partial — if it matters, the venue may need changing rather than concealing.
-- **The event is 26 September 2026.** Everything below is on a deadline, not a backlog.
-- **Is `07040538528` on WhatsApp?** Published as a `tel:` link only, because nobody confirmed it. The site number uses a click-to-chat short link rather than a number-derived `wa.me/<digits>` URL, so guessing one here would be inventing a fact. One-line change if it is.
+The night has run. The pre-event items (sheet verification, deleting test rows, the deadline) are closed. What is left:
+
+- **Act on the debrief.** Top items: waterproofing (mattresses got wet), the gate drive-in fee (who charged it; fold into the price or warn guests), and the follow-ups in the people table. Three open questions are listed at the bottom of the debrief.
+- **QR code on the `SCN` confirmation** — the debrief's scan-in-at-the-gate idea. Small website change: render the existing code as a QR in the confirmation email and on `/events/camp-night/registered`. Only worth building once a next edition is scheduled.
+- **Real photography from the night** for the recap, as with Kiddies Hike. The page still uses the AI-generated hero and the flyer.
+- **The venue was public for about a day before being hidden**, so anything shared or indexed in that window still carries it, as do the confirmation emails already sent. Matters only if Brooks Garden is reused and secrecy still matters.
+- **Is `07040538528` on WhatsApp?** Published as a `tel:` link only, because nobody confirmed it. Moot for this edition; decide before reusing the number for the next one.
 - **Two `RESEND_API_KEY` lines in `.env.local`**, both 36 characters and both starting `re_`. The last one wins, so this is currently harmless, but it is exactly how a rotated key silently stops taking effect. Local file, not committed — delete whichever is stale.
 - **Upstash DNS did not resolve from the dev server** (`getaddrinfo ENOTFOUND mature-lab-104674.upstash.io`) during local testing, so rate limiting was failing open. Possibly just the local network rather than a dead database; worth confirming the Upstash instance is still live, because a rate limiter that silently fails open is the kind of thing nobody notices until a bot finds a form. Note that the *unreachable* path fails open in production too — only *missing env vars* fail closed.

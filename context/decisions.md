@@ -859,7 +859,7 @@ The founders' model is that money changes hands offline — transfer or in perso
 ---
 ## Camp Night's capacity cap lives in the Apps Script, not the site
 
-Fifty tents, and the site cannot enforce it. `/events/camp-night` is statically rendered, so it has no count of sign-ups; only the sheet knows. The script therefore counts rows and returns `event-full` once it holds 50.
+Sixty tents (fifty until 25/09/2026), and the site cannot enforce it. `/events/camp-night` is statically rendered, so it has no count of sign-ups; only the sheet knows. The script therefore counts rows and returns `event-full` once it holds 60.
 
 **The API returns 409 before sending any email.** Every other thing the sheet can say is non-blocking — the confirmation email is the source of truth that a sign-up happened, and the internal notification carries every field so a missing row can be added by hand. Capacity is the exception, because telling camper 61 "You are in" is a promise the team cannot keep. Nothing is sent.
 
@@ -879,5 +879,18 @@ Fifty tents, and the site cannot enforce it. `/events/camp-night` is statically 
 It replaces the site WhatsApp line in the Camp Night confirmation email and the `/contact` link on the confirmation page, because a camper with a question about that night should reach the people running it.
 
 Rendered international (`+234 704 053 8528`) though it was given as local, following the same convention as the site number for the same reasons: `tel:` links that work from abroad, and consistency. **No WhatsApp link** — the site number uses a click-to-chat short link and nobody has confirmed this line is on WhatsApp, so inventing a `wa.me/<digits>` URL for it would be a guess presented as a fact.
+
+---
+
+## Retiring an event takes more than flipping `EVENT_STATUS`
+
+Camp Night went `'past'` on 28/09/2026, two days after it ran. The flag alone closed the form, 403'd the API, dropped the `Offer` and swapped the hero buttons — but a sweep of what a stranger would still see found four surfaces still selling a night that had already happened, because they were plain strings rather than flag-aware:
+
+- **`EVENT_DESCRIPTION`** — feeds the meta description, OG copy, the Event JSON-LD *and* the hero's past-state intro. It ended "Venue shared with everyone who signs up. From ₦20,000." Now two strings, `DESCRIPTION_UPCOMING` / `DESCRIPTION_PAST`, with `EVENT_DESCRIPTION` picking one **after** `EVENT_STATUS` is declared — a `const` read before its declaration is a temporal-dead-zone error at module load, which a wrapping function does not fix if the export is evaluated eagerly.
+- **The hero trust line** — "The exact venue goes out to everyone who signs up. Enquiries and bookings: …". Now gated on `SIGNUP_OPEN`.
+- **The OG and Twitter card subtitles** — "From ₦20,000", hardcoded because route-segment image files are parsed statically. Rewritten to be tense-neutral rather than flag-aware; a price-free subtitle is true before and after the night. Platforms cache these, so already-shared links lag.
+- **The sitemap entry** — still `daily` / 0.9. Demoted to `yearly` / 0.4, matching the other two past events.
+
+**For the next event:** write the description as two strings from the start, keep price out of the OG subtitle, and put the trust line behind the flag. Then retiring it really is a one-line change.
 
 ---
