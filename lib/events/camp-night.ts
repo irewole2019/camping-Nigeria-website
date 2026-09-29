@@ -25,8 +25,13 @@ export const COMMUNITY_NAME = 'African Dream Community'
 
 // Names the city only — this is the public description, used for the meta
 // description, the OG copy and the Event JSON-LD. The venue goes to signees.
-export const EVENT_DESCRIPTION =
+// Two versions; EVENT_DESCRIPTION picks one below EVENT_STATUS. The upcoming
+// copy's sign-up line and "From ₦20,000" would read as an open offer in search
+// results for a night that has already run.
+const DESCRIPTION_UPCOMING =
   'A one-night outdoor camp in Abuja, from 6pm on Saturday 26 September 2026 until 9am the next morning. Adults 18 and over. Tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games. Venue shared with everyone who signs up. From ₦20,000.'
+const DESCRIPTION_PAST =
+  'A one-night outdoor camp in Abuja that ran from 6pm on Saturday 26 September 2026 until 9am the next morning. Adults 18 and over, tents and mattresses provided, three DJs hosted by DJ SARZ, bonfire, karaoke, movies and games.'
 
 // 26 September 2026, Saturday — Africa/Lagos is UTC+1, no DST.
 //
@@ -154,17 +159,19 @@ export const REGISTERED_PATH = '/events/camp-night/registered'
 /**
  * Lifecycle. Explicit flag rather than a date comparison, for the same reason
  * as the other events: these pages are statically rendered, so `Date.now()`
- * bakes in at build time and goes stale between deploys. Flip to 'past' after
- * the 26th to close sign-ups, drop the Offer from the schema and switch the
- * page to recap framing.
+ * bakes in at build time and goes stale between deploys. 'past' since
+ * 28/09/2026: sign-ups closed, the schema Offer dropped, the page, the
+ * description and the homepage banner switched to recap framing.
  */
-export const EVENT_STATUS: EventStatus = 'upcoming'
+export const EVENT_STATUS: EventStatus = 'past'
 
 export function isSignupOpen(status: EventStatus): boolean {
   return status === 'upcoming'
 }
 
 export const SIGNUP_OPEN: boolean = isSignupOpen(EVENT_STATUS)
+
+export const EVENT_DESCRIPTION = SIGNUP_OPEN ? DESCRIPTION_UPCOMING : DESCRIPTION_PAST
 
 // ─── Tent packages ──────────────────────────────────────────────────────────
 

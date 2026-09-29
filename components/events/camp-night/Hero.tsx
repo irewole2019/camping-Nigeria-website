@@ -135,16 +135,24 @@ export default function Hero() {
               animate={{ opacity: 1 }}
               transition={{ duration: 1, ease: premiumEase, delay: 1.1 }}
             >
-              {TENT_CAP} tents only. Adults {MIN_AGE}+. The exact venue goes out to everyone who
-              signs up.
-              <br />
-              Enquiries and bookings:{' '}
-              <a
-                href={EVENT_PHONE_TEL}
-                className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
-              >
-                {EVENT_PHONE_DISPLAY}
-              </a>
+              {SIGNUP_OPEN ? (
+                <>
+                  {TENT_CAP} tents only. Adults {MIN_AGE}+. The exact venue goes out to everyone
+                  who signs up.
+                  <br />
+                  Enquiries and bookings:{' '}
+                  <a
+                    href={EVENT_PHONE_TEL}
+                    className="font-semibold text-brand-accent-readable underline-offset-4 hover:underline"
+                  >
+                    {EVENT_PHONE_DISPLAY}
+                  </a>
+                </>
+              ) : (
+                <>
+                  {TENT_CAP} tents. Adults {MIN_AGE}+. One night outdoors in {VENUE_PUBLIC_LABEL}.
+                </>
+              )}
             </motion.p>
           </div>
         </div>

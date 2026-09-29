@@ -10,6 +10,6 @@ export default function Image() {
     hero: '/images/events/camp-night/hero.webp',
     eyebrow: 'Camp Night · Abuja',
     title: 'A night outdoors, Sat 26 September',
-    subtitle: 'Tents pitched, bonfire lit, 3 DJs. From ₦20,000.',
+    subtitle: 'Tents pitched, bonfire lit, 3 DJs. One night above the city.',
   })
 }
