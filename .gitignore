@@ -19,3 +19,9 @@ node_modules/
 
 # Private notes, e.g. contact numbers from event debriefs (repo is public)
 *.private.md
+
+# Internal planning, strategy and hiring docs (repo is public); kept on the founders' machines
+/docs/focus-plan/
+/Camping_Nigeria_Growth_Market_Opportunity_Research.md
+/Camping Nigeria Gear Sourcing.md
+/Camping Nigeria Gear Sourcing.html

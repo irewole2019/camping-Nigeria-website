@@ -16,6 +16,17 @@ The site is built and run by the three founders:
 | **Taiye**   | President         | TBD                                                                   |
 | **Kehinde** | Managing Director | TBD                                                                   |
 
+### Team focus areas (from October 2026)
+
+| Person | Focus |
+| --- | --- |
+| **Wole** (Irewole) | Strategy, software |
+| **Taiye** | Sourcing, software |
+| **Kehinde** | Sales to schools and organizations, customer service |
+| **Toyosi** | Operations, maintenance, events |
+
+Goals and monthly outcomes for each person live in `docs/focus-plan/2026-q4-focus-plan.md`, which is gitignored because this repo is public. Ask Wole for a copy.
+
 When a decision is listed as "Leadership team" below, raise it in whatever channel the three of them use to sync — don't default to just the commit author.
 
 ## Primary decision-maker (code + architecture)
