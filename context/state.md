@@ -281,7 +281,9 @@ Worked through the full code-review punch list plus a follow-up review:
 
 ### MAD Settings — what is outstanding
 
-- **Deploy the sheet before promoting the page.** `docs/mad-settings/SETUP.md`, a manual job in the founders' Google account, then set `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` in Vercel and redeploy. **Until then there is no tent cap at all.** Delete test rows afterwards — a sleepover test row holds a tent.
+- ✅ **Deployed and live** (13/10/2026, `eb984b5`). Verified on campingnigeria.com: `/events/mad-settings` 200 with no venue in the HTML, homepage banner showing "Early Bird · From ₦10,000", `/events`, the coded confirmation page and the OG card all 200, sitemap entry present. The push had to rebase over three unrelated commits (team focus areas, `.gitignore`, a `.claude` hook) — no overlap.
+- ✅ **Sheet created** by the founders (13/10/2026) and `setup()` run. Its first run failed with Apps Script's bare "An unknown error has occurred" — the browser was signed into several Google accounts, so the editor ran as the default account rather than the sheet's owner. Running it from an incognito window signed into only the owning account fixed it. Now in the troubleshooting section of `docs/mad-settings/SETUP.md`.
+- **Not yet verified: the site is connected to the sheet.** `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` lives only in Vercel, so it cannot be checked from the repo. If it was added after the 13/10 deploy started, that build does not have it — redeploy. The proof is one live sleepover sign-up producing a row with `Tent?` = `Yes`; **then delete that row**, since it holds a tent. **Until a row appears, there is no tent cap.**
 - **Early-bird prices only.** The flyer gives no regular price and no early-bird deadline, so the page says "early bird" and invents neither. When the prices change, edit `TICKETS` in the module.
 - **Gate drive-in fee** — the Camp Night debrief found guests charged to drive in at this venue. Same venue, so decide whether to warn guests on the page.
 - **After the 31st:** flip `EVENT_STATUS` to `'past'` and demote the sitemap entry to 0.4 / yearly.

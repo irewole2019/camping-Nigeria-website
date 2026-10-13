@@ -38,6 +38,14 @@ sort, filter and check people in from.
 9. Go back to the spreadsheet tab. You should now see two tabs at the bottom:
    **Sign-ups** (with green headers) and **Lookup**.
 
+   > **"An unknown error has occurred, please try again later."** This is what
+   > happened on the first try for MAD Settings (13/10/2026). It almost always
+   > means the browser is signed into **more than one Google account**: the
+   > editor runs as your default account, not the one that owns the sheet.
+   > Open an incognito window, sign into *only* the owning account, open the
+   > sheet → Extensions → Apps Script, and run `setup` again. If it still
+   > fails, wait a minute and retry — occasionally it is Google's side.
+
 ## Part 4 — Publish it
 
 10. Back in the Apps Script editor: **Deploy → New deployment**.
