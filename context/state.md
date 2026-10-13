@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-09-29
+Last updated: 2026-10-13
 
 ## Company
 
@@ -38,7 +38,8 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
 
 ### Events
 
-- **Events hub** — `/events` — lists upcoming then past editions from the registry in [lib/events/index.ts](../lib/events/index.ts). The registry holds only summary/card data; deep detail (schedule, FAQs, pricing, image registry) stays in each event's own module. Adding an event is a module plus one registry entry — the hub, the homepage banner, and the nav need no edits. `FEATURED_UPCOMING_EVENT` drives the homepage `EventBanner`, which is content-agnostic and only rendered when something is actually taking registrations. **Right now nothing is** — all three events are past, so the banner is off and the hub shows its empty upcoming state.
+- **Events hub** — `/events` — lists upcoming then past editions from the registry in [lib/events/index.ts](../lib/events/index.ts). The registry holds only summary/card data; deep detail (schedule, FAQs, pricing, image registry) stays in each event's own module. Adding an event is a module plus one registry entry — the hub, the homepage banner, and the nav need no edits. `FEATURED_UPCOMING_EVENT` drives the homepage `EventBanner`, which is content-agnostic and only rendered when something is actually taking registrations. **Right now that is MAD Settings**, the only upcoming entry.
+- **MAD Settings** — `/events/mad-settings` — pop-up, bonfire party and camping, **Saturday 31 October 2026, 12:00 PM, sleepovers until 9:00 AM**, Abuja (same venue as Camp Night, disclosed to signees only), adults 18+, presented by African Dream Community × Tbee Sounds. Early-bird tickets: attendance only ₦10,000 / sleepover single ₦30,000 / sleepover couple ₦35,000. **80-tent cap on sleepover tickets only.** **Status: upcoming** — see entry 56. Source of truth [lib/events/mad-settings.ts](../lib/events/mad-settings.ts).
 - **September Camp Night** — `/events/camp-night` — adults' overnight camp, **Saturday 26 September 2026, 6:00 PM to 9:00 AM**, Abuja (venue disclosed to signees only), 60-tent cap, shared ₦20,000 / single ₦25,000 / couple ₦30,000. **Status: past** since 28/09/2026 — see entry 55. Source of truth [lib/events/camp-night.ts](../lib/events/camp-night.ts); debrief at [docs/camp-night/debrief-2026-09-26.md](../docs/camp-night/debrief-2026-09-26.md).
 - **Kiddies Hike and Fun Day** — `/events/kiddies-hike` — potluck family hike, **Friday 21 August 2026, 9:00 AM to 4:30 PM**, Abuja, ages 4 to 12, free entry. **Status: past** — built as a recap from the start. 50 children and 35 parents; 10 marshals, a 1-to-5 ratio that is tighter than Base Camp Kids' published 1-to-8 and leads the safety block. Source of truth: [lib/events/kiddies-hike.ts](../lib/events/kiddies-hike.ts). Sections mirror Base Camp Kids: hero, positioning, souvenirs, hour-by-hour schedule, gallery, safety, cost, FAQ, closing CTA.
   - **Real photography**, unlike Base Camp Kids' AI placeholders. Ten WebP frames in [public/images/events/kiddies-hike/](../public/images/events/kiddies-hike/), 2.8 MB total, converted from ~57 MB of iPhone HEIC and QuickTime originals. Each `GALLERY` entry records its `sourceFile` and `capturedAt`. Photo consent confirmed by the team on 11/09/2026.
@@ -74,9 +75,10 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
 | `/schools/international-award/proposal` — **hidden, page 307s** | `components/schools/international-award/AwardProposalForm.tsx` | `app/api/award-proposal/route.ts` (Resend) — **returns 404 while `DOE_ENABLED` is false** | `hello@campingnigeria.com` |
 | `/gear-rental` | `components/gear-rental/QuoteForm.tsx` | **External** — POST to `https://quote.campingnigeria.com/api/submit-quote` | Quote tool handles persistence + email |
 | `/events/base-camp-kids` | `components/events/base-camp-kids/RegistrationForm.tsx` — **not rendered while `EVENT_STATUS = 'past'`** | `app/api/event-registration/route.ts` (Resend) — **returns 403 while closed** | `hello@campingnigeria.com` |
+| `/events/mad-settings` | `components/events/mad-settings/SignupForm.tsx` | `app/api/mad-settings-signup/route.ts` (Resend + Google Sheet) — **open** | `hello@campingnigeria.com` |
 | `/events/camp-night` | `components/events/camp-night/SignupForm.tsx` — **not rendered while `EVENT_STATUS = 'past'`** | `app/api/camp-night-signup/route.ts` (Resend + Google Sheet) — **returns 403 while closed** | `hello@campingnigeria.com` |
 
-The 6 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
+The 7 Resend-backed routes send **two** emails (internal + customer confirmation) via `sendPairedMail` from `lib/mail.ts`. Each runs the full defensive stack: honeypot → IP rate limit → payload type guard → trim check → format check (email regex, phone digit count) → length caps. Recommendation payloads (proposal program/tier, assessment tier) are **derived server-side** — the API never trusts a client-supplied recommendation.
 
 The gear-rental form is different (Phase 2 quote tool integration) — see the dedicated section below.
 
@@ -268,6 +270,21 @@ Worked through the full code-review punch list plus a follow-up review:
     **The trap this exposed, worth remembering for the next event.** Editing `apps-script.gs` in this repo changes *nothing* in production — the script runs as a copy pasted into the founders' Google account, so a cap change is two jobs: a commit here, and a manual re-paste plus **Deploy → Manage deployments → New version** there. Saving the script is not enough; only a new version of the *existing* deployment keeps the URL Vercel knows about. Between the two jobs the site advertises the new number while the sheet still refuses at the old one, and the camper hits a dead end nobody gets alerted about. The founders confirmed on 25/09/2026 that they redeployed. That was **not independently verified from here** — the webhook URL lives only in Vercel, so there is no address to call from the repo. Symptom if it did not take: a camper reports "all 60 tents are taken" while the sheet holds fewer rows.
 
 55. ✅ **Camp Night ran (26/09/2026), debriefed, and retired to a past edition (28/09/2026).** The debrief — guest feedback, ideas and people to follow up — is at [docs/camp-night/debrief-2026-09-26.md](../docs/camp-night/debrief-2026-09-26.md), with phone numbers kept in the gitignored `debrief-2026-09-26.private.md` beside it because the repo is public. `EVENT_STATUS` flipped to `'past'`: sign-up form gone, `/api/camp-night-signup` returns 403, `Offer` dropped from the Event JSON-LD, hero switched to "This Edition Has Ended" / "See How the Night Ran", homepage banner off (nothing is upcoming now, so `FEATURED_UPCOMING_EVENT` is null and `/events` shows its empty upcoming state). **Four surfaces the flag did not reach** were fixed by hand — `EVENT_DESCRIPTION` (now a past/upcoming pair), the hero trust line, the OG/Twitter subtitles ("From ₦20,000" removed) and the sitemap (0.9 daily → 0.4 yearly). Why, and how to avoid it next time, in [decisions.md](decisions.md). 116 tests pass; build clean.
+
+56. ✅ **MAD Settings built on the Camp Night framework** (13/10/2026). A new event, 31 October 2026, from the team's flyer and website cover. Mirrors Camp Night file for file — source of truth, records module, API route with the full defensive stack, Hero + SignupForm, page, coded confirmation page, OG/Twitter cards, Apps Script + setup guide, registry entry, sitemap (0.9 daily), tests (24 new, 140 total). It is the only upcoming event, so it drives the homepage banner. Founders confirmed the four facts the flyer lacked: sleepovers end 9am Sunday, **80 tents with attendance-only uncapped**, 18+, and the same five on-site facilities. **What is new versus Camp Night:**
+    - **A ticket without a tent.** `Ticket.usesTent` travels to the sheet as a `Tent?` column and the Apps Script counts only `Yes` rows; the refusal is `tents-full` and the 409 message points people at the attendance ticket that is still open. Verified against a mocked sheet: tent 81 refused, attendance accepted after that, duplicate code still rejected. Why in [decisions.md](decisions.md).
+    - **A `Tent ID` column** in the sheet, filled in by hand at check-in — the tent-tracking idea from the Camp Night debrief.
+    - **`MAD-` codes**, a separate sheet and env var (`GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL`), its own rate-limit key.
+    - **Built to retire cleanly.** Description is an upcoming/past pair from the start; OG subtitles are price-free and tense-neutral; the trust line is behind `SIGNUP_OPEN` — the lessons of entry 55.
+    - **The cover is a graphic, not a photo**, so the hero has no overlay gradient, starts below the navbar (the navbar covered "Mad" on mobile), and the date stamp moved bottom-right (top-right sat on the title). Hub card and homepage banner use top-anchored crops (`card.webp`, `banner.webp`) because a centred crop cuts the title off.
+    - The "small, known group" safety point was **not** reused — attendance is uncapped, so it would have been false. It reads "a capped sleepover" instead, with a test.
+
+### MAD Settings — what is outstanding
+
+- **Deploy the sheet before promoting the page.** `docs/mad-settings/SETUP.md`, a manual job in the founders' Google account, then set `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` in Vercel and redeploy. **Until then there is no tent cap at all.** Delete test rows afterwards — a sleepover test row holds a tent.
+- **Early-bird prices only.** The flyer gives no regular price and no early-bird deadline, so the page says "early bird" and invents neither. When the prices change, edit `TICKETS` in the module.
+- **Gate drive-in fee** — the Camp Night debrief found guests charged to drive in at this venue. Same venue, so decide whether to warn guests on the page.
+- **After the 31st:** flip `EVENT_STATUS` to `'past'` and demote the sitemap entry to 0.4 / yearly.
 
 ### Camp Night — what is outstanding
 

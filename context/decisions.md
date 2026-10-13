@@ -894,3 +894,15 @@ Camp Night went `'past'` on 28/09/2026, two days after it ran. The flag alone cl
 **For the next event:** write the description as two strings from the start, keep price out of the OG subtitle, and put the trust line behind the flag. Then retiring it really is a one-line change.
 
 ---
+
+## MAD Settings caps tents, not sign-ups
+
+Camp Night sold only tents, so "count the rows" and "count the tents" were the same thing. MAD Settings adds an *Attendance only* ticket with no tent, and the founders set the cap as **80 tents, attendance uncapped**. Counting rows would have refused day guests once the tents sold out — turning away the cheapest, least constrained ticket for a resource it does not use.
+
+So each ticket carries `usesTent`, the site sends it with the row, the sheet stores it as a visible `Tent?` column, and the Apps Script counts only `Yes` rows. The column is visible on purpose: the team can see why the count is what it is, and the setup guide tells them not to edit it.
+
+**The cap is still enforced only in the script**, for the same reason as Camp Night — the page is static. The refusal is renamed `tents-full` (from `event-full`) because the event is not full; the 409 message says so and points at the attendance ticket.
+
+**Why a copy, not a shared event framework.** MAD Settings duplicates Camp Night's module, records, route, components and script rather than generalising them. This repo has made that call three times now (Base Camp Kids → Kiddies Hike → Camp Night → MAD Settings), and the ticket change shows why: each edition differs in a way a shared abstraction would have had to anticipate. If a fifth event arrives with the same shape, that is the point to extract — not before. The one thing reused is `normaliseInstagram`, a pure helper with no event in it.
+
+---
