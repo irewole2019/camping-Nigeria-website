@@ -73,6 +73,27 @@ import {
   formatNaira as cnFormatNaira,
 } from './camp-night'
 
+import {
+  BANNER_IMAGE as MS_BANNER_IMAGE,
+  CARD_IMAGE as MS_CARD_IMAGE,
+  COMMUNITY_NAME as MS_COMMUNITY,
+  EVENT_DATE_LABEL as MS_DATE_LABEL,
+  EVENT_END_ISO as MS_END_ISO,
+  EVENT_FULL_TITLE as MS_TITLE,
+  EVENT_PATH as MS_PATH,
+  EVENT_START_ISO as MS_START_ISO,
+  EVENT_STATUS as MS_STATUS,
+  EVENT_TAGLINE as MS_TAGLINE,
+  HERO_IMAGE_ALT as MS_IMAGE_ALT,
+  LOWEST_PRICE as MS_LOWEST_PRICE,
+  MIN_AGE as MS_MIN_AGE,
+  PARTNER_NAME as MS_PARTNER,
+  TENT_CAP as MS_TENT_CAP,
+  VENUE_CITY as MS_CITY,
+  VENUE_PUBLIC_LABEL as MS_VENUE_PUBLIC_LABEL,
+  formatNaira as msFormatNaira,
+} from './mad-settings'
+
 export type { EventStatus }
 
 /** Icon key rather than a component — this module is imported by server components. */
@@ -218,7 +239,50 @@ const CAMP_NIGHT: EventSummary = {
   },
 }
 
-export const EVENTS: EventSummary[] = [CAMP_NIGHT, BASE_CAMP_KIDS, KIDDIES_HIKE]
+/**
+ * The only upcoming event, so it drives `FEATURED_UPCOMING_EVENT` and the
+ * homepage `EventBanner`. Flip EVENT_STATUS in ./mad-settings to 'past' after
+ * the night and the banner goes quiet on its own.
+ *
+ * Card and banner use top-anchored crops of the square cover (CARD_IMAGE,
+ * BANNER_IMAGE) — a centred crop cuts the top of the title off.
+ */
+const MAD_SETTINGS: EventSummary = {
+  slug: 'mad-settings',
+  title: MS_TITLE,
+  tagline: MS_TAGLINE,
+  blurb:
+    'A pop-up and bonfire party from midday, then a night under canvas for anyone who stays. Three DJs, games on the big screen, and Chapman and popcorn on us.',
+  path: MS_PATH,
+  status: MS_STATUS,
+  dateLabel: MS_DATE_LABEL,
+  startIso: MS_START_ISO,
+  endIso: MS_END_ISO,
+  // Public label only — same rule as Camp Night: the venue goes to signees.
+  venueLabel: MS_VENUE_PUBLIC_LABEL,
+  city: MS_CITY,
+  ageRange: `Adults ${MS_MIN_AGE}+`,
+  image: MS_CARD_IMAGE,
+  imageAlt: MS_IMAGE_ALT,
+  banner: {
+    image: MS_BANNER_IMAGE,
+    imageAlt: MS_IMAGE_ALT,
+    badge: `Early Bird · From ${msFormatNaira(MS_LOWEST_PRICE)}`,
+    eyebrow: 'MAD Settings · Abuja · 2026',
+    headline: 'MAD Settings — pop-up, bonfire party and camping.',
+    announcement: `${MS_COMMUNITY} × ${MS_PARTNER}`,
+    body: `A day-into-night party with a sleepover for anyone who wants it. Three DJs, a bonfire, games, movies and karaoke, with free Chapman and popcorn. Come for the day, or book one of ${MS_TENT_CAP} tents.`,
+    stats: [
+      { icon: 'calendar', label: 'When', value: MS_DATE_LABEL.replace('Saturday, ', '') },
+      { icon: 'map-pin', label: 'Where', value: MS_CITY },
+      { icon: 'users', label: 'Tents', value: `${MS_TENT_CAP} only` },
+    ],
+    primaryCta: { label: 'Save My Spot', href: `${MS_PATH}#signup` },
+    secondaryCta: { label: 'See the Tickets', href: `${MS_PATH}#tickets` },
+  },
+}
+
+export const EVENTS: EventSummary[] = [MAD_SETTINGS, CAMP_NIGHT, BASE_CAMP_KIDS, KIDDIES_HIKE]
 
 /** Soonest first — the next thing to happen leads the hub. */
 export const UPCOMING_EVENTS: EventSummary[] = EVENTS.filter(

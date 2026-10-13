@@ -117,6 +117,14 @@ const ROUTES: RouteEntry[] = [
   },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.6 },
   { path: '/events', changeFrequency: 'monthly', priority: 0.6 },
+  // Live event, taking sign-ups — highest event priority until it has run.
+  // Demote to 0.4 / yearly when EVENT_STATUS goes 'past'.
+  {
+    path: '/events/mad-settings',
+    changeFrequency: 'daily',
+    priority: 0.9,
+    image: `${SITE_URL}/images/events/mad-settings/hero.webp`,
+  },
   // Past edition since 28/09/2026 — demoted from 0.9 / daily, matching the
   // other past events, now that sign-ups are closed.
   {
