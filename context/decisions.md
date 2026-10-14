@@ -607,7 +607,7 @@ Note the one thing that stays hardcoded on purpose: the `font-family:Helvetica,A
 ---
 ## Offers appear twice: compact cards on each market page, full detail on `/offers`
 
-Each market's own marketing page (`/schools`, `/community` (formerly `/individuals`), `/organizations`) renders `OfferShowcase` — compact feature cards that open the full package in a modal. The dedicated `/offers/<group>` pages still render every package inline via `OfferPackages`.
+Each market's own marketing page (`/schools`, `/organizations`) renders `OfferShowcase` (`/community`, formerly `/individuals`, is the exception: the founders removed its offers on 14/10/2026) — compact feature cards that open the full package in a modal. The dedicated `/offers/<group>` pages still render every package inline via `OfferPackages`.
 
 **Why two presentations rather than one:** the jobs differ. Someone on `/schools` is being sold the idea and should be able to price a programme without losing their place in the page — hence a modal, not a navigation. Someone on `/offers/schools` arrived to compare packages and wants everything visible, linkable and printable.
 
