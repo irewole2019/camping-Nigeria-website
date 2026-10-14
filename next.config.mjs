@@ -100,9 +100,13 @@ const nextConfig = {
      * coming back, so search engines should move the old URLs' standing to
      * the new ones. `:path*` also carries the OG and Twitter card routes.
      */
+    // The bare paths get exact rules first: through `:path*` alone, an empty
+    // match produced `/community/` and a second hop to strip the slash.
     const renamed = [
-      { source: '/individuals/:path*', destination: '/community/:path*', permanent: true },
-      { source: '/offers/individuals/:path*', destination: '/offers/community/:path*', permanent: true },
+      { source: '/individuals', destination: '/community', permanent: true },
+      { source: '/individuals/:path+', destination: '/community/:path+', permanent: true },
+      { source: '/offers/individuals', destination: '/offers/community', permanent: true },
+      { source: '/offers/individuals/:path+', destination: '/offers/community/:path+', permanent: true },
     ]
     if (DOE_ENABLED) return renamed
     return [

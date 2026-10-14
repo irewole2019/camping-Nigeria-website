@@ -287,6 +287,8 @@ Worked through the full code-review punch list plus a follow-up review:
 
 ### Community — what is outstanding
 
+- ✅ **Deployed and live** (14/10/2026, `e5ed78c`). Verified on campingnigeria.com: `/community` 200 with the hero video (MP4 + WebM), poster and OG card all served, no offers on the page, three gallery slots; `/offers/community` 200; homepage links to `/community`. The first deploy's redirects reached the right pages in **two** hops (`/individuals` → `/community/` → `/community`), because `:path*` with an empty match leaves a trailing slash. Fixed with exact rules for the bare paths plus `:path+` for sub-paths — every old URL is now one 308.
+
 - **Gallery photos.** Tell us which photos belong to September Camp Night (and the events for the other two slots); they go in `EVENT_SLOTS` in `lib/community.ts`.
 - **A real join channel** (WhatsApp group, broadcast channel, form) if Instagram is meant to be temporary — one constant, `JOIN_URL`.
 - **Facebook page URL**, to make the Facebook line a link.
