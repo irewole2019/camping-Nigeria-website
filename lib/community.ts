@@ -111,7 +111,12 @@ export const ATTEND_STEPS: readonly string[] = [
 
 export const HERO_VIDEO = '/videos/community-hero.mp4'
 export const HERO_VIDEO_WEBM = '/videos/community-hero.webm'
-/** A mid-clip frame: the clip fades in from black, so frame 0 is unusable. */
+/**
+ * The clip's first frame, so the still shown before playback matches what
+ * plays. The source opened on 0.7s of black and cut between shots at its end;
+ * the encoded file drops the black and cross-fades its last 0.5s into its
+ * first, so the loop has no black frame and no seam.
+ */
 export const HERO_POSTER = '/images/community/hero-poster.webp'
 
 export interface CommunityPhoto {

@@ -7,8 +7,6 @@ import Section from '@/components/ui/Section'
 import JsonLd from '@/components/seo/JsonLd'
 import CommunityHero from '@/components/community/CommunityHero'
 import EventGallery from '@/components/community/EventGallery'
-import OfferShowcase from '@/components/offers/OfferShowcase'
-import { getOfferGroup } from '@/lib/offers-data'
 import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 import {
@@ -27,8 +25,6 @@ import {
   WHY_PEOPLE_RETURN,
   type CommunityPhoto,
 } from '@/lib/community'
-
-const communityOffers = getOfferGroup('community')
 
 export const metadata = buildPageMetadata({
   title: 'The African Dream Community | Camping Nigeria',
@@ -147,15 +143,9 @@ export default function CommunityPage() {
         </div>
       </Section>
 
-      {/* Camping Nigeria's own published camps, for members who want to go
-          further. Kept from the old /individuals page — the offers group was
-          renamed with it. */}
-      <OfferShowcase
-        group={communityOffers}
-        heading="Camp With Us"
-        intro={communityOffers.packagesIntro}
-        className="bg-brand-light"
-      />
+      {/* No OfferShowcase here, unlike the other market pages: the founders
+          took the Open Camp / Private Camp offers off this page on
+          14/10/2026. They still live at /offers/community. */}
 
       {/* How to get involved */}
       <Section className="bg-white">

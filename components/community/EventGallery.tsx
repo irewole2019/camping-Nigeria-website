@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Camera, Images, X } from 'lucide-react'
+import { ArrowRight, Camera, X } from 'lucide-react'
 import Section from '@/components/ui/Section'
 import { EVENT_SLOTS, type CommunityEventSlot } from '@/lib/community'
 
@@ -74,26 +74,28 @@ export default function EventGallery() {
                 aria-hidden="true"
               />
 
+              {/* Hover / focus overlay — the darkening is unchanged; it now sits
+                  under the caption rather than carrying a centred pill. */}
+              <div
+                className="pointer-events-none absolute inset-0 bg-brand-dark/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+                aria-hidden="true"
+              />
+
+              {/* Caption, bottom-left. "Explore Gallery" is a plain text link
+                  under the title: on hover-capable screens it slides up into
+                  view as the card darkens and its arrow nudges right; on touch
+                  screens, where there is no hover, it is always shown. */}
               <div className="absolute inset-x-0 bottom-0 p-6">
                 <p className="font-sans text-xs font-semibold uppercase tracking-widest text-brand-accent">
                   {slot.dateLabel ?? 'Coming soon'}
                 </p>
                 <p className="mt-1 font-serif text-2xl font-bold text-white">{slot.title}</p>
-                {/* Touch screens: always visible, since there is no hover. */}
-                <span className="mt-3 inline-flex items-center gap-2 font-sans text-sm font-semibold text-white/90 [@media(hover:hover)]:hidden">
-                  <Images className="h-4 w-4" aria-hidden="true" />
+                <span className="mt-3 inline-flex items-center gap-2 font-sans text-sm font-semibold tracking-wide text-white underline decoration-white/40 underline-offset-8 transition-all duration-300 [@media(hover:hover)]:translate-y-2 [@media(hover:hover)]:opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-hover:decoration-brand-accent group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                   Explore Gallery
-                </span>
-              </div>
-
-              {/* Hover / focus overlay */}
-              <div
-                className="pointer-events-none absolute inset-0 hidden items-center justify-center bg-brand-dark/60 opacity-0 backdrop-blur-[2px] transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100 [@media(hover:hover)]:flex"
-                aria-hidden="true"
-              >
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 py-3 font-sans text-sm font-semibold uppercase tracking-widest text-white">
-                  <Images className="h-4 w-4" />
-                  Explore Gallery
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
                 </span>
               </div>
             </button>
