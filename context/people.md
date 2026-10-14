@@ -84,7 +84,7 @@ When a decision is listed as "Leadership team" below, raise it in whatever chann
 | -------------------------------- | ------------------------------------------------------------ | ---------- |
 | Resend                           | Transactional email                                          | TBD        |
 | Microsoft 365 / Outlook Bookings | DoE consultation calendar                                    | TBD        |
-| Microsoft Forms                  | Individual trip bookings (URL in `lib/constants.ts#BOOKING_FORM_URL`) | TBD        |
+| Microsoft Forms                  | Open Camp seat bookings on /offers/community (URL in `lib/constants.ts#BOOKING_FORM_URL`) | TBD        |
 | Vercel                           | Hosting + analytics                                          | TBD        |
 | Domain registrar                 | `campingnigeria.com`                                       | TBD        |
 | Instagram `@campingnigeria`     | Social                                                       | TBD        |

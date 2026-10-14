@@ -4,9 +4,9 @@ Briefing for Claude Code. Read this before touching the repo.
 
 ## What this is
 
-Marketing + lead-capture site for **Camping Nigeria** — an outdoor-learning / camping-gear company running school programs, individual trips, and gear rental in Nigeria. Live at `campingnigeria.com`.
+Marketing + lead-capture site for **Camping Nigeria** — an outdoor-learning / camping-gear company running school programs, community events and trips, and gear rental in Nigeria. Live at `campingnigeria.com`.
 
-The site is the main acquisition surface: it books individuals into trips (via Microsoft Forms) and captures school proposals + gear-rental quotes (via Resend email).
+The site is the main acquisition surface: it grows the African Dream Community and books people into trips (Open Camp seats via Microsoft Forms) and captures school proposals + gear-rental quotes (via Resend email).
 
 > **The Duke of Edinburgh / International Award surface is currently hidden.** One switch: `DOE_ENABLED` in `lib/feature-flags.ts`, set to `false`. It is a temporary hide, not a removal — nothing was deleted, and flipping the flag to `true` restores every page, route, section, link, sitemap entry and keyword. Read that file before touching anything DoE-related; the routes below still exist in the tree but are unreachable.
 
@@ -23,9 +23,10 @@ The site is the main acquisition surface: it books individuals into trips (via M
 ## Key routes
 
 Public pages (all App Router `page.tsx`):
-- `/` — home (hero video, schools/individuals/gear teasers)
-- `/offers` — published-pricing hub. Hero with one pill button per market, then group cards. Each market has its own route: `/offers/schools`, `/offers/organizations`, `/offers/individuals`. All content in `lib/offers-data.ts`; shared shell in `components/offers/OfferGroupPage.tsx`. **Not in the main navbar** — reached from the footer Quick Links, the homepage grid, and an `OfferShowcase` section on each market's own page. Detail rendering is shared via `components/offers/OfferDetail.tsx`. Coexists with the quote-based flows rather than replacing them — see `context/decisions.md`.
-- `/about`, `/individuals`, `/organizations` — light marketing pages. `/individuals` and `/organizations` each carry an `OfferShowcase` section (compact offer cards that expand into a modal), as does `/schools`.
+- `/` — home (hero video, schools/community/gear teasers)
+- `/offers` — published-pricing hub. Hero with one pill button per market, then group cards. Each market has its own route: `/offers/schools`, `/offers/organizations`, `/offers/community`. All content in `lib/offers-data.ts`; shared shell in `components/offers/OfferGroupPage.tsx`. **Not in the main navbar** — reached from the footer Quick Links, the homepage grid, and an `OfferShowcase` section on each market's own page. Detail rendering is shared via `components/offers/OfferDetail.tsx`. Coexists with the quote-based flows rather than replacing them — see `context/decisions.md`.
+- `/about`, `/organizations` — light marketing pages. `/organizations` carries an `OfferShowcase` section (compact offer cards that expand into a modal), as do `/schools` and `/community`.
+- `/community` — **The African Dream Community**, which **replaced `/individuals` on 14/10/2026** (308 redirects from `/individuals/*` and `/offers/individuals/*` in `next.config.mjs`). "Individuals" is gone from every audience label, link, route and the offers group; general prose that uses "individuals" to mean people (gear rental, About, Terms, site OG) was deliberately left alone. Content in `lib/community.ts`, from the team's page document. Full-screen video hero modelled on the homepage gateway; three "Events we've hosted" gallery slots (`EVENT_SLOTS`) that show "Explore Gallery" on hover and open a native `<dialog>` — September Camp Night plus two placeholders, all with empty `photos` until the founders say which photos belong to which event. **Join the Community → Instagram `@africandream_ng`**; the WhatsApp line is the same `0704 053 8528` as the event pages, and still not in `CONTACT`.
 - `/schools` — hub. Its Duke of Edinburgh callout is **hidden** while `DOE_ENABLED` is false.
 - `/schools/international-award` — **hidden** (307s to `/schools`). Full DoE page with 4-question assessment → `/api/assessment-lead`. Q3 (group size) is a free integer; phone is required on the capture phase. **Sells the school offers** (Field Day / Campus Expedition / Outdoor Year) via `OfferShowcase`; Q4 asks about time commitment and selects one of them. Every result routes to `/schools/international-award/proposal?tier={recommended}`. The Base Camp / Trail Ready / Summit Partner tiers were retired — see `context/decisions.md`.
 - `/schools/international-award/proposal` — **hidden** (307s to `/schools`). Dedicated DoE proposal form for both schools and parents, with package selection (Field Day / Campus Expedition / Outdoor Year / Not sure) → `/api/award-proposal`. Legacy `?tier=base-camp|trail-ready|summit-partner` links deliberately fall through to "Not sure".
@@ -53,7 +54,7 @@ The gear-rental form does **not** use this stack — it talks straight to the qu
 ## External services
 
 - **Resend** — transactional email. Needs `RESEND_API_KEY` env var. From address: `rentals@campingnigeria.com` / similar per route.
-- **Microsoft Forms** — individual trip bookings. URL lives in `lib/constants.ts#BOOKING_FORM_URL`. All "Book Your Spot" CTAs link out — don't re-hardcode it.
+- **Microsoft Forms** — Open Camp seat bookings. URL lives in `lib/constants.ts#BOOKING_FORM_URL`. All "Book Your Spot" CTAs link out — don't re-hardcode it.
 - **Outlook Bookings** — DoE consultation calendar. URL lives in `lib/constants.ts#CALENDAR_BOOKING_URL`. **Cannot be iframed** (X-Frame-Options) — always link-out.
 - **Vercel** — hosting + analytics.
 

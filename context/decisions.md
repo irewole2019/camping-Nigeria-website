@@ -299,7 +299,7 @@ The registered address is declared once in [lib/constants.ts](../lib/constants.t
 
 ## Per-route `opengraph-image.tsx` + `twitter-image.tsx` files using a shared renderer
 
-Each major page (`/`, `/schools`, `/schools/international-award`, the 3 program pages, `/individuals`, `/organizations`, `/gear-rental`, `/about`) has its own `opengraph-image.tsx` and `twitter-image.tsx` pair. Each one calls `renderHeroOgImage()` from [lib/og-image.tsx](../lib/og-image.tsx), which composites the page's hero photo behind a forest-green gradient overlay with the brand pill + share-optimised headline.
+Each major page (`/`, `/schools`, `/schools/international-award`, the 3 program pages, `/community` (formerly `/individuals`), `/organizations`, `/gear-rental`, `/about`) has its own `opengraph-image.tsx` and `twitter-image.tsx` pair. Each one calls `renderHeroOgImage()` from [lib/og-image.tsx](../lib/og-image.tsx), which composites the page's hero photo behind a forest-green gradient overlay with the brand pill + share-optimised headline.
 
 **Why per-route files instead of a single dynamic API route:**
 - It's the App Router file convention. Next picks them up automatically and wires them into the page's metadata — no manual `openGraph.images` override needed.
@@ -607,7 +607,7 @@ Note the one thing that stays hardcoded on purpose: the `font-family:Helvetica,A
 ---
 ## Offers appear twice: compact cards on each market page, full detail on `/offers`
 
-Each market's own marketing page (`/schools`, `/individuals`, `/organizations`) renders `OfferShowcase` — compact feature cards that open the full package in a modal. The dedicated `/offers/<group>` pages still render every package inline via `OfferPackages`.
+Each market's own marketing page (`/schools`, `/community` (formerly `/individuals`), `/organizations`) renders `OfferShowcase` — compact feature cards that open the full package in a modal. The dedicated `/offers/<group>` pages still render every package inline via `OfferPackages`.
 
 **Why two presentations rather than one:** the jobs differ. Someone on `/schools` is being sold the idea and should be able to price a programme without losing their place in the page — hence a modal, not a navigation. Someone on `/offers/schools` arrived to compare packages and wants everything visible, linkable and printable.
 
@@ -906,3 +906,13 @@ So each ticket carries `usesTent`, the site sends it with the row, the sheet sto
 **Why a copy, not a shared event framework.** MAD Settings duplicates Camp Night's module, records, route, components and script rather than generalising them. This repo has made that call three times now (Base Camp Kids → Kiddies Hike → Camp Night → MAD Settings), and the ticket change shows why: each edition differs in a way a shared abstraction would have had to anticipate. If a fifth event arrives with the same shape, that is the point to extract — not before. The one thing reused is `normaliseInstagram`, a pure helper with no event in it.
 
 ---
+
+## "Individuals" became "Community", and the old URLs 308
+
+On 14/10/2026 the founders replaced the Individuals audience with the African Dream Community — a community under Camping Nigeria — everywhere it appears as an audience: navigation, the homepage, the offers group, the contact form and the page itself, now `/community`.
+
+**Permanent redirects, unlike the DoE hide.** `/individuals/*` and `/offers/individuals/*` 308 to `/community/*` and `/offers/community/*`. The DoE redirect is a 307 because that surface is coming back; this one is not, so search engines should move the old pages' standing to the new URLs. Both live in the same `redirects()` in `next.config.mjs`; the rename entries apply whatever `DOE_ENABLED` says.
+
+**Where "individuals" was kept.** The founders chose to leave general prose that uses the word to mean people — "camping equipment for schools, individuals, and organizations", the About page, the Terms, the site-wide OG line. The line drawn: anything that names the *audience* as a destination (a label, link, route, offer group, form option, or a heading listing the three markets) changed; descriptive prose did not. Search the codebase before assuming a remaining "individuals" is a miss.
+
+**The gallery shows nothing it cannot vouch for.** The team supplied 18 community photos without saying which event each came from. They are on the page as general community photography with scene-only alt text, and the three "Events we've hosted" galleries are empty until someone says which photos belong where — attributing a photo to the wrong event would be a public claim about who was there.

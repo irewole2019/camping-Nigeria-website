@@ -6,7 +6,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 
 - **Pages**: `app/<route>/page.tsx` (App Router)
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
-- **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `individuals/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
+- **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `community/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
 - **Feature flags**: `lib/feature-flags.ts`. Use a flag to hide a whole surface rather than deleting it, so it comes back with one edit. Annotate the type (`export const X: boolean = false`) — without it TypeScript narrows to the literal and every downstream `if (X)` becomes a compile error the moment the flag is flipped. Same reason `EVENT_STATUS` routes through `isRegistrationOpen()`.
 - **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/index.ts` (the event registry), `events/base-camp-kids.ts`, `events/kiddies-hike.ts`, `events/camp-night.ts`, `events/camp-night-records.ts`, `events/mad-settings.ts`, `events/mad-settings-records.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:

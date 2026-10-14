@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-10-13
+Last updated: 2026-10-14
 
 ## Company
 
@@ -14,7 +14,7 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
 - **`/offers`** — hub. Hero mirrors the homepage gateway (three pill buttons, one per market), then three parallax group cards, then the shared terms block.
 - **`/offers/schools`** — Field Day (from ₦3,000,000) · The Campus Expedition (from ₦6,000,000) · The Outdoor Year (from ₦12,750,000)
 - **`/offers/organizations`** — The Company Field Day (from ₦3,550,000) · The Leadership Expedition (from ₦5,450,000)
-- **`/offers/individuals`** — Open Camp (₦95,000 per person) · Private Camp (from ₦1,550,000)
+- **`/offers/community`** (was `/offers/individuals`; 308s) — Open Camp (₦95,000 per person) · Private Camp (from ₦1,550,000)
 - Source of truth: [lib/offers-data.ts](../lib/offers-data.ts) — feeds the render, metadata, OG copy, `Service` + `AggregateOffer` JSON-LD and the sitemap. Shared page shell at [components/offers/OfferGroupPage.tsx](../components/offers/OfferGroupPage.tsx); each `page.tsx` is a four-line data lookup.
 - Content transcribed verbatim from `Camping_Nigeria_Offers_1.html` (repo root). CTAs route per market: schools → `/schools/proposal`, organizations → `/contact`, Open Camp → `BOOKING_FORM_URL` (Microsoft Forms), Private Camp → `/contact`.
 - **Navigation:** deliberately *not* in the main navbar — the header already carries five links plus the CTA. `/offers` is reachable from the footer **Quick Links** column (first item) and the homepage "See Offers & Pricing" grid link. Sitemap priority stays 0.9, so header placement does not affect search discoverability. Each group page also carries an `OfferGroupNav` strip so visitors can move sideways between markets without returning to the hub.
@@ -27,7 +27,7 @@ Camping Nigeria is based in **Abuja** — storefront at **Shop No. 17A, Arts and
   - Uses `/images/schools/hero.webp` as the backup poster — shown until first frame paints, or permanently if the video is slow/failed/blocked
   - Wired in [app/page.tsx](../app/page.tsx) to read `/videos/hero-bg.webm` when the browser supports it, falling back to the MP4 in `VIDEO_URL`
 - **Schools** (`/schools`) — hub page. Its Duke of Edinburgh split callout (image right, gold offset border) is **hidden** while `DOE_ENABLED` is false; the component is intact and returns with the flag.
-- **Individuals** (`/individuals`) — light marketing page, "Book Your Spot" → Microsoft Forms
+- **Community** (`/community`, replaced `/individuals` on 14/10/2026; 308s) — the African Dream Community page. Video hero modelled on the homepage gateway; who we are, what we do, an "Events we've hosted" gallery, equipped by Camping Nigeria, why people return, a photo mosaic, the community offers, how to get involved, get in touch. Content in [lib/community.ts](../lib/community.ts). See entry 57.
 - **Organizations** (`/organizations`) — light marketing page
 - **About** (`/about`), **Privacy** (`/privacy-policy`), **Terms** (`/terms`)
 
@@ -278,6 +278,18 @@ Worked through the full code-review punch list plus a follow-up review:
     - **Built to retire cleanly.** Description is an upcoming/past pair from the start; OG subtitles are price-free and tense-neutral; the trust line is behind `SIGNUP_OPEN` — the lessons of entry 55.
     - **The cover is a graphic, not a photo**, so the hero has no overlay gradient, starts below the navbar (the navbar covered "Mad" on mobile), and the date stamp moved bottom-right (top-right sat on the title). Hub card and homepage banner use top-anchored crops (`card.webp`, `banner.webp`) because a centred crop cuts the title off.
     - The "small, known group" safety point was **not** reused — attendance is uncapped, so it would have been false. It reads "a capped sleepover" instead, with a test.
+
+57. ✅ **"Individuals" became "Community" across the site** (14/10/2026). New `/community` page for the African Dream Community, built from the team's `African_Dream_Community_Page.md`, with their hero video (12 MB, 5 s, with audio → 2.0 MB MP4 + 1.8 MB WebM, muted, poster from a mid-clip frame because the clip fades in from black) and 17 of their 18 photos as 1600px WebP (`ddc-191` dropped — near-black). `/individuals` and `/offers/individuals` 308 to their new homes, OG routes included. Renamed: navbar, footer, homepage pills and grid link, the home H2, the `SecondaryAudiences` card (and its image file), the offers group (slug, name, eyebrow, meta), the `/offers` hero/description/OG, the contact-form subject ("Community Events"), sitemap, `lib/media.ts`. The old Individuals page, its four components and its 14 stock images were deleted. Left alone on purpose, at the founders' call: prose using "individuals" to mean people (gear rental, About, Terms, site OG, manifest).
+    - **Past-events gallery**: three slots, "Explore Gallery" on hover/focus (permanently shown on touch screens), opening a native `<dialog>`. September Camp Night + two "Next gallery" placeholders. **All three have no photos yet** — the founders have not said which photos are from which event, so each opens to an honest "Gallery coming soon".
+    - **Join the Community → Instagram**, the founders' choice; the page document's "community channel" was a placeholder and is not published. Facebook has no URL, so it is text.
+    - The page keeps `OfferShowcase` (Open Camp / Private Camp), now "Camp With Us", which the document did not mention — it is the existing market-page convention and the offers group moved with the page.
+
+### Community — what is outstanding
+
+- **Gallery photos.** Tell us which photos belong to September Camp Night (and the events for the other two slots); they go in `EVENT_SLOTS` in `lib/community.ts`.
+- **A real join channel** (WhatsApp group, broadcast channel, form) if Instagram is meant to be temporary — one constant, `JOIN_URL`.
+- **Facebook page URL**, to make the Facebook line a link.
+- **Photo consent** for the people in the community photos, as was done for Kiddies Hike.
 
 ### MAD Settings — what is outstanding
 
