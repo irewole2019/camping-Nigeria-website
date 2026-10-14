@@ -13,10 +13,10 @@ const cards = [
   {
     image: SCHOOLS_SECONDARY_AUDIENCES[0].src,
     alt: SCHOOLS_SECONDARY_AUDIENCES[0].alt,
-    headline: 'Your First Real Outdoor Experience',
-    body: 'Discover structured and accessible camping experiences designed for young adults and adventure seekers.',
-    link: 'Book Your Spot',
-    href: '/individuals',
+    headline: 'Camp. Connect. Celebrate.',
+    body: 'Join the African Dream Community: meet new people, make real friends and step outside the city together. Joining costs nothing.',
+    link: 'Join the Community',
+    href: '/community',
   },
   {
     image: SCHOOLS_SECONDARY_AUDIENCES[1].src,

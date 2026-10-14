@@ -64,7 +64,7 @@ export default function OffersHero() {
               transition={{ duration: 1, ease: premiumEase, delay: 0.25 }}
             >
               Offers for schools, organizations and{' '}
-              <span className="text-brand-accent">individuals</span>
+              <span className="text-brand-accent">our community</span>
             </motion.h1>
           </div>
 

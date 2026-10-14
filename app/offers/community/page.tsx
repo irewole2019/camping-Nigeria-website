@@ -2,12 +2,12 @@ import OfferGroupPage from '@/components/offers/OfferGroupPage'
 import { getOfferGroup } from '@/lib/offers-data'
 import { buildPageMetadata } from '@/lib/seo'
 
-const group = getOfferGroup('individuals')
+const group = getOfferGroup('community')
 
 export const metadata = buildPageMetadata({
   title: group.metaTitle,
   description: group.metaDescription,
-  path: '/offers/individuals',
+  path: '/offers/community',
   keywords: [
     'open camp Nigeria',
     'private camping trip Abuja',
@@ -16,6 +16,6 @@ export const metadata = buildPageMetadata({
   ],
 })
 
-export default function IndividualOffersPage() {
+export default function CommunityOffersPage() {
   return <OfferGroupPage group={group} />
 }

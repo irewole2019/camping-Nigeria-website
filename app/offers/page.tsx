@@ -10,7 +10,7 @@ import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 export const metadata = buildPageMetadata({
   title: 'Offers & Pricing | Camping Nigeria',
   description:
-    'Published packages and prices for Camping Nigeria outdoor programmes — school field days and expeditions, corporate offsites, and open or private camps for individuals.',
+    'Published packages and prices for Camping Nigeria outdoor programmes — school field days and expeditions, corporate offsites, and open or private camps for our community.',
   path: '/offers',
   keywords: [
     'camping packages Nigeria',

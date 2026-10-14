@@ -10,6 +10,6 @@ export default function Image() {
     hero: '/images/schools/media-feature.webp',
     eyebrow: 'Our Offers',
     title: 'Published packages and prices',
-    subtitle: 'Programmes for schools, organizations and individuals.',
+    subtitle: 'Programmes for schools, organizations and our community.',
   })
 }

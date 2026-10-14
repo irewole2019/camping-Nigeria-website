@@ -94,8 +94,19 @@ const nextConfig = {
    * the proposal page, and all four OG and Twitter card routes.
    */
   async redirects() {
-    if (DOE_ENABLED) return []
+    /**
+     * /individuals became /community on 14/10/2026, and its offers group
+     * with it. This one IS permanent (308): unlike the DoE hide it is not
+     * coming back, so search engines should move the old URLs' standing to
+     * the new ones. `:path*` also carries the OG and Twitter card routes.
+     */
+    const renamed = [
+      { source: '/individuals/:path*', destination: '/community/:path*', permanent: true },
+      { source: '/offers/individuals/:path*', destination: '/offers/community/:path*', permanent: true },
+    ]
+    if (DOE_ENABLED) return renamed
     return [
+      ...renamed,
       {
         source: '/schools/international-award/:path*',
         destination: '/schools',

@@ -12,7 +12,7 @@ const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 const SUBJECT_OPTIONS = [
   'General Inquiry',
   'School Programmes',
-  'Individual Camping',
+  'Community Events',
   'Organization Retreats',
   'Gear Rental',
   'Partnership Opportunity',

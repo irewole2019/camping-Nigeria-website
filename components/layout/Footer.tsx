@@ -6,7 +6,7 @@ import { LOGO_URL, CONTACT } from '@/lib/constants'
 const quickLinks = [
   { label: 'Offers', href: '/offers' },
   { label: 'Schools', href: '/schools' },
-  { label: 'Individuals', href: '/individuals' },
+  { label: 'Community', href: '/community' },
   { label: 'Organizations', href: '/organizations' },
   { label: 'Gear Rental', href: '/gear-rental' },
 ]

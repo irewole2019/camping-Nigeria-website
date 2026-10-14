@@ -17,25 +17,13 @@
  *   public/images/schools/program-eco-awareness.webp
  *   public/images/schools/program-leadership.webp
  *   public/images/schools/media-feature.webp
- *   public/images/schools/audience-individuals.webp
+ *   public/images/schools/audience-community.webp
  *   public/images/schools/audience-organizations.webp
  *   public/images/schools/audience-gear-rental.webp
  *   public/images/schools/final-cta.webp
  *
- *   public/images/individuals/hero.webp
- *   public/images/individuals/expect-guided-trails.webp
- *   public/images/individuals/expect-verified-campsites.webp
- *   public/images/individuals/expect-quality-equipment.webp
- *   public/images/individuals/expect-structured-itinerary.webp
- *   public/images/individuals/expect-community.webp
- *   public/images/individuals/gallery-1.webp
- *   public/images/individuals/gallery-2.webp
- *   public/images/individuals/gallery-3.webp
- *   public/images/individuals/gallery-4.webp
- *   public/images/individuals/gallery-5.webp
- *   public/images/individuals/gallery-6.webp
- *   public/images/individuals/gallery-7.webp
- *   public/images/individuals/cta.webp
+ *   public/images/community/*.webp            (photos: see lib/community.ts)
+ *   public/videos/community-hero.{mp4,webm}
  *
  *   public/images/organizations/hero.webp
  *   public/images/organizations/offering-team-building.webp
@@ -94,7 +82,7 @@ export const SCHOOLS_MEDIA_FEATURE = {
 
 export const SCHOOLS_SECONDARY_AUDIENCES = [
   {
-    src: '/images/schools/audience-individuals.webp',
+    src: '/images/schools/audience-community.webp',
     alt: 'Young adults on a camping trip',
   },
   {
@@ -117,77 +105,13 @@ export const SCHOOLS_DOE_CALLOUT = {
   alt: 'Students participating in the Duke of Edinburgh Award expedition',
 }
 
-// ─── Individuals Page ────────────────────────────────────────────────────────
+// ─── Community ───────────────────────────────────────────────────────────────
+// The /community page's own photos live in lib/community.ts; this is only the
+// hero the /offers/community group and its cards borrow.
 
-export const INDIVIDUALS_HERO = {
-  src: '/images/individuals/hero.webp',
-  alt: 'Young adults gathered around a campfire in warm evening light',
-}
-
-export const INDIVIDUALS_EXPECTATIONS = [
-  {
-    src: '/images/individuals/expect-guided-trails.webp',
-    alt: 'Beautiful resort grounds with palm trees and a serene poolside setting',
-  },
-  {
-    src: '/images/individuals/expect-verified-campsites.webp',
-    alt: 'Lush palm garden with outdoor seating areas on manicured grounds',
-  },
-  {
-    src: '/images/individuals/expect-quality-equipment.webp',
-    alt: 'Colorful tents arranged on a wide green field under clear skies',
-  },
-  {
-    src: '/images/individuals/expect-structured-itinerary.webp',
-    alt: 'Group following a structured hiking itinerary',
-  },
-  {
-    src: '/images/individuals/expect-community.webp',
-    alt: 'Community of friends gathered outdoors',
-  },
-]
-
-export const INDIVIDUALS_GALLERY = [
-  {
-    src: '/images/individuals/gallery-1.webp',
-    alt: 'Friends gathered around a glowing campfire at night',
-    className: 'row-span-2',
-  },
-  {
-    src: '/images/individuals/gallery-2.webp',
-    alt: 'Young adults hiking through a forest trail',
-    className: '',
-  },
-  {
-    src: '/images/individuals/gallery-3.webp',
-    alt: 'Tent pitched at sunrise in a clearing',
-    className: '',
-  },
-  {
-    src: '/images/individuals/gallery-4.webp',
-    alt: 'Group of campers laughing and connecting outdoors',
-    className: 'row-span-2',
-  },
-  {
-    src: '/images/individuals/gallery-5.webp',
-    alt: 'Hiker standing on a ridge overlooking a valley',
-    className: '',
-  },
-  {
-    src: '/images/individuals/gallery-6.webp',
-    alt: 'Camping gear neatly arranged on a wooden surface',
-    className: '',
-  },
-  {
-    src: '/images/individuals/gallery-7.webp',
-    alt: 'Stars over a campsite in the wilderness',
-    className: '',
-  },
-]
-
-export const INDIVIDUALS_CTA = {
-  src: '/images/individuals/cta.webp',
-  alt: '',
+export const COMMUNITY_OFFERS_HERO = {
+  src: '/images/community/081a0122.webp',
+  alt: 'Community members sitting in a wide circle of chairs on the grass, with colourful tents pitched behind them',
 }
 
 // ─── Organizations Page ──────────────────────────────────────────────────────

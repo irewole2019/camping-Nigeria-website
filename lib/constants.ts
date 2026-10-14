@@ -24,7 +24,7 @@ export const CONTACT = {
   },
 } as const
 
-/** Microsoft Forms booking form for individual trip seats — always link out */
+/** Microsoft Forms booking form for Open Camp seats (/offers/community) — always link out */
 export const BOOKING_FORM_URL = 'https://forms.office.com/r/bgsZ4shNxD'
 
 /** Outlook Bookings "Book With Me" scheduling link (cannot be iframe-embedded — open in new tab) */

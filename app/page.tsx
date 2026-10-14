@@ -20,7 +20,7 @@ export const metadata = buildPageMetadata({
 const NAV_BUTTONS = [
   { label: 'Schools', href: '/schools' },
   { label: 'Organizations', href: '/organizations' },
-  { label: 'Individuals', href: '/individuals' },
+  { label: 'Community', href: '/community' },
 ]
 
 export default function GatewayPage() {
@@ -97,7 +97,7 @@ export default function GatewayPage() {
       <section className="bg-brand-dark text-white py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-serif text-3xl md:text-4xl font-bold leading-tight max-w-3xl">
-            Outdoor Programmes in Nigeria for Schools, Organizations, and Individuals
+            Outdoor Programmes in Nigeria for Schools, Organizations, and Our Community
           </h2>
           <p className="mt-4 max-w-3xl text-white/75 leading-relaxed text-base md:text-lg">
             Camping Nigeria designs structured outdoor experiences that build confidence,
@@ -139,10 +139,10 @@ export default function GatewayPage() {
               Plan an Organization Retreat
             </Link>
             <Link
-              href="/individuals"
+              href="/community"
               className="rounded-xl border border-white/15 bg-white/5 px-5 py-4 hover:bg-white/10 transition-colors duration-200"
             >
-              Join an Individuals Camp
+              Join the African Dream Community
             </Link>
             <Link
               href="/about"

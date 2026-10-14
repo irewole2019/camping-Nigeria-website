@@ -12,14 +12,14 @@
  */
 
 import {
-  INDIVIDUALS_HERO,
+  COMMUNITY_OFFERS_HERO,
   ORGANIZATIONS_HERO,
   SCHOOLS_HERO,
   SCHOOLS_MEDIA_FEATURE,
 } from '@/lib/media'
 import { BOOKING_FORM_URL } from '@/lib/constants'
 
-export type OfferGroupSlug = 'schools' | 'organizations' | 'individuals'
+export type OfferGroupSlug = 'schools' | 'organizations' | 'community'
 
 export interface OfferFact {
   /** Short column label, e.g. 'Group size' */
@@ -316,20 +316,20 @@ const ORGANIZATIONS: OfferGroup = {
   ],
 }
 
-// ─── Individuals ────────────────────────────────────────────────────────────
+// ─── Community ──────────────────────────────────────────────────────────────
 
-const INDIVIDUALS: OfferGroup = {
-  slug: 'individuals',
-  name: 'Individuals',
-  eyebrow: 'Offers for Individuals',
+const COMMUNITY: OfferGroup = {
+  slug: 'community',
+  name: 'Community',
+  eyebrow: 'Offers for the Community',
   teaser:
     'Camping without owning any of it. Join a scheduled camp, or bring your own group.',
   intro:
     'Camping without owning any of it. Bring clothes and a toothbrush. We handle the rest.',
   packagesIntro:
     'Buy a single seat on a camp we have already scheduled, or take a date for your own group. Both include every piece of gear, all meals, and supervision through the night.',
-  hero: INDIVIDUALS_HERO,
-  metaTitle: 'Individual Camping Offers & Prices | Camping Nigeria',
+  hero: COMMUNITY_OFFERS_HERO,
+  metaTitle: 'Community Camping Offers & Prices | Camping Nigeria',
   metaDescription:
     'Join an Open Camp from ₦95,000 per person, or book a Private Camp for your own group from ₦1,550,000. All gear, meals and supervision included.',
   serviceType: 'Guided camping experience',
@@ -416,7 +416,7 @@ const INDIVIDUALS: OfferGroup = {
 
 // ─── Registry ───────────────────────────────────────────────────────────────
 
-export const OFFER_GROUPS: OfferGroup[] = [SCHOOLS, ORGANIZATIONS, INDIVIDUALS]
+export const OFFER_GROUPS: OfferGroup[] = [SCHOOLS, ORGANIZATIONS, COMMUNITY]
 
 /** Hero for the /offers hub itself — a wide landscape, not one market's photo. */
 export const OFFERS_HUB_HERO = SCHOOLS_MEDIA_FEATURE

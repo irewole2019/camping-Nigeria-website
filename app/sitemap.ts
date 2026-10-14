@@ -54,10 +54,10 @@ const ROUTES: RouteEntry[] = [
     image: `${SITE_URL}/images/organizations/hero.webp`,
   },
   {
-    path: '/offers/individuals',
+    path: '/offers/community',
     changeFrequency: 'weekly',
     priority: 0.85,
-    image: `${SITE_URL}/images/individuals/hero.webp`,
+    image: `${SITE_URL}/images/community/081a0122.webp`,
   },
   { path: '/schools', changeFrequency: 'weekly', priority: 0.9, image: `${SITE_URL}/images/schools/hero.webp` },
   {
@@ -92,10 +92,10 @@ const ROUTES: RouteEntry[] = [
   },
   { path: '/schools/proposal', changeFrequency: 'monthly', priority: 0.6 },
   {
-    path: '/individuals',
+    path: '/community',
     changeFrequency: 'weekly',
     priority: 0.8,
-    image: `${SITE_URL}/images/individuals/hero.webp`,
+    image: `${SITE_URL}/images/community/081a0122.webp`,
   },
   {
     path: '/organizations',
