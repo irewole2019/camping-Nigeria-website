@@ -497,4 +497,9 @@ When a session fails: stop dependent sessions, keep notes without guest data, co
 
 ## 10. TOOLING CURRENCY AND SOURCES
 
-No live research run this session. To record in Session 0.1: `html5-qrcode` version and publish date; `qrcode` and `@types/qrcode` versions. Carried from Stage 1: html5-qrcode supports iOS Safari 15.1+ over HTTPS (https://classic.yarnpkg.com/en/package/html5-qrcode, checked 2026-10-14). Still to confirm in practice: Apps Script quotas on a personal account (watch during Session 1.2 timing), Resend plan limits for normal sign-up volume.
+Recorded in Session 0.1 (npm registry, checked 2026-10-17):
+- `html5-qrcode` 2.3.8, published 2023-04-15; no release since. README says the project is "in maintenance mode until further notice": no bug fixes, PRs not merged. Repo not archived, 448 open issues.
+- `qrcode` 1.5.4, published 2024-08-05. Mature and widely used; slow release cadence.
+- `@types/qrcode` 1.5.6, published 2025-10-24 (DefinitelyTyped).
+
+Carried from Stage 1: html5-qrcode supports iOS Safari 15.1+ over HTTPS (https://classic.yarnpkg.com/en/package/html5-qrcode, checked 2026-10-14). Still to confirm in practice: Apps Script quotas on a personal account (watch during Session 1.2 timing), Resend plan limits for normal sign-up volume.
