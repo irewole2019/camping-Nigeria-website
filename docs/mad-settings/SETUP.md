@@ -112,7 +112,9 @@ Three ways to check one at the gate:
 **Checked In?** starts at `No` and **Tent ID** starts blank; both are yours
 to fill in at the gate. Tent ID is for the number on the tent's tag, so each
 code maps to a tent for cleaning and damage checks (an idea from the Camp
-Night debrief). The script never touches a row once it's written.
+Night debrief). The script never touches a row once it's written, with one
+exception: a Padi Check scan writes the arrival time into **Checked In?**
+(see "Padi Check" below).
 
 **Don't edit the `Tent?` column.** It is what the 80-tent cap counts.
 
@@ -124,6 +126,40 @@ Editing the code does **not** change the live URL by itself. Use
 **Deploy → Manage deployments → the pencil icon → New version → Deploy** to
 push changes to the same URL. Creating a *new deployment* instead gives you a
 different URL, and you'd have to update Vercel again.
+
+---
+
+## Padi Check (gate check-in)
+
+The script also answers the Padi Check scanner at the gate. The website asks
+it to check a code, and the script either writes the arrival time into
+**Checked In?** (`welcome`) or answers `already`, `not-found` or `not-paid`.
+Every answer except `welcome` is added to a **Scan log** tab, so you can see
+afterwards which codes were turned away. These requests must carry a shared
+secret; without it the script answers `unauthorised` and changes nothing.
+
+One-time setup, in the Apps Script editor:
+
+1. Paste in the new `apps-script.gs` and save.
+2. **Project Settings** (gear icon, left) → **Time zone** →
+   **(GMT+01:00) Lagos**.
+3. Still in Project Settings → **Script Properties** → **Add script property**:
+   - Property: `PADI_CHECK_SECRET`
+   - Value: the same secret the website has as `PADI_CHECK_SCRIPT_SECRET`.
+4. Back in the editor, pick **`setupPadiCheck`** in the function dropdown and
+   click **Run**. A **Scan log** tab appears in the sheet.
+5. **Deploy → New deployment → Web app** (Execute as: Me, Access: Anyone).
+   This makes a **separate test URL** for building and testing. Put it in
+   `.env.local` as `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL`.
+
+**Leave the existing deployment alone until go-live.** The live site keeps
+using the old URL, on the old version, so sign-ups are unaffected while
+Padi Check is being built. At go-live, switch the existing deployment to the
+new version (see "If you redeploy the script later"), so its URL stays the
+same and Vercel needs no change.
+
+If the Script Property is missing or empty, every Padi Check request is
+refused. Sign-ups are not affected either way.
 
 ---
 

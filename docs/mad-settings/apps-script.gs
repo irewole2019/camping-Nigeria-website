@@ -34,6 +34,15 @@
  * { ok: false, error: 'duplicate-code' }. The site then retries with a fresh
  * code. Without this, a collision would silently give two campers the same
  * code and there would be no way to tell them apart on the night.
+ *
+ * PADI CHECK (the gate check-in tool, bottom of this file). A POST carrying
+ * `action` — `checkin`, `stats` or `roster` — is a gate request and never
+ * reaches the sign-up code. It must also carry `secret`, which has to match
+ * the Script Property PADI_CHECK_SECRET, or it gets `unauthorised`. To set up:
+ * Project Settings -> time zone (GMT+01:00) Lagos, add the Script Property
+ * PADI_CHECK_SECRET, run `setupPadiCheck()` once (it makes the Scan log tab).
+ * `checkin` is the one place this script edits a row after writing it: it
+ * puts the arrival time in Checked In?. Details in SETUP.md, "Padi Check".
  */
 
 const SHEET_NAME = 'Sign-ups'
@@ -161,6 +170,12 @@ function doPost(e) {
     const body = JSON.parse(e.postData.contents)
     const sheet = getOrCreateSheet()
 
+    // Padi Check. A body carrying `action` comes from the gate, never from the
+    // sign-up form, and stops here; a body without one runs the sign-up code
+    // below exactly as before. Still inside the lock, so two scans of one code
+    // cannot both come back `welcome`.
+    if (body.action) return jsonOut(handlePadiCheck(body, sheet))
+
     if (!body.code) return jsonOut({ ok: false, error: 'missing-code' })
 
     // Capacity, for tent tickets only. Checked before the duplicate guard so a
@@ -285,4 +300,179 @@ function columnLetter(n) {
 function setup() {
   getOrCreateSheet()
   setupLookupTab()
+}
+
+// ---------------------------------------------------------------------------
+// Padi Check — gate check-in (usl-build/7-prd.md, R-001)
+// ---------------------------------------------------------------------------
+
+const SCAN_LOG_SHEET_NAME = 'Scan log'
+const SCAN_LOG_HEADERS = ['Timestamp', 'Code', 'Status', 'Name']
+
+// 1-indexed, looked up from HEADERS so they cannot drift from it.
+const NAME_COLUMN = HEADERS.indexOf('Name') + 1
+const TICKET_COLUMN = HEADERS.indexOf('Ticket') + 1
+const PAID_COLUMN = HEADERS.indexOf('Paid?') + 1
+const CHECKED_IN_COLUMN = HEADERS.indexOf('Checked In?') + 1
+
+/**
+ * Routes a gate request. Every action needs the shared secret, held in the
+ * Script Property PADI_CHECK_SECRET and in the website's env as
+ * PADI_CHECK_SCRIPT_SECRET. If the property is missing or empty, every
+ * action is refused, so a half-configured script fails closed.
+ */
+function handlePadiCheck(body, sheet) {
+  const secret = PropertiesService.getScriptProperties().getProperty('PADI_CHECK_SECRET')
+  if (!secret || typeof body.secret !== 'string' || body.secret !== secret) {
+    return { ok: false, error: 'unauthorised' }
+  }
+
+  if (body.action === 'checkin') return padiCheckIn(sheet, body.code)
+  if (body.action === 'stats') {
+    const counts = countArrivals(sheet)
+    return { ok: true, checkedIn: counts.checkedIn, total: counts.total }
+  }
+  if (body.action === 'roster') return { ok: true, roster: padiRoster(sheet) }
+  return { ok: false, error: 'unknown-action' }
+}
+
+/**
+ * Marks a code as arrived. Answers one of four statuses; only `welcome`
+ * writes to Sign-ups, and every other status is appended to the Scan log.
+ * The response never carries email, phone, Instagram or price.
+ */
+function padiCheckIn(sheet, code) {
+  if (!code) return { ok: false, error: 'missing-code' }
+
+  const row = findRowByCode(sheet, code)
+  if (row === -1) {
+    logScan(code, 'not-found', '')
+    return withCounts(sheet, { ok: true, status: 'not-found' })
+  }
+
+  const values = sheet.getRange(row, 1, 1, HEADERS.length).getValues()[0]
+  const guest = {
+    name: String(values[NAME_COLUMN - 1]),
+    ticket: String(values[TICKET_COLUMN - 1]),
+    usesTent: isYes(values[TENT_COLUMN - 1]),
+  }
+
+  if (!isYes(values[PAID_COLUMN - 1])) {
+    logScan(code, 'not-paid', guest.name)
+    return withCounts(sheet, Object.assign({ ok: true, status: 'not-paid' }, guest))
+  }
+
+  const checkedIn = values[CHECKED_IN_COLUMN - 1]
+  if (hasArrived(checkedIn)) {
+    logScan(code, 'already', guest.name)
+    return withCounts(
+      sheet,
+      Object.assign({ ok: true, status: 'already', checkedInAt: formatArrival(checkedIn) }, guest),
+    )
+  }
+
+  const now = lagosNow()
+  sheet.getRange(row, CHECKED_IN_COLUMN).setValue(now)
+  return withCounts(sheet, Object.assign({ ok: true, status: 'welcome', checkedInAt: now }, guest))
+}
+
+/** Paid rows only, and only the four fields the printed gate list needs. */
+function padiRoster(sheet) {
+  const last = sheet.getLastRow()
+  if (last < 2) return []
+  const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+  const out = []
+  for (let i = 0; i < rows.length; i += 1) {
+    const r = rows[i]
+    if (!isYes(r[PAID_COLUMN - 1])) continue
+    out.push({
+      name: String(r[NAME_COLUMN - 1]),
+      code: String(r[CODE_COLUMN - 1]),
+      ticketLabel: String(r[TICKET_COLUMN - 1]),
+      usesTent: isYes(r[TENT_COLUMN - 1]),
+    })
+  }
+  return out
+}
+
+/**
+ * checkedIn: rows whose Checked In? is neither blank nor `No`.
+ * total: rows with Paid? = Yes.
+ */
+function countArrivals(sheet) {
+  const last = sheet.getLastRow()
+  if (last < 2) return { checkedIn: 0, total: 0 }
+  const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+  let checkedIn = 0
+  let total = 0
+  for (let i = 0; i < rows.length; i += 1) {
+    if (hasArrived(rows[i][CHECKED_IN_COLUMN - 1])) checkedIn += 1
+    if (isYes(rows[i][PAID_COLUMN - 1])) total += 1
+  }
+  return { checkedIn: checkedIn, total: total }
+}
+
+function withCounts(sheet, result) {
+  const counts = countArrivals(sheet)
+  result.checkedIn = counts.checkedIn
+  result.total = counts.total
+  return result
+}
+
+function isYes(v) {
+  return String(v).trim().toLowerCase() === 'yes'
+}
+
+function hasArrived(v) {
+  const s = String(v).trim().toLowerCase()
+  return s !== '' && s !== 'no'
+}
+
+function lagosNow() {
+  return Utilities.formatDate(new Date(), 'Africa/Lagos', "yyyy-MM-dd'T'HH:mm:ss")
+}
+
+/**
+ * Sheets may turn the written ISO string into a date, and a time typed by
+ * hand certainly will. Either way, send back the same string shape.
+ */
+function formatArrival(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, 'Africa/Lagos', "yyyy-MM-dd'T'HH:mm:ss")
+  return String(v)
+}
+
+function getOrCreateScanLog() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet()
+  let sheet = ss.getSheetByName(SCAN_LOG_SHEET_NAME)
+  if (!sheet) sheet = ss.insertSheet(SCAN_LOG_SHEET_NAME)
+  if (sheet.getLastRow() === 0) {
+    sheet
+      .getRange(1, 1, 1, SCAN_LOG_HEADERS.length)
+      .setValues([SCAN_LOG_HEADERS])
+      .setFontWeight('bold')
+      .setBackground('#0e3e2e')
+      .setFontColor('#ffffff')
+    sheet.setFrozenRows(1)
+    sheet.setColumnWidth(1, 160)
+    sheet.setColumnWidth(2, 130)
+    sheet.setColumnWidth(3, 100)
+    sheet.setColumnWidth(4, 200)
+  }
+  return sheet
+}
+
+/**
+ * A not-found code is whatever was scanned or typed, so it is capped in
+ * length and kept from starting with = + - @, which Sheets would read as a
+ * formula.
+ */
+function logScan(code, status, name) {
+  let safe = String(code).trim().slice(0, 40)
+  if (/^[=+\-@]/.test(safe)) safe = "'" + safe
+  getOrCreateScanLog().appendRow([new Date(), safe, status, name])
+}
+
+/** Run once after pasting this version: creates the Scan log tab. */
+function setupPadiCheck() {
+  getOrCreateScanLog()
 }
