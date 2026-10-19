@@ -18,11 +18,11 @@ Use a universal payment-control policy, lightweight organization verification be
 
 Three approaches were considered:
 
-| Approach | Strength | Limitation |
-|---|---|---|
-| Messaging and contract changes only | Fast to introduce | Staff can still execute a prohibited transfer; identity and approval evidence remain weak |
-| Policy, organization verification and refund controls | Addresses the reported mechanism and supports legitimate exceptions | Needs named ownership and modest software work; recommended |
-| Extensive financial KYC before every quote | Collects more information early | Adds friction and sensitive data without necessarily stopping refund diversion |
+| Approach                                              | Strength                                                            | Limitation                                                                                |
+| ----------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Messaging and contract changes only                   | Fast to introduce                                                   | Staff can still execute a prohibited transfer; identity and approval evidence remain weak |
+| Policy, organization verification and refund controls | Addresses the reported mechanism and supports legitimate exceptions | Needs named ownership and modest software work; recommended                               |
+| Extensive financial KYC before every quote            | Collects more information early                                     | Adds friction and sensitive data without necessarily stopping refund diversion            |
 
 The objective is an auditable chain linking the contracting organization, authorized people, invoice, actual payment source and permitted refund destination. KYC alone does not establish that a refund instruction is legitimate.
 
@@ -61,15 +61,15 @@ Collect organization name/type, contact name/role, email, phone and booking requ
 
 Create a reusable organization profile and verify:
 
-| Information | Purpose and verification |
-|---|---|
-| Legal name, trading/school name and address | Identify the contracting entity and school operator |
-| Registration or establishment evidence appropriate to entity type | Check the entity; do not require every public school or other entity to have an identical CAC document |
-| Booking representative's name, role and authority | Establish who may negotiate and place the booking |
-| Finance contact and authorized signatory | Establish who receives financial records and may approve changes |
-| Bank, account number and account holder | Establish the intended payment source and ownership |
-| Evidence connecting differing legal, school and bank names | Resolve a legitimate mismatch rather than automatically rejecting it |
-| Acceptance of the applicable agreement and payment policy | Record the accepting person's identity, role, date and exact document version |
+| Information                                                                                                       | Purpose and verification                                                                               |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Legal name, trading/school name and address                                                                       | Identify the contracting entity and school operator                                                    |
+| Registration or establishment evidence appropriate to entity type                                                 | Check the entity; do not require every public school or other entity to have an identical CAC document |
+| Booking representative's name, role and authority                                                                 | Establish who may negotiate and place the booking                                                      |
+| Finance contact and authorized signatory (principal or proprietor or head of the company and contact information) | Establish who receives financial records and may approve changes                                       |
+| Bank, account number and account holder                                                                           | Establish the intended payment source and ownership                                                    |
+| Evidence connecting differing legal, school and bank names                                                        | Resolve a legitimate mismatch rather than automatically rejecting it                                   |
+| Acceptance of the applicable agreement and payment policy                                                         | Record the accepting person's identity, role, date and exact document version                          |
 
 Confirm organizational authority through an independently sourced school/organization contact or existing trusted relationship. A second email address supplied by the same requester is not independent verification. A corporate email domain helps but is not proof; a school using Gmail needs an alternative verification path.
 
@@ -115,7 +115,7 @@ Verification and acceptance of booking terms should be mandatory for all organiz
 If commercially justified, test an **institutional booking discount**:
 
 - Apply it visibly to the school's invoice before payment; never pay it as cash or a personal rebate.
-- Proposed eligibility: the first qualifying booking per verified legal entity, with an eligible service subtotal strictly above ₦1 million before this discount and VAT. Exclude refundable deposits and pass-through expenses from threshold calculations.
+- Proposed eligibility: the first qualifying booking per verified legal entity, with an eligible service subtotal strictly above ₦1.1 million before this discount and VAT. Exclude refundable deposits and pass-through expenses from threshold calculations.
 - Require completed registration and authorized agreement acceptance before the final invoice.
 - Define eligible services, offer dates, a fixed pilot budget, combination with other offers, and how related bookings are treated. Prevent duplicate organizations and booking splits from creating repeat discounts.
 - Recalculate eligibility on material booking changes before confirming revised terms. Refund calculations must reflect actual payments and the documented discounted price, without inventing a retrospective penalty.
@@ -127,12 +127,12 @@ Recommended decision: implement controls immediately; approve any discount as a 
 
 ## 5. Internal responsibilities and incident handling
 
-| Role | Responsibility |
-|---|---|
+| Role                      | Responsibility                                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Sales/booking coordinator | Collect details, communicate policy, create the quote; cannot approve their own refund or account change |
-| Finance/preparer | Verify settled receipts and source, calculate eligible amount, prepare refund record |
-| Independent approver | Check entitlement, original source and supporting evidence before release |
-| Director/owner | Resolve exceptions and suspicious requests; review recurring patterns |
+| Finance/preparer          | Verify settled receipts and source, calculate eligible amount, prepare refund record                     |
+| Independent approver      | Check entitlement, original source and supporting evidence before release                                |
+| Director/owner            | Resolve exceptions and suspicious requests; review recurring patterns                                    |
 
 People may hold multiple operational roles in a small team, but the same person must not both prepare and approve an outgoing refund. Apply separation in the business bank's payment permissions where supported; an application approval alone does not control a bank transfer.
 
@@ -140,7 +140,7 @@ For an incident: stop the proposed redirection, preserve the request and transac
 
 Reject inflated invoices, fictitious service lines and undisclosed personal commissions. Any legitimate referral arrangement needs a separate documented basis, conflict review and disclosure; it cannot serve as an alternative route for an organizational refund.
 
-Ask counsel to determine whether Camping Nigeria's actual activities bring it within SCUML obligations and what additional due diligence, retention or reporting would follow. SCUML's 2025 service-level document includes hotels and hospitality businesses; that alone does not establish Camping Nigeria's classification. [SCUML service-level agreement](https://scumlportal.efcc.gov.ng/SERVICE%20LEVEL%20AGREEMENT.pdf).
+Ask counsel to determine whether Camping Nigeria's actual activities bring it within SCUML obligations and what additional due diligence, retention or reporting would follow. SCUML's 2025 service-level document includes hotels and hospitality businesses; that alone does not establish Camping Nigeria's classification. [SCUML service-level agreement](<https://scumlportal.efcc.gov.ng/SERVICE%20LEVEL%20AGREEMENT.pdf>).
 
 ## 6. Existing implementation and proposed changes
 
@@ -170,13 +170,13 @@ Audit records should identify real actors and preserve earlier values; authorize
 
 Indicative sequence; software effort depends on a focused implementation assessment.
 
-| Phase | Deliverable | Owner | Completion evidence |
-|---|---|---|---|
-| First 1–2 working days | Adopt return-to-source handling, two-person bank approval and restricted refund register; review pending requests | Owner + finance | Every pending refund has a known source, documented entitlement and an independent reviewer |
-| First week | Review legal wording, verify active organizational customers, agree responsibilities, define discount economics | Operations + counsel + owner | Approved policy and forms; active bookings have verified finance contacts; discount decision recorded |
-| Next implementation cycle | Named access, organization onboarding, acceptance and source-account records | Engineering + operations | End-to-end staging evidence across both school and rental flows |
-| Following cycle | Refund workflow, exceptions, notifications and reconciliation reports | Engineering + finance | Bank/provider process rehearsed, permissions and failure cases verified |
-| After 30 days of use | Review control adherence and customer friction | Owner + finance | Evidence-based decision on process changes and any discount pilot |
+| Phase                     | Deliverable                                                                                                       | Owner                        | Completion evidence                                                                                   |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| First 1–2 working days   | Adopt return-to-source handling, two-person bank approval and restricted refund register; review pending requests | Owner + finance              | Every pending refund has a known source, documented entitlement and an independent reviewer           |
+| First week                | Review legal wording, verify active organizational customers, agree responsibilities, define discount economics   | Operations + counsel + owner | Approved policy and forms; active bookings have verified finance contacts; discount decision recorded |
+| Next implementation cycle | Named access, organization onboarding, acceptance and source-account records                                      | Engineering + operations     | End-to-end staging evidence across both school and rental flows                                       |
+| Following cycle           | Refund workflow, exceptions, notifications and reconciliation reports                                             | Engineering + finance        | Bank/provider process rehearsed, permissions and failure cases verified                               |
+| After 30 days of use      | Review control adherence and customer friction                                                                    | Owner + finance              | Evidence-based decision on process changes and any discount pilot                                     |
 
 Before release, verify at least these scenarios:
 

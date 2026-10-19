@@ -25,7 +25,7 @@ The site is built and run by the three founders:
 | **Kehinde** | Sales to schools and organizations, customer service |
 | **Toyosi** | Operations, maintenance, events |
 
-Goals and monthly outcomes for each person live in `docs/focus-plan/2026-q4-focus-plan.md`, which is committed now that the repo is private.
+Goals and monthly outcomes for each person live in `docs/focus-plan/2026-q4-focus-plan.md`.
 
 When a decision is listed as "Leadership team" below, raise it in whatever channel the three of them use to sync — don't default to just the commit author.
 
