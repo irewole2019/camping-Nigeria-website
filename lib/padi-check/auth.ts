@@ -1,11 +1,29 @@
+import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { SESSION_COOKIE, SESSION_TTL_SECONDS, verifySession, type PadiSession } from './session'
 
-/** The caller's Padi Check session, or null. */
+/** The caller's Padi Check session, or null. For route handlers. */
 export function readSession(request: NextRequest): PadiSession | null {
   const secret = process.env.PADI_CHECK_SESSION_SECRET
   if (!secret) return null
   return verifySession(request.cookies.get(SESSION_COOKIE)?.value, secret)
+}
+
+/** The same, for server components (pages). */
+export async function getPageSession(): Promise<PadiSession | null> {
+  const secret = process.env.PADI_CHECK_SESSION_SECRET
+  if (!secret) return null
+  return verifySession((await cookies()).get(SESSION_COOKIE)?.value, secret)
+}
+
+/**
+ * The `tel:` link behind "Call Toyosi", built from PADI_CHECK_CALL_PHONE.
+ * Only ever rendered into a page for a signed-in session; the number is
+ * never committed. Null if unset, and the button is then left out.
+ */
+export function callHref(): string | null {
+  const phone = process.env.PADI_CHECK_CALL_PHONE?.replace(/[^\d+]/g, '')
+  return phone ? `tel:${phone}` : null
 }
 
 export function sessionCookie(token: string) {

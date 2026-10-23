@@ -252,7 +252,11 @@ describe('Padi Check gate memory', () => {
     const sheet = fakeSheet()
     await refreshRoster(store, sheet.client, NOW)
 
-    expect((await checkCode(BAYO, { store, sheet: sheet.client })).result.status).toBe('not-paid')
+    sheet.rows.get(ADA)!.arrived = '2026-10-31T18:00:00' // in the sheet, not yet in memory
+    const unpaid = (await checkCode(BAYO, { store, sheet: sheet.client })).result
+    expect(unpaid.status).toBe('not-paid')
+    expect(unpaid.checkedIn).toBe(0) // the memory's count, not the sheet's 1
+    sheet.rows.get(ADA)!.arrived = undefined
     expect((await checkCode('MAD-ZZZZZZ', { store, sheet: sheet.client })).result.status).toBe('not-found')
 
     sheet.rows.set(LATE, { name: 'Late', ticket: 'Attendance only (no tent)', usesTent: false, paid: true })

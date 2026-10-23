@@ -123,10 +123,14 @@ export async function checkCode(
   }
 
   const r = await sheet.checkIn(code)
-  if (store && (r.status === 'welcome' || r.status === 'already')) {
+  if (store && r.status !== 'offline') {
     try {
-      await store.addGuest(code, { name: r.name ?? '', ticket: r.ticket ?? '', usesTent: r.usesTent === true })
-      await store.markArrived(code, r.checkedInAt ?? lagosTime(deps.now))
+      if (r.status === 'welcome' || r.status === 'already') {
+        await store.addGuest(code, { name: r.name ?? '', ticket: r.ticket ?? '', usesTent: r.usesTent === true })
+        await store.markArrived(code, r.checkedInAt ?? lagosTime(deps.now))
+      }
+      // One source for the count: once the list is in memory, the memory's,
+      // so the number on screen does not jump between memory and sheet.
       return { result: { ...r, ...(await countsOr(store, r)) }, background }
     } catch (err) {
       console.error('[padi-check] could not remember a sheet answer:', err)

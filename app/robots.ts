@@ -6,7 +6,8 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/'],
+        // /padi-check is the gate tool: also noindex in its layout (R-012).
+        disallow: ['/api/', '/padi-check'],
       },
     ],
     host: 'https://www.campingnigeria.com',
