@@ -3,7 +3,7 @@
 **Project:** Padi Check (internal event check-in tool; formerly "Event QR Check-in")
 **Mode:** student
 **Terminal stage:** 8 (default)
-**Last updated:** 2026-10-18
+**Last updated:** 2026-10-23
 
 **North star (one paragraph):**
 Camping Nigeria's single gate operative currently "checks" event sign-up codes (SCN-, MAD-XXXXXX) by glancing
@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** Session 0.1 done 2026-10-18 (volunteer phone still to confirm). Session 1.1 done 2026-10-18. Next: Session 1.2, put the script on a TEST deployment (manual, owner Google account).
+**Next action:** Session 0.1 done 2026-10-18; volunteer phone decided 2026-10-23: not fixed, Padi Check must work on both the Android and the iPhone (test both in 1.5 and 3.2). Session 1.1 done 2026-10-18. Next: Session 1.2, put the script on a TEST deployment (manual, owner Google account).
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
