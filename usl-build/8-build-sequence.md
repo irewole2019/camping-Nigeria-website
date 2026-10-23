@@ -250,14 +250,16 @@ Parallel lanes are safe because the paired sessions touch different files, but a
 **Execution mode:** MANUAL
 
 **Execution procedure:**
-1. Vercel, Project, Settings, Environment Variables: add all six Padi Check variables for **Preview** only, and set Preview's `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` to the TEST URL. Leave Production unchanged.
+1. Vercel, Project, Settings, Environment Variables: add all six Padi Check variables for **Preview** only, and set Preview's `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` to the TEST URL. Leave Production unchanged. The gate memory needs `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` in Preview too; if the existing ones already apply to Preview, leave them (memory keys are separated by environment, so Preview never touches Production's).
 2. Push the branch: `git push -u origin feat/padi-check`. Open the preview URL Vercel creates.
 3. On the volunteer's phone (Safari if iPhone): open `/padi-check`, log in, type TEST Two's code. Time from tap to colour.
 4. Check the sheet shows TEST Two's time. Tap Call Toyosi on a red and confirm the dialler opens with the right number (hang up).
-5. Reset TEST rows' `Checked In?` to `No`.
+5. Reset TEST rows' `Checked In?` to `No`. The gate memory follows a reset made by hand, but only for arrivals more than 10 minutes old, at its next refresh (every 5 minutes): allow up to about 15 minutes before rescanning a reset code, or it will still say Already checked in.
+6. While on the phone, open `/padi-check/preview` and look at all six screens outdoors after dark.
 
 **Definition of done:**
 - [ ] Green on the real phone within 3 s; sheet updated.
+- [ ] Badge reads "Fast".
 - [ ] Call Toyosi opens the correct number (AC-R005-02).
 - [ ] Production env vars untouched.
 

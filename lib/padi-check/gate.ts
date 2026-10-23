@@ -40,7 +40,7 @@ export interface GateStore {
   /** Records the arrival unless there is one. Returns the earlier time, or null if this was the first. */
   markArrived(code: string, at: string): Promise<string | null>
   counts(): Promise<Counts>
-  /** Replaces the guest list; keeps arrivals for codes still on it and adds the sheet's. */
+  /** Replaces the guest list; adds the sheet's arrivals and forgets the ones `arrivalsToForget` names. */
   replaceRoster(guests: Map<string, Guest>, arrivals: Map<string, string>, now: number): Promise<void>
   /** When the list was last copied from the sheet, in ms, or null if never. */
   loadedAt(): Promise<number | null>
@@ -137,6 +137,42 @@ export async function checkCode(
     }
   }
   return { result: r, background }
+}
+
+/**
+ * An arrival younger than this is kept even when the sheet does not show it
+ * yet: its write may still be on the way (pending, or confirmed after the
+ * roster was read).
+ */
+export const RESET_GRACE_MS = 10 * 60 * 1000
+
+/** "2026-10-31T19:05:00" (Lagos) → ms, or NaN. */
+function lagosMs(at: string): number {
+  return Date.parse(`${at}+01:00`)
+}
+
+/**
+ * Which remembered arrivals a refresh should forget. The sheet is the record,
+ * so the memory follows it: a guest no longer on the paid list goes, and so
+ * does an arrival the sheet no longer shows, once it is old enough that the
+ * sheet must have had it (someone set Checked In? back to No by hand, to fix
+ * a mistake or to rerun a test). Pending arrivals are never forgotten.
+ */
+export function arrivalsToForget(
+  remembered: Record<string, string>,
+  guests: Map<string, Guest>,
+  sheetArrivals: Map<string, string>,
+  pending: Set<string>,
+  now: number,
+): string[] {
+  return Object.entries(remembered)
+    .filter(([code, at]) => {
+      if (!guests.has(code)) return true
+      if (sheetArrivals.has(code) || pending.has(code)) return false
+      const t = lagosMs(at)
+      return Number.isFinite(t) && now - t > RESET_GRACE_MS
+    })
+    .map(([code]) => code)
 }
 
 /** Copies the paid list from the sheet. False if the sheet did not answer. */
@@ -249,8 +285,12 @@ export function createRedisGateStore(redis: Redis, event = 'mad-settings'): Gate
       return { checkedIn, total }
     },
     async replaceRoster(guests, arrivals, now) {
-      const known = (await redis.hkeys(ARRIVED)) as string[]
-      const gone = known.filter((code) => !guests.has(code))
+      const [remembered, pendingCodes] = await Promise.all([
+        redis.hgetall<Record<string, unknown>>(ARRIVED),
+        redis.hkeys(PENDING),
+      ])
+      const asText = Object.fromEntries(Object.entries(remembered ?? {}).map(([c, at]) => [c, String(at)]))
+      const gone = arrivalsToForget(asText, guests, arrivals, new Set(pendingCodes as string[]), now)
       const tx = redis.multi()
       tx.del(GUESTS)
       if (guests.size) {
@@ -314,9 +354,10 @@ export function createMemoryGateStore(): GateStore {
       return { checkedIn: arrived.size, total: guests.size }
     },
     async replaceRoster(next, arrivals, now) {
+      const gone = arrivalsToForget(Object.fromEntries(arrived), next, arrivals, new Set(pending.keys()), now)
       guests.clear()
       for (const [code, g] of next) guests.set(code, g)
-      for (const code of [...arrived.keys()]) if (!next.has(code)) arrived.delete(code)
+      for (const code of gone) arrived.delete(code)
       for (const [code, at] of arrivals) if (!arrived.has(code)) arrived.set(code, at)
       loaded = now
     },

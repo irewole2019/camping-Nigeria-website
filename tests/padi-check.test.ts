@@ -8,7 +8,9 @@ import {
 } from '@/lib/padi-check/session'
 import { toCounts, toGateResult, toRoster, type GateResult, type RosterEntry, type SheetClient } from '@/lib/padi-check/sheet'
 import {
+  RESET_GRACE_MS,
   ROSTER_MAX_AGE_MS,
+  arrivalsToForget,
   checkCode,
   createMemoryGateStore,
   gateCounts,
@@ -323,5 +325,34 @@ describe('Padi Check gate memory', () => {
     await refreshRoster(store, sheet.client, NOW + 2 * ROSTER_MAX_AGE_MS)
     expect(await store.getGuest(ADA)).toBeNull()
     expect(await store.counts()).toEqual({ checkedIn: 0, total: 0 })
+  })
+
+  it('follows a hand reset in the sheet, but not for a recent or unwritten arrival', async () => {
+    const store = createMemoryGateStore()
+    const sheet = fakeSheet()
+    await refreshRoster(store, sheet.client, NOW)
+    const first = await checkCode(ADA, { store, sheet: sheet.client, now: NOW })
+    await runAll(first.background) // the sheet now has 19:00
+    sheet.rows.get(ADA)!.arrived = undefined // someone sets Checked In? back to No
+
+    // Five minutes on: too recent to trust the sheet's No, so still Already.
+    await refreshRoster(store, sheet.client, NOW + 5 * 60_000)
+    expect((await checkCode(ADA, { store, sheet: sheet.client })).result.status).toBe('already')
+
+    // Eleven minutes on: the reset wins, and the next scan is a fresh welcome.
+    await refreshRoster(store, sheet.client, NOW + RESET_GRACE_MS + 60_000)
+    expect((await checkCode(ADA, { store, sheet: sheet.client, now: NOW + RESET_GRACE_MS + 61_000 })).result.status).toBe(
+      'welcome',
+    )
+  })
+
+  it('never forgets an arrival whose sheet write is still pending', () => {
+    const guests = new Map([[ADA, { name: 'Ada', ticket: '', usesTent: false }]])
+    const old = { [ADA]: '2026-10-31T18:00:00' }
+    const later = NOW + 60 * 60_000
+    expect(arrivalsToForget(old, guests, new Map(), new Set([ADA]), later)).toEqual([])
+    expect(arrivalsToForget(old, guests, new Map(), new Set(), later)).toEqual([ADA])
+    expect(arrivalsToForget(old, guests, new Map([[ADA, '2026-10-31T18:00:00']]), new Set(), later)).toEqual([])
+    expect(arrivalsToForget(old, new Map(), new Map(), new Set([ADA]), later)).toEqual([ADA]) // left the paid list
   })
 })
