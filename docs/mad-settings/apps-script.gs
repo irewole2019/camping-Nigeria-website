@@ -327,7 +327,7 @@ function handlePadiCheck(body, sheet) {
     return { ok: false, error: 'unauthorised' }
   }
 
-  if (body.action === 'checkin') return padiCheckIn(sheet, body.code)
+  if (body.action === 'checkin') return padiCheckIn(sheet, body.code, body.at)
   if (body.action === 'stats') {
     const counts = countArrivals(sheet)
     return { ok: true, checkedIn: counts.checkedIn, total: counts.total }
@@ -340,8 +340,14 @@ function handlePadiCheck(body, sheet) {
  * Marks a code as arrived. Answers one of four statuses; only `welcome`
  * writes to Sign-ups, and every other status is appended to the Scan log.
  * The response never carries email, phone, Instagram or price.
+ *
+ * `at` is the time the gate let the guest in. The website answers the gate
+ * from its own fast copy of the list and sends the arrival here afterwards,
+ * sometimes after a retry, so the sheet records the gate's time rather than
+ * the moment this call happened to land. Anything not shaped like
+ * yyyy-MM-ddTHH:mm:ss is ignored and the current Lagos time is used.
  */
-function padiCheckIn(sheet, code) {
+function padiCheckIn(sheet, code, at) {
   if (!code) return { ok: false, error: 'missing-code' }
 
   const row = findRowByCode(sheet, code)
@@ -371,12 +377,16 @@ function padiCheckIn(sheet, code) {
     )
   }
 
-  const now = lagosNow()
-  sheet.getRange(row, CHECKED_IN_COLUMN).setValue(now)
-  return withCounts(sheet, Object.assign({ ok: true, status: 'welcome', checkedInAt: now }, guest))
+  const time = typeof at === 'string' && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d$/.test(at) ? at : lagosNow()
+  sheet.getRange(row, CHECKED_IN_COLUMN).setValue(time)
+  return withCounts(sheet, Object.assign({ ok: true, status: 'welcome', checkedInAt: time }, guest))
 }
 
-/** Paid rows only, and only the four fields the printed gate list needs. */
+/**
+ * Paid rows only: the four fields the printed gate list needs, plus
+ * `checkedInAt` for guests already marked in, so the website's fast copy
+ * of the list knows who has arrived.
+ */
 function padiRoster(sheet) {
   const last = sheet.getLastRow()
   if (last < 2) return []
@@ -385,12 +395,14 @@ function padiRoster(sheet) {
   for (let i = 0; i < rows.length; i += 1) {
     const r = rows[i]
     if (!isYes(r[PAID_COLUMN - 1])) continue
-    out.push({
+    const entry = {
       name: String(r[NAME_COLUMN - 1]),
       code: String(r[CODE_COLUMN - 1]),
       ticketLabel: String(r[TICKET_COLUMN - 1]),
       usesTent: isYes(r[TENT_COLUMN - 1]),
-    })
+    }
+    if (hasArrived(r[CHECKED_IN_COLUMN - 1])) entry.checkedInAt = formatArrival(r[CHECKED_IN_COLUMN - 1])
+    out.push(entry)
   }
   return out
 }

@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** Session 0.1 done 2026-10-18; volunteer phone decided 2026-10-23: not fixed, Padi Check must work on both the Android and the iPhone (test both in 1.5 and 3.2). Session 1.1 done 2026-10-18. Next: Session 1.2, put the script on a TEST deployment (manual, owner Google account).
+**Next action:** Sessions 0.1, 1.1, 1.2 (checks pass, timing failed) and 1.3 done 2026-10-23. Gate now answers from a fast Upstash copy of the list (decision 2026-10-23, build sequence Section 9). Blocked on the owner: (1) create a new Upstash database, its URL and token into .env.local (and later Vercel); (2) update the TEST Apps Script deployment to the new script version. Then re-time, re-test the login lockout, and go on to Session 1.4.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
