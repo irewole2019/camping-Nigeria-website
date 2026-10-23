@@ -286,7 +286,17 @@ describe('Padi Check gate memory', () => {
     const sheet = fakeSheet()
     expect((await checkCode(ADA, { store: null, sheet: sheet.client })).result.status).toBe('welcome')
     expect(sheet.calls).toEqual([`checkin ${ADA}`])
-    expect(await gateCounts(null, sheet.client)).toEqual({ checkedIn: 1, total: 1 })
+    expect(await gateCounts(null, sheet.client)).toEqual({ checkedIn: 1, total: 1, fast: false })
+  })
+
+  it('reports fast only once the list is in memory', async () => {
+    const store = createMemoryGateStore()
+    const sheet = fakeSheet()
+    expect((await gateCounts(store, sheet.client))?.fast).toBe(false)
+    await refreshRoster(store, sheet.client, NOW)
+    expect(await gateCounts(store, sheet.client)).toEqual({ checkedIn: 0, total: 1, fast: true })
+    sheet.state.down = true
+    expect(await gateCounts(createMemoryGateStore(), sheet.client)).toBeNull()
   })
 
   it('refreshes a stale list, learns arrivals from the sheet, and drops removed guests', async () => {

@@ -7,9 +7,10 @@ import { sheet } from '@/lib/padi-check/sheet'
 export const dynamic = 'force-dynamic'
 
 /**
- * GET → { checkedIn, total }, or { status: 'offline' } with 503. Volunteer or
- * admin session. The scanner polls this, so it is also what keeps the gate's
- * memory fresh and retries sheet writes between scans.
+ * GET → { checkedIn, total, fast }, or { status: 'offline' } with 503.
+ * Volunteer or admin session. `fast` says whether the gate's memory is
+ * answering; the scanner shows it. The scanner polls this, so it is also what
+ * keeps the memory fresh and retries sheet writes between scans.
  */
 export async function GET(request: NextRequest) {
   const session = readSession(request)

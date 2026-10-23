@@ -173,16 +173,26 @@ export async function maintain(store: GateStore, sheet: SheetClient, now = Date.
   }
 }
 
+export interface GateCounts extends Counts {
+  /**
+   * True when the count came from the gate's memory, which means known guests
+   * are being answered fast. False means every check is going to the sheet;
+   * the scanner shows it so a slow gate is never a surprise.
+   */
+  fast: boolean
+}
+
 /** Counts for the live tally: from memory once the list is loaded, else from the sheet. */
-export async function gateCounts(store: GateStore | null, sheet: SheetClient): Promise<Counts | null> {
+export async function gateCounts(store: GateStore | null, sheet: SheetClient): Promise<GateCounts | null> {
   if (store) {
     try {
-      if (await store.loadedAt()) return await store.counts()
+      if (await store.loadedAt()) return { ...(await store.counts()), fast: true }
     } catch (err) {
       console.error('[padi-check] gate memory failed; asking the sheet:', err)
     }
   }
-  return sheet.stats()
+  const counts = await sheet.stats()
+  return counts && { ...counts, fast: false }
 }
 
 // ─── Stores ─────────────────────────────────────────────────────────────────

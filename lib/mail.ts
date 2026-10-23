@@ -36,6 +36,15 @@ async function sendOne(resendKey: string, args: SendOne): Promise<Response> {
   })
 }
 
+/** One email, for internal alerts that have no customer half. True if Resend accepted it. */
+export async function sendSingleMail(resendKey: string, args: SendOne): Promise<boolean> {
+  try {
+    return (await sendOne(resendKey, args)).ok
+  } catch {
+    return false
+  }
+}
+
 export interface PairedMailPayload {
   from: string
   internal: {
