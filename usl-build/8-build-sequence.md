@@ -492,6 +492,7 @@ When a session fails: stop dependent sessions, keep notes without guest data, co
 | Admin back-fill email | deferred | PRD D-006 | Sales open 27 Oct, after go-live | Founder | R-009 |
 | Tent ID, multiple scanners, undo, other events, offline | deferred | PRD D-001 to D-005 | Triggers not met | Founder | D-001 to D-005 |
 | No sheet copy; build on a TEST deployment of the live sheet | deviation | User, 2026-10-17 | Only founder test rows exist before 27 Oct | Founder | R-001 |
+| Apps Script too slow for the 3 s target. Session 1.2, 2026-10-23, dev PC to TEST deployment: AC-R001-01..05 all pass, but 20 `checkin` calls gave median 4.8 s, fastest 2.5 s, 5 of 20 under 3 s, 6 of 20 no answer within 15 s. A plain GET heartbeat (no lock, no write) took 2.9 to 4.7 s with one over 20 s; spikes of 18 to 19 s occurred on both the script hop and the answer-fetch hop, while the PC reached Google in 90 to 560 ms. So the delay is Google's Apps Script service, not the script or the connection. One unknown-code call came back as the doGet heartbeat (a Google redirect glitch, not reproduced); the website must treat any reply without `status` as offline. | risk (stop rule) | Session 1.2 timing | Typical over 3 s: build paused for a founder decision on the check path | Founder | R-001, R-002, NFR performance |
 
 ---
 
