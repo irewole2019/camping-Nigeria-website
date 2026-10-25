@@ -12,7 +12,11 @@ interface TypeACodeProps {
   busy: boolean
   /** `dark` sits on a coloured result field (the camera-off state). */
   tone?: 'light' | 'dark'
-  /** Changes when the box should take focus again (after Next guest or Try again). */
+  /**
+   * Set, and changed, when the box should take focus. Left undefined while
+   * the camera is in use, because focusing the box raises the phone keyboard
+   * over the camera.
+   */
   focusKey?: number
 }
 
@@ -21,7 +25,7 @@ export default function TypeACode({ value, onChange, onSubmit, busy, tone = 'lig
   const input = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    input.current?.focus()
+    if (focusKey !== undefined) input.current?.focus()
   }, [focusKey])
 
   const ready = value.length === CODE_CHARS && !busy

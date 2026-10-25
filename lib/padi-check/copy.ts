@@ -20,6 +20,7 @@ export const LOGIN_COPY = {
 export const SCANNER_COPY = {
   wordmark: 'Padi Check',
   count: (checkedIn: number, total: number) => `${checkedIn} of ${total} in`,
+  pointAtPass: 'Point at the gate pass',
   typeACode: 'Type a code',
   check: 'Check',
   checking: 'Checking',
@@ -61,4 +62,6 @@ export const DETAIL_COPY = {
   notFound: 'Check the code with the guest, or type it in',
   offline: 'Check your signal and try again',
   cameraOff: 'Allow the camera in your browser, or type the code below',
+  /** iPhone only, when the browser offers no camera at all (an in-app browser). From the build sequence, Session 2.2. */
+  openInSafari: 'Open this page in Safari',
 }

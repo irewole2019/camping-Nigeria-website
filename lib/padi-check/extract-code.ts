@@ -19,6 +19,17 @@ export function cleanTypedCode(raw: string): string {
   return s.replace(/[^A-Z0-9]/g, '').slice(0, CODE_CHARS)
 }
 
+/**
+ * The MAD code inside whatever the camera read: a bare code, a Gate pass
+ * (`MAD-XXXXXX|Name|Ticket`), or junk. Null when there is no code of the
+ * right shape, so the gate can answer not-found without asking anyone.
+ * Same alphabet as the codes themselves: no 0, O, 1 or I.
+ */
+export function extractCode(text: string): string | null {
+  const m = /MAD-[A-HJ-NP-Z2-9]{6}(?![A-Z0-9])/.exec(text.toUpperCase())
+  return m ? m[0] : null
+}
+
 /** "2026-10-31T19:05:00" → "7:05 pm". Anything else comes back unchanged. */
 export function formatArrivalTime(stored: string | undefined): string {
   if (!stored) return ''

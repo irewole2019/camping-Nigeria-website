@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** Session 2.1 done 2026-10-25 (Gate pass on the confirmation page; a stock phone camera read the QR in about 2 s). Now Session 2.2, camera scanning (fix the Permissions-Policy camera block first), then 2.3 the gate pass in the email.
+**Next action:** Session 2.2 built 2026-10-25: camera scanning on /padi-check (html5-qrcode 2.3.8, loaded on demand), camera allowed by Permissions-Policy on /padi-check only. Tested in headless Edge with a fake camera playing a Gate pass video: welcome then, after Next guest, already; one check per QR while it stayed in view (AC-R004-03); no camera gives the camera-off screen with typing. Waiting on the owner: scan a Gate pass on the preview with both phones, and test Don't allow (AC-R004-01, -02). Founder will send pictures for a restyle by 27 Oct. Next: Session 2.3, gate pass in the email.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 

@@ -41,9 +41,10 @@ export default function ResultScreen({
 
   useEffect(() => {
     // One buzz per result, where the phone supports it (Android; not iPhone).
-    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(200)
+    // The camera-off screen is a standing state, not a scan result: no buzz.
+    if (state !== 'camera-off' && typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(200)
     primary.current?.focus()
-  }, [resultId])
+  }, [resultId, state])
 
   const buttons = spec.buttons.filter((b) => b !== 'call' || callHref)
   const last = buttons[buttons.length - 1]

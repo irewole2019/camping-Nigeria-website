@@ -67,11 +67,22 @@ const securityHeaders = [
 
 const nextConfig = {
   async headers() {
+    // Padi Check's scanner needs the camera; every other page keeps it off.
+    // Later rules win for the same header key, so these override the
+    // site-wide camera=() for the gate routes only.
+    const gateCamera = [
+      {
+        key: 'Permissions-Policy',
+        value: 'camera=(self), microphone=(), geolocation=(), interest-cohort=()',
+      },
+    ]
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
       },
+      { source: '/padi-check', headers: gateCamera },
+      { source: '/padi-check/:path+', headers: gateCamera },
     ]
   },
 

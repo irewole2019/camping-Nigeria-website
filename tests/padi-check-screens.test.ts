@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { BUTTON_COPY, DETAIL_COPY, LOGIN_COPY, RESULTS, SCANNER_COPY } from '@/lib/padi-check/copy'
-import { cleanTypedCode, formatArrivalTime } from '@/lib/padi-check/extract-code'
+import { cleanTypedCode, extractCode, formatArrivalTime } from '@/lib/padi-check/extract-code'
 import { countsFrom, toScreen } from '@/lib/padi-check/screen'
 
 describe('Padi Check copy (usl-build/6-landing-page-copy.md, Surfaces 4 and 5)', () => {
@@ -54,6 +54,26 @@ describe('Padi Check code box', () => {
 
   it('drops spaces and punctuation', () => {
     expect(cleanTypedCode('b8 k2-mq')).toBe('B8K2MQ')
+  })
+})
+
+describe('Padi Check camera reads (extractCode)', () => {
+  it('finds a plain code', () => {
+    expect(extractCode('MAD-B8K2MQ')).toBe('MAD-B8K2MQ')
+  })
+
+  it('finds the code in a full Gate pass', () => {
+    expect(extractCode('MAD-B8K2MQ|Ada Obi|Sleepover single (1 person)')).toBe('MAD-B8K2MQ')
+  })
+
+  it('upper-cases a lowercase read', () => {
+    expect(extractCode('mad-b8k2mq|ada')).toBe('MAD-B8K2MQ')
+  })
+
+  it('returns null for junk, other events and letters the codes never use', () => {
+    for (const junk of ['', 'https://example.com', 'SCN-B8K2MQ|Camp Night', 'MAD-B8K2M', 'MAD-B8K2MO', 'MAD-B8K2M0', 'MAD-B8K2MQX']) {
+      expect(extractCode(junk)).toBeNull()
+    }
   })
 })
 

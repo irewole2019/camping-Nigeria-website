@@ -4,9 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import PadiCheckShell from './PadiCheckShell'
 import ResultScreen from './ResultScreen'
+import Scanner from './Scanner'
 import TypeACode from './TypeACode'
-import { RESULTS } from '@/lib/padi-check/copy'
-import { CODE_PREFIX } from '@/lib/padi-check/extract-code'
+import { DETAIL_COPY, RESULTS } from '@/lib/padi-check/copy'
+import { CODE_PREFIX, extractCode } from '@/lib/padi-check/extract-code'
 import { countsFrom, toScreen, type CheckReply, type ScreenContent } from '@/lib/padi-check/screen'
 
 /** Server 8 s script timeout plus headroom; past this the gate shows offline. */
@@ -27,7 +28,10 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
   const [shown, setShown] = useState<Shown | null>(null)
   const [counts, setCounts] = useState<{ checkedIn: number; total: number } | null>(null)
   const [fast, setFast] = useState<boolean | null>(null)
-  const [focusKey, setFocusKey] = useState(0)
+  // Undefined until typing is what is happening (see TypeACode).
+  const [focusKey, setFocusKey] = useState<number | undefined>(undefined)
+  // Assumed on until the camera says otherwise.
+  const [camera, setCamera] = useState<'on' | 'off' | 'unsupported'>('on')
   const nextId = useRef(1)
 
   const signedOut = useCallback(() => router.refresh(), [router])
@@ -90,10 +94,24 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
     [busy, signedOut],
   )
 
+  /** A QR the camera read. No MAD code in it: not-found, without asking anyone. */
+  const onScan = (text: string) => {
+    const code = extractCode(text)
+    if (code) {
+      check(code.slice(CODE_PREFIX.length))
+      return
+    }
+    setShown({ state: 'not-found', name: text.trim().slice(0, 24), detail: DETAIL_COPY.notFound, id: nextId.current++, chars: '' })
+  }
+
+  const onCameraOff = (unsupported: boolean) => setCamera(unsupported ? 'unsupported' : 'off')
+
   const nextGuest = () => {
     setShown(null)
     setChars('')
-    setFocusKey((k) => k + 1)
+    // Typing only: with the camera on, focusing the box would raise the
+    // keyboard over the camera.
+    if (camera !== 'on') setFocusKey((k) => (k ?? 0) + 1)
   }
 
   const retry = () => {
@@ -102,9 +120,12 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
     // found, or (offline) to send it again while the button says Checking.
     setChars(shown.chars)
     setShown(null)
-    setFocusKey((k) => k + 1)
-    if (shown.state === 'offline') check(shown.chars)
+    if (shown.chars) setFocusKey((k) => (k ?? 0) + 1)
+    if (shown.state === 'offline' && shown.chars) check(shown.chars)
   }
+
+  const cameraOff = camera !== 'on'
+  const onIphone = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/.test(navigator.userAgent)
 
   return (
     <PadiCheckShell counts={counts} fast={fast}>
@@ -120,22 +141,34 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
           callHref={callHref}
           onNext={nextGuest}
           onRetry={retry}
-        >
-          {shown.state === 'camera-off' && (
-            <TypeACode value={chars} onChange={setChars} onSubmit={() => check(chars)} busy={busy} tone="dark" />
-          )}
-        </ResultScreen>
+        />
       ) : (
-        <div className="mx-auto w-full max-w-[480px] px-5 py-8">
-          <TypeACode
-            value={chars}
-            onChange={setChars}
-            onSubmit={() => check(chars)}
-            busy={busy}
-            focusKey={focusKey}
-          />
-        </div>
+        cameraOff && (
+          <ResultScreen state="camera-off" resultId={0} detail={DETAIL_COPY.cameraOff} callHref={callHref}>
+            {camera === 'unsupported' && onIphone && (
+              <p className="mt-3 font-sans text-lg font-semibold">{DETAIL_COPY.openInSafari}</p>
+            )}
+            <TypeACode
+              value={chars}
+              onChange={setChars}
+              onSubmit={() => check(chars)}
+              busy={busy}
+              tone="dark"
+              focusKey={focusKey ?? 0}
+            />
+          </ResultScreen>
+        )
       )}
+      {/* Kept mounted under the results, so the camera is not restarted for every guest. */}
+      <div className={`mx-auto w-full max-w-[480px] space-y-6 px-5 py-6 ${shown || cameraOff ? 'hidden' : ''}`}>
+        <Scanner
+          active={!shown && !busy && !cameraOff}
+          onScan={onScan}
+          onCameraOff={onCameraOff}
+          onCameraOn={() => setCamera('on')}
+        />
+        <TypeACode value={chars} onChange={setChars} onSubmit={() => check(chars)} busy={busy} focusKey={focusKey} />
+      </div>
     </PadiCheckShell>
   )
 }
