@@ -100,27 +100,31 @@ Replaces: "Your code" label and "Keep this. It is how we find you at the gate."
 >
 > Questions? Reply to this email.
 
+> **Revised 2026-10-25** from the founder's screen designs (the restyle in `8-build-sequence.md` Section 9). The earlier wording is in git history. House rules unchanged: no contractions; never invalid, denied, secure or fraud (the design's "Secure check-ins" tagline was dropped for that reason).
+
 ### Surface 4: Padi Check login
 
-> **Padi Check**
-> MAD Settings · Gate
-> [Password]
-> **[Start checking in]**
+> [Padi Check mark: a "P" with a tick cut through it]
+> **Padi** Check
+> Fast. Simple. Check-ins for your events.
+> Password [show/hide]
+> **[Start checking in →]**
+> Volunteer access only
 > Wrong password: "That password did not work. Ask Toyosi for today's password."
 
 ### Surface 5: Padi Check scanner and results
 
-**Top bar:** Padi Check · **[N] of [M] in**
-**Scanning:** "Point at the gate pass" (camera) / **Type a code** [MAD-______] [Check]
+**Top of every screen:** status pill **[N] of [M]** · **FAST** or **SLOW** (code screen: Padi Check mark and name on the left; result screens: back arrow on the left, which returns to scanning)
+**Code screen:** "Point at the gate pass" (camera, always on) / or / **Enter a code** · Type the guest code from their ticket / [MAD-______] **[Check →]** / **Tip** · Codes usually start with MAD-
 
-| State | Screen colour | Big word | Detail | Buttons |
-|---|---|---|---|---|
-| Valid, first arrival | Green | **Welcome in** | [Full name] / [Ticket label] · **Tent** or **No tent** | [Next guest] |
-| Already checked in | Orange | **Already checked in** | [Full name] / at [h:mm am/pm] | [Call Toyosi] [Next guest] |
-| Not found | Red | **We cannot find this code** | [Code] / Check the code with the guest, or type it in | [Call Toyosi] [Try again] |
-| Not marked paid | Red | **Not marked as paid** | [Full name] | [Call Toyosi] [Next guest] |
-| Network failure | Grey | **Cannot reach the list** | Check your signal and try again | [Try again] |
-| Camera blocked | Neutral | **The camera is off** | Allow the camera in your browser, or type the code below | (type box shown) |
+| State | Screen colour | Picture | Big word | Detail | Buttons |
+|---|---|---|---|---|---|
+| Valid, first arrival | Green | Initials, tick badge | **Welcome in!** | [Full name] / tiles: [Ticket label] · **Tent** or **No tent**; [h:mm AM/PM] · Check-in time | [Next guest →] |
+| Already checked in | Orange | Initials, clock badge | **Already checked in** | [Full name] / tile: Checked in at [h:mm AM/PM] | [Call Toyosi] [Next guest →] |
+| Not found | Red | Cross in a ring | **We cannot find this code** | [Code] (with copy button) / Check the code with the guest, or type it in again. | [Call Toyosi] [Try again] |
+| Not marked paid | Red | ! in a ring | **Not marked as paid** | [Full name] / Signed up, but payment not confirmed. | [Call Toyosi] [Next guest →] |
+| Network failure | Grey | Wifi-off in a ring | **Cannot reach the list** | Check your signal and try again. | [Try again] |
+| Camera blocked | Dark green | QR tile | **The camera is off** | Allow the camera in your browser, or type the code below / **Type a code** [MAD-______] [Check →] / **Turn on camera** · Enable camera in browser settings (tries the camera again) | |
 
 ### Surface 6: Gate card (printed A5)
 

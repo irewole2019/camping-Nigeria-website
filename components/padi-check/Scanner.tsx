@@ -26,6 +26,8 @@ const PAUSED = 3
 interface ScannerProps {
   /** False while a check is in flight or a result is on screen. */
   active: boolean
+  /** Changed by "Turn on camera" to try starting the camera again. */
+  retryKey?: number
   /** The raw text of the QR that was read. */
   onScan: (text: string) => void
   /** The camera cannot run. `unsupported` means the browser has no camera API at all. */
@@ -34,8 +36,9 @@ interface ScannerProps {
   onCameraOn: () => void
 }
 
-export default function Scanner({ active, onScan, onCameraOff, onCameraOn }: ScannerProps) {
+export default function Scanner({ active, retryKey = 0, onScan, onCameraOff, onCameraOn }: ScannerProps) {
   const scanner = useRef<Html5Qrcode | null>(null)
+  const startRef = useRef<() => void>(() => {})
   const locked = useRef(false)
   const activeRef = useRef(active)
   const onScanRef = useRef(onScan)
@@ -120,6 +123,7 @@ export default function Scanner({ active, onScan, onCameraOff, onCameraOn }: Sca
       else start()
     }
 
+    startRef.current = start
     start()
     document.addEventListener('visibilitychange', onVisibility)
     return () => {
@@ -128,6 +132,11 @@ export default function Scanner({ active, onScan, onCameraOff, onCameraOn }: Sca
       stop()
     }
   }, [])
+
+  // "Turn on camera": try again, for when the camera was allowed after a refusal.
+  useEffect(() => {
+    if (retryKey > 0) startRef.current()
+  }, [retryKey])
 
   // Pause while a result is up; resume, unlocked, for the next guest.
   useEffect(() => {
@@ -149,7 +158,7 @@ export default function Scanner({ active, onScan, onCameraOff, onCameraOn }: Sca
   return (
     <div className="space-y-3">
       <p className="font-sans text-lg font-semibold text-brand-dark">{SCANNER_COPY.pointAtPass}</p>
-      <div id={REGION_ID} className="aspect-square w-full overflow-hidden rounded-lg bg-black" />
+      <div id={REGION_ID} className="aspect-square w-full overflow-hidden rounded-3xl bg-brand-dark shadow-lg" />
     </div>
   )
 }

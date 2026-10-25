@@ -12,37 +12,54 @@ export interface CheckReply {
   total?: unknown
 }
 
+/**
+ * What a result screen shows: name, ticket, Tent or No tent, a time, or the
+ * code that was not found. Nothing else, whatever the reply carries.
+ */
 export interface ScreenContent {
   state: ResultState
   name?: string
+  ticket?: string
+  tent?: string
+  time?: string
+  code?: string
   detail?: string
 }
 
 const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v : undefined)
 
-/**
- * The result screen for a reply, per the Surface 5 table: name, ticket,
- * Tent or No tent, and a time; nothing else, whatever the reply carries.
- * Anything unrecognised is shown as offline rather than guessed at.
- */
+/** Anything unrecognised is shown as offline rather than guessed at. */
 export function toScreen(reply: CheckReply | null, code: string): ScreenContent {
   const name = str(reply?.name)
   switch (reply?.status) {
-    case 'welcome': {
-      const tent = reply.usesTent === true ? DETAIL_COPY.tent : DETAIL_COPY.noTent
-      return { state: 'welcome', name, detail: [str(reply.ticket), tent].filter(Boolean).join(' · ') }
-    }
-    case 'already': {
-      const time = formatArrivalTime(str(reply.checkedInAt))
-      return { state: 'already', name, detail: time ? DETAIL_COPY.at(time) : undefined }
-    }
+    case 'welcome':
+      return {
+        state: 'welcome',
+        name,
+        ticket: str(reply.ticket),
+        tent: reply.usesTent === true ? DETAIL_COPY.tent : DETAIL_COPY.noTent,
+        time: formatArrivalTime(str(reply.checkedInAt)) || undefined,
+      }
+    case 'already':
+      return { state: 'already', name, time: formatArrivalTime(str(reply.checkedInAt)) || undefined }
     case 'not-found':
-      return { state: 'not-found', name: code, detail: DETAIL_COPY.notFound }
+      return { state: 'not-found', code, detail: DETAIL_COPY.notFound }
     case 'not-paid':
-      return { state: 'not-paid', name }
+      return { state: 'not-paid', name, detail: DETAIL_COPY.notPaid }
     default:
       return { state: 'offline', detail: DETAIL_COPY.offline }
   }
+}
+
+/** "Ada Obi" → "AO"; one letter for one word; empty for no name. */
+export function initials(name: string | undefined): string {
+  return (name ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('')
 }
 
 /** The live count from a reply, if it carries one. */

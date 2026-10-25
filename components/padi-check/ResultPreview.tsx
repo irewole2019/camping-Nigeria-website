@@ -2,15 +2,19 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { Camera } from 'lucide-react'
 import PadiCheckShell from './PadiCheckShell'
 import ResultScreen from './ResultScreen'
 import TypeACode from './TypeACode'
-import { DETAIL_COPY, RESULTS, type ResultState } from '@/lib/padi-check/copy'
-import { toScreen } from '@/lib/padi-check/screen'
+import { DETAIL_COPY, RESULTS, SCANNER_COPY, type ResultState } from '@/lib/padi-check/copy'
+import { toScreen, type ScreenContent } from '@/lib/padi-check/screen'
 
 /** Made-up guests only. */
-const FIXTURES: Record<ResultState, ReturnType<typeof toScreen>> = {
-  welcome: toScreen({ status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover single (1 person)', usesTent: true }, 'MAD-B8K2MQ'),
+const FIXTURES: Record<ResultState, ScreenContent> = {
+  welcome: toScreen(
+    { status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover single (1 person)', usesTent: true, checkedInAt: '2026-10-31T19:05:00' },
+    'MAD-B8K2MQ',
+  ),
   already: toScreen({ status: 'already', name: 'Ada Obi', checkedInAt: '2026-10-31T19:05:00' }, 'MAD-B8K2MQ'),
   'not-found': toScreen({ status: 'not-found' }, 'MAD-B8K2MQ'),
   'not-paid': toScreen({ status: 'not-paid', name: 'Bayo Adeyemi' }, 'MAD-B8K2MQ'),
@@ -28,20 +32,33 @@ export default function ResultPreview({
   callHref: string | null
 }) {
   const [chars, setChars] = useState('')
-  const shown = FIXTURES[state]
   return (
-    <PadiCheckShell counts={{ checkedIn: 12, total: 80 }} fast={state !== 'offline'}>
+    <PadiCheckShell>
       <ResultScreen
-        state={state}
-        resultId={states.indexOf(state)}
-        name={shown.name}
-        detail={shown.detail}
+        content={FIXTURES[state]}
+        resultId={states.indexOf(state) + 1}
+        counts={{ checkedIn: 12, total: 80 }}
+        fast={state !== 'offline'}
         callHref={callHref}
         onNext={() => {}}
         onRetry={() => {}}
+        onBack={state === 'camera-off' ? undefined : () => {}}
       >
         {state === 'camera-off' && (
-          <TypeACode value={chars} onChange={setChars} onSubmit={() => {}} busy={false} tone="dark" />
+          <>
+            <div className="pt-2">
+              <TypeACode value={chars} onChange={setChars} onSubmit={() => {}} busy={false} tone="dark" id="padi-code-off" label={SCANNER_COPY.typeACode} />
+            </div>
+            <div className="flex w-full items-center gap-4 rounded-3xl border border-white/15 bg-white/10 p-4">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/10" aria-hidden="true">
+                <Camera className="h-7 w-7" />
+              </span>
+              <span>
+                <span className="block font-sans text-lg font-bold">{DETAIL_COPY.turnOnCamera}</span>
+                <span className="block font-sans text-sm">{DETAIL_COPY.turnOnCameraHint}</span>
+              </span>
+            </div>
+          </>
         )}
       </ResultScreen>
       <nav className="mx-auto grid max-w-[480px] grid-cols-2 gap-2 px-5 py-6 font-sans text-sm">

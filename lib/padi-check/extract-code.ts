@@ -30,12 +30,12 @@ export function extractCode(text: string): string | null {
   return m ? m[0] : null
 }
 
-/** "2026-10-31T19:05:00" → "7:05 pm". Anything else comes back unchanged. */
+/** "2026-10-31T19:05:00" → "7:05 PM". Anything else comes back unchanged. */
 export function formatArrivalTime(stored: string | undefined): string {
   if (!stored) return ''
   const m = /T(\d\d):(\d\d)/.exec(stored)
   if (!m) return stored
   const h = Number(m[1])
-  const suffix = h < 12 ? 'am' : 'pm'
+  const suffix = h < 12 ? 'AM' : 'PM'
   return `${h % 12 === 0 ? 12 : h % 12}:${m[2]} ${suffix}`
 }

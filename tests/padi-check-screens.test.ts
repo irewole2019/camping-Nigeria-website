@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { BUTTON_COPY, DETAIL_COPY, LOGIN_COPY, RESULTS, SCANNER_COPY } from '@/lib/padi-check/copy'
 import { cleanTypedCode, extractCode, formatArrivalTime } from '@/lib/padi-check/extract-code'
-import { countsFrom, toScreen } from '@/lib/padi-check/screen'
+import { countsFrom, initials, toScreen } from '@/lib/padi-check/screen'
 
 describe('Padi Check copy (usl-build/6-landing-page-copy.md, Surfaces 4 and 5)', () => {
   it('uses the agreed words for each result', () => {
     expect(Object.fromEntries(Object.entries(RESULTS).map(([k, v]) => [k, v.word]))).toEqual({
-      welcome: 'Welcome in',
+      welcome: 'Welcome in!',
       already: 'Already checked in',
       'not-found': 'We cannot find this code',
       'not-paid': 'Not marked as paid',
@@ -79,10 +79,10 @@ describe('Padi Check camera reads (extractCode)', () => {
 
 describe('Padi Check arrival time', () => {
   it('shows the sheet time as h:mm am/pm', () => {
-    expect(formatArrivalTime('2026-10-31T19:05:00')).toBe('7:05 pm')
-    expect(formatArrivalTime('2026-10-31T00:30:00')).toBe('12:30 am')
-    expect(formatArrivalTime('2026-10-31T12:00:00')).toBe('12:00 pm')
-    expect(formatArrivalTime('2026-10-31T09:41:12')).toBe('9:41 am')
+    expect(formatArrivalTime('2026-10-31T19:05:00')).toBe('7:05 PM')
+    expect(formatArrivalTime('2026-10-31T00:30:00')).toBe('12:30 AM')
+    expect(formatArrivalTime('2026-10-31T12:00:00')).toBe('12:00 PM')
+    expect(formatArrivalTime('2026-10-31T09:41:12')).toBe('9:41 AM')
   })
 
   it('passes anything else through, and blank stays blank', () => {
@@ -101,41 +101,52 @@ describe('Padi Check result content (AC-R005-03)', () => {
     phone: '+2348000000000',
   }
 
-  it('welcome: name, then ticket and Tent', () => {
+  it('welcome: name, ticket, Tent and the check-in time', () => {
     expect(toScreen({ ...leaky, status: 'welcome' }, 'MAD-B8K2MQ')).toEqual({
       state: 'welcome',
       name: 'Ada Obi',
-      detail: 'Sleepover single (1 person) · Tent',
+      ticket: 'Sleepover single (1 person)',
+      tent: 'Tent',
+      time: '7:05 PM',
     })
-    expect(toScreen({ status: 'welcome', name: 'Bo', ticket: 'Attendance only (no tent)', usesTent: false }, 'x').detail).toBe(
-      'Attendance only (no tent) · No tent',
-    )
+    expect(toScreen({ status: 'welcome', name: 'Bo', ticket: 'Attendance only (no tent)', usesTent: false }, 'x').tent).toBe('No tent')
   })
 
   it('already: name, then the first arrival time', () => {
     expect(toScreen({ ...leaky, status: 'already' }, 'MAD-B8K2MQ')).toEqual({
       state: 'already',
       name: 'Ada Obi',
-      detail: 'at 7:05 pm',
+      time: '7:05 PM',
     })
   })
 
   it('not found shows the code that was checked, not a name', () => {
     expect(toScreen({ status: 'not-found' }, 'MAD-B8K2MQ')).toEqual({
       state: 'not-found',
-      name: 'MAD-B8K2MQ',
-      detail: 'Check the code with the guest, or type it in',
+      code: 'MAD-B8K2MQ',
+      detail: 'Check the code with the guest, or type it in again.',
     })
   })
 
-  it('not paid shows the name only', () => {
-    expect(toScreen({ ...leaky, status: 'not-paid' }, 'MAD-B8K2MQ')).toEqual({ state: 'not-paid', name: 'Ada Obi' })
+  it('not paid shows the name and why', () => {
+    expect(toScreen({ ...leaky, status: 'not-paid' }, 'MAD-B8K2MQ')).toEqual({
+      state: 'not-paid',
+      name: 'Ada Obi',
+      detail: 'Signed up, but payment not confirmed.',
+    })
   })
 
   it('anything unexpected is offline, never a guess', () => {
     for (const reply of [null, {}, { status: 'maybe' }, { error: 'Sign in again.' }]) {
-      expect(toScreen(reply, 'MAD-B8K2MQ')).toEqual({ state: 'offline', detail: 'Check your signal and try again' })
+      expect(toScreen(reply, 'MAD-B8K2MQ')).toEqual({ state: 'offline', detail: 'Check your signal and try again.' })
     }
+  })
+
+  it('shows initials for the picture', () => {
+    expect(initials('Ada Obi')).toBe('AO')
+    expect(initials('  bayo  ')).toBe('B')
+    expect(initials('Ada Chioma Obi')).toBe('AC')
+    expect(initials(undefined)).toBe('')
   })
 
   it('never carries an email or phone number onto the screen', () => {
