@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
-import { Analytics } from '@vercel/analytics/next'
 import MotionProvider from '@/components/MotionProvider'
+import SiteAnalytics from '@/components/SiteAnalytics'
 import ScrollToTop from '@/components/ScrollToTop'
 import JsonLd from '@/components/seo/JsonLd'
 import { buildOrganizationJsonLd, buildWebsiteJsonLd } from '@/lib/structured-data'
@@ -95,7 +95,7 @@ export default function RootLayout({
         </a>
         <ScrollToTop />
         <MotionProvider>{children}</MotionProvider>
-        <Analytics />
+        <SiteAnalytics />
       </body>
     </html>
   )
