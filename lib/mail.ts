@@ -11,12 +11,25 @@ export function safeHeader(s: string): string {
   return s.replace(/[\r\n]/g, ' ').trim()
 }
 
+/**
+ * A file sent with the email. With `content_id`, the HTML can show it inline
+ * as `<img src="cid:...">` (Resend's inline images), which is how the Gate pass
+ * QR travels: no hosted URL for the mail client to fetch or block.
+ */
+export interface MailAttachment {
+  filename: string
+  /** Base64. */
+  content: string
+  content_id?: string
+}
+
 interface SendOne {
   from: string
   to: string[]
   subject: string
   html: string
   replyTo?: string
+  attachments?: MailAttachment[]
 }
 
 async function sendOne(resendKey: string, args: SendOne): Promise<Response> {
@@ -32,6 +45,7 @@ async function sendOne(resendKey: string, args: SendOne): Promise<Response> {
       reply_to: args.replyTo,
       subject: safeHeader(args.subject),
       html: args.html,
+      ...(args.attachments?.length ? { attachments: args.attachments } : {}),
     }),
   })
 }
@@ -58,6 +72,7 @@ export interface PairedMailPayload {
     to: string
     subject: string
     html: string
+    attachments?: MailAttachment[]
   }
 }
 
@@ -95,6 +110,7 @@ export async function sendPairedMail(
       to: [payload.customer.to],
       subject: payload.customer.subject,
       html: payload.customer.html,
+      attachments: payload.customer.attachments,
     }),
   ])
 

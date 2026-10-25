@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server'
 import { CONTACT } from '@/lib/constants'
 import { escapeHtml, isHoneypotTripped, MAX_LENGTHS, withinLengthCaps } from '@/lib/html'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { sendPairedMail } from '@/lib/mail'
+import { sendPairedMail, type MailAttachment } from '@/lib/mail'
+import { gatePassFields, gatePassPng } from '@/lib/gate-pass/qr'
 import {
   BRING,
   EVENT_DATE_LABEL,
@@ -149,7 +150,10 @@ function bulletList(items: readonly string[]): string {
     .join('')
 }
 
-function buildCustomerEmail(data: SignupPayload, code: string): string {
+/** The inline attachment's id; the email's <img> points at `cid:` + this. */
+const GATE_PASS_CID = 'gate-pass'
+
+function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boolean): string {
   const ticket = getTicket(data.ticketId)
   const firstName = escapeHtml(data.name.split(' ')[0])
 
@@ -168,12 +172,18 @@ function buildCustomerEmail(data: SignupPayload, code: string): string {
 
   <tr><td style="background-color:#ffffff;padding:32px 40px;">
 
-    <!-- The code -->
+    <!-- The Gate pass (R-008): the QR travels as an inline attachment, so the
+         code text below it is what remains if a mail client hides images. -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:2px solid #e6b325;border-radius:10px;overflow:hidden;margin-bottom:28px;">
       <tr><td style="background-color:#fdf6e3;padding:20px;" align="center">
-        <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#b8880a;font-weight:600;">Your code</p>
+        <p style="margin:0;font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#b8880a;font-weight:600;">Your gate pass</p>
+        ${
+          withGatePass
+            ? `<img src="cid:${GATE_PASS_CID}" width="240" height="240" alt="Your gate pass, code ${escapeHtml(code)}" style="display:block;margin:14px auto 4px;width:240px;height:240px;border:0;background-color:#ffffff;border-radius:6px;">`
+            : ''
+        }
         <h2 style="margin:8px 0 6px;font-size:32px;font-weight:700;color:#0e3e2e;letter-spacing:4px;font-family:monospace;">${escapeHtml(code)}</h2>
-        <p style="margin:0;font-size:13px;color:#6b6455;">Keep this. It is how we find you at the gate.</p>
+        <p style="margin:0;font-size:14px;font-weight:700;color:#0e3e2e;">Screenshot this now. Show it at the gate.</p>
       </td></tr>
     </table>
 
@@ -407,6 +417,17 @@ export async function POST(request: Request) {
       )
     }
 
+    // The Gate pass QR, drawn here and attached inline. If drawing it fails,
+    // the email still goes, with the code as text: the gate accepts a typed
+    // code, and "your name still gets you in".
+    let gatePass: MailAttachment | null = null
+    try {
+      const png = await gatePassPng(gatePassFields(code, payload.name, ticket.label))
+      gatePass = { filename: `gate-pass-${code}.png`, content: png.toString('base64'), content_id: GATE_PASS_CID }
+    } catch (err) {
+      console.error('MAD Settings gate pass QR failed; sending without it:', err)
+    }
+
     const result = await sendPairedMail(resendKey, {
       from: FROM,
       internal: {
@@ -418,7 +439,8 @@ export async function POST(request: Request) {
       customer: {
         to: payload.email,
         subject: `You are in — MAD Settings, ${EVENT_DATE_LABEL} (${code})`,
-        html: buildCustomerEmail(payload, code),
+        html: buildCustomerEmail(payload, code, gatePass !== null),
+        attachments: gatePass ? [gatePass] : undefined,
       },
     })
 

@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** 2026-10-25: Session 2.2 (camera) built and the whole of Padi Check restyled to the founder's designs and logo (see build sequence Section 9). Waiting on the owner: phone test of the camera and the new look on the preview with both phones; go-ahead for Session 2.3 (gate pass in the confirmation email). Then 2.4 admin pages, 3.1 checks, 3.2 run-through.
+**Next action:** 2026-10-25: founder confirmed on the phone that camera scanning and the new look work. Session 2.3 built: the confirmation email carries the Gate pass inline. Waiting on the owner: one TEST sign-up on the preview with their own email, open in Gmail web and app, scan the email QR green (AC-R008-01). Then 2.4 admin pages.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
