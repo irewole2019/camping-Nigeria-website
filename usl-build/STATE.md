@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** Session 1.5 in progress 2026-10-25: branch pushed, Preview env vars set by the owner (MAD Settings sheet URL as a branch-only Preview value), preview redeployed and serving /padi-check at https://v0-camping-nigeria-website-git-feat-padi-check-usl-systems.vercel.app/padi-check (behind Vercel Authentication; a 23-hour share link was issued for the phone). Waiting on the phone test: sign in, TEST Two green within 3 s, Call Toyosi dials, preview screens outdoors. Then Session 2.1. Note for 2.2: the site Permissions-Policy blocks the camera.
+**Next action:** Sessions 0.1 to 1.5 done 2026-10-25 (walking skeleton passed on the founder's phone: green about 2 s, red about 4 s, Call Toyosi correct, sheet updated). Vercel now points at the new Upstash database for all environments. Next: Session 2.1, Gate pass QR on the confirmation page (also fix the unloaded font-mono there).
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
