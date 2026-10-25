@@ -101,7 +101,7 @@ function Confetti() {
 
 function Tile({ icon, title, sub, className = '' }: { icon: ReactNode; title: string; sub?: string; className?: string }) {
   return (
-    <div className={`flex min-w-0 items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-3.5 py-3.5 text-left ${className}`}>
+    <div className={`flex min-w-0 items-center gap-3 rounded-2xl border border-white/15 bg-black/15 px-3.5 py-3.5 text-left ${className}`}>
       <span className="shrink-0" aria-hidden="true">
         {icon}
       </span>
@@ -186,7 +186,7 @@ export default function ResultScreen({
   return (
     <section
       className="flex min-h-dvh flex-col text-white"
-      style={{ backgroundImage: `radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,0.12), transparent 60%), linear-gradient(to bottom, ${spec.from}, ${spec.to})` }}
+      style={{ backgroundImage: `radial-gradient(120% 60% at 50% 0%, rgba(255,255,255,0.05), transparent 60%), linear-gradient(to bottom, ${spec.from}, ${spec.to})` }}
       aria-labelledby="padi-result-word"
     >
       <div className="mx-auto flex w-full max-w-[480px] flex-1 flex-col px-5 pb-8 pt-4">

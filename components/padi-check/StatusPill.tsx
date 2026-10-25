@@ -15,7 +15,7 @@ export default function StatusPill({
   tone: 'glass' | 'light'
 }) {
   if (!counts && fast === null) return <span className="h-11" aria-hidden="true" />
-  const shell = tone === 'glass' ? 'bg-black/25 text-white' : 'bg-brand-dark text-white'
+  const shell = tone === 'glass' ? 'bg-black/40 text-white' : 'bg-brand-dark text-white'
   return (
     <span className={`inline-flex h-11 shrink-0 items-center gap-3 whitespace-nowrap rounded-full px-4 font-sans ${shell}`}>
       {counts && (

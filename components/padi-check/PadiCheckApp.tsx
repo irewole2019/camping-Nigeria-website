@@ -215,14 +215,14 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
 
         <div className="my-7 flex items-center gap-4" aria-hidden="true">
           <span className="h-px flex-1 bg-brand-dark/15" />
-          <span className="font-sans text-lg text-brand-dark/60">{SCANNER_COPY.or}</span>
+          <span className="font-sans text-lg text-brand-dark/75">{SCANNER_COPY.or}</span>
           <span className="h-px flex-1 bg-brand-dark/15" />
         </div>
 
         <h2 id="padi-enter-code" className="font-sans text-[1.75rem] font-bold leading-tight text-brand-dark">
           {SCANNER_COPY.enterCode}
         </h2>
-        <p className="mb-5 mt-1 font-sans text-lg text-brand-dark/65">{SCANNER_COPY.enterCodeHint}</p>
+        <p className="mb-5 mt-1 font-sans text-lg text-brand-dark/75">{SCANNER_COPY.enterCodeHint}</p>
         <TypeACode
           value={chars}
           onChange={setChars}
