@@ -5,10 +5,16 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import PadiLogo from './PadiLogo'
-import { DETAIL_COPY, LOGIN_COPY, RESULTS } from '@/lib/padi-check/copy'
+import { ADMIN_COPY, DETAIL_COPY, LOGIN_COPY, RESULTS } from '@/lib/padi-check/copy'
+import type { PadiRole } from '@/lib/padi-check/session'
 
-/** Surface 4 in the founder's design (2026-10-25): the volunteer's password, nothing else. */
-export default function PadiLogin() {
+/**
+ * Surface 4 in the founder's design (2026-10-25): one password, nothing else.
+ * `admin` is the same screen for the card and list pages, with the admin
+ * password; signing in as admin also works for scanning.
+ */
+export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
+  const admin = role === 'admin'
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [visible, setVisible] = useState(false)
@@ -24,7 +30,7 @@ export default function PadiLogin() {
       const res = await fetch('/api/padi-check/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, role: 'volunteer' }),
+        body: JSON.stringify({ password, role }),
       })
       if (res.ok) {
         router.refresh()
@@ -67,7 +73,7 @@ export default function PadiLogin() {
             <span className="font-bold">{LOGIN_COPY.wordmarkBold}</span>{' '}
             <span className="font-normal">{LOGIN_COPY.wordmarkLight}</span>
           </h1>
-          <p className="mt-4 max-w-[18rem] font-sans text-lg leading-snug text-white/85">{LOGIN_COPY.tagline}</p>
+          <p className="mt-4 max-w-[18rem] font-sans text-lg leading-snug text-white/85">{admin ? ADMIN_COPY.tagline : LOGIN_COPY.tagline}</p>
         </div>
 
         <form
@@ -108,14 +114,14 @@ export default function PadiLogin() {
             disabled={!password || sending}
             className="flex h-16 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-b from-[#6ee7a0] to-[#4ade80] font-sans text-xl font-bold text-brand-dark shadow-lg disabled:opacity-60 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60"
           >
-            {LOGIN_COPY.submit}
+            {admin ? ADMIN_COPY.submit : LOGIN_COPY.submit}
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </button>
         </form>
 
         <p className="mx-auto mt-auto inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/30 px-5 py-3 font-sans text-base backdrop-blur-sm">
           <ShieldCheck className="h-5 w-5 text-[#4ade80]" aria-hidden="true" />
-          {LOGIN_COPY.volunteerOnly}
+          {admin ? ADMIN_COPY.adminOnly : LOGIN_COPY.volunteerOnly}
         </p>
       </div>
     </main>

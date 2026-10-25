@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** 2026-10-25: Session 2.3 passed (gate pass QR shows in Gmail web and app; founder confirmed). Now Session 2.4: admin login, Gate card, printed guest list.
+**Next action:** 2026-10-25: Session 2.4 built: admin sign-in, /padi-check/card (A5 Gate card, Surface 6 copy, Toyosi number from env) and /padi-check/list (paid guests, name/code/ticket/tent, sorted, In box), GET /api/padi-check/roster (403 for volunteer). Checked locally with a pretend Toyosi number. Note for go-live: 4 sheet rows do not start with TEST; confirm they should stay. Next: Session 3.1 security, privacy and accessibility sweep, then 3.2 full run-through on both phones.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 

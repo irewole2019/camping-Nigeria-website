@@ -20,6 +20,37 @@ export const LOGIN_COPY = {
   volunteerOnly: 'Volunteer access only',
 }
 
+/** The admin sign-in on the card and list pages (Session 2.4; not in the copy deck, which has no admin surface). */
+export const ADMIN_COPY = {
+  tagline: 'Gate card and guest list',
+  submit: 'Sign in',
+  adminOnly: 'Admin access only',
+  print: 'Print',
+}
+
+/** Surface 6, the printed A5 Gate card, verbatim from usl-build/6-landing-page-copy.md. */
+export const CARD_COPY = {
+  title: 'Padi Check · Gate card',
+  rows: [
+    { tone: 'welcome', lead: 'Green, Welcome in:', text: 'let them in. Hand a tent to "Tent" guests.' },
+    { tone: 'already', lead: 'Orange, Already checked in:', text: 'do not let in yet. Call Toyosi.' },
+    { tone: 'not-found', lead: 'Red:', text: 'do not turn anyone away. Call Toyosi.' },
+    { tone: 'offline', lead: 'Grey, Cannot reach the list:', text: 'try again. Still stuck? Use the Lookup tab in the Sheet.' },
+  ] as const,
+  camera: { lead: 'Camera not working?', text: 'Type the code in the box.' },
+  toyosi: 'Toyosi:',
+  never: { lead: 'Never', text: "show or read out a guest's details to anyone else." },
+}
+
+/** The printed guest list (R-011). */
+export const LIST_COPY = {
+  title: 'Padi Check · Guest list',
+  columns: { name: 'Name', code: 'Code', ticket: 'Ticket', tent: 'Tent', in: 'In' },
+  printed: (when: string) => `Printed ${when} (Lagos time)`,
+  count: (n: number) => `${n} paid ${n === 1 ? 'guest' : 'guests'}`,
+  empty: 'No paid guests yet.',
+}
+
 export const SCANNER_COPY = {
   wordmark: 'Padi Check',
   /** Visible count, as drawn: "4 of 80". */
