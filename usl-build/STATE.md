@@ -3,7 +3,7 @@
 **Project:** Padi Check (internal event check-in tool; formerly "Event QR Check-in")
 **Mode:** student
 **Terminal stage:** 8 (default)
-**Last updated:** 2026-10-25
+**Last updated:** 2026-10-26
 
 **North star (one paragraph):**
 Camping Nigeria's single gate operative currently "checks" event sign-up codes (SCN-, MAD-XXXXXX) by glancing
@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** 2026-10-25: Sessions 2.4 and 3.1 done (sweep: 8 checks, two fixed: contrast and analytics). Next: Session 3.2, full run-through on both phones (owner), then 4.1 go-live.
+**Next action:** 2026-10-26: Session 3.2 run on the volunteer phone (not-found, not-paid, already seen in preview logs). Session 4.1 in progress: CLAUDE.md briefed, main merged into the branch (docs only, no overlap), all checks pass. Waiting on the owner: (1) Apps Script production deployment to the new version, (2) Vercel Production env vars (six Padi Check + CRON_SECRET), then approval to merge into main.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
