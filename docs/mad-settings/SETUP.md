@@ -151,6 +151,10 @@ One-time setup, in the Apps Script editor:
 5. **Deploy → New deployment → Web app** (Execute as: Me, Access: Anyone).
    This makes a **separate test URL** for building and testing. Put it in
    `.env.local` as `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL`.
+   *(History: this test deployment was archived on 26/10/2026, after
+   go-live. There is now one deployment, the live one, and `.env.local` has
+   no sheet link, so local runs skip the sheet instead of writing test rows
+   into the real one.)*
 
 **Leave the existing deployment alone until go-live.** The live site keeps
 using the old URL, on the old version, so sign-ups are unaffected while
@@ -187,12 +191,12 @@ hand"), but then you have typing to do.
    bottom ends with a line like
    `People per tribe: {"Gadaff":1,"Kutinga":1,"Mandi":0,"Sellas":0}`.
    Running it again changes nothing.
-4. Publish the new version to **both** links — the live one the website uses,
-   and the test one:
-   **Deploy → Manage deployments** → pick a deployment on the left → the
-   **pencil** icon → **Version: New version** → **Deploy**. Then pick the
-   other deployment and do the same. Never use *New deployment* here: that
-   makes a new link the website does not know.
+4. Publish the new version to the live link:
+   **Deploy → Manage deployments** → the deployment on the left → the
+   **pencil** icon → **Version: New version** → **Deploy**. Never use
+   *New deployment* here: that makes a new link the website does not know.
+   (Done on 26/10/2026. There is only one deployment now: the separate test
+   one was archived the same day.)
 5. Check: paste the live Web app URL into a browser. It still shows the
    heartbeat (`"service":"mad-settings-signups"`). Then tell whoever is
    updating the website that the sheet is done.
