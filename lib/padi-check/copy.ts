@@ -42,6 +42,74 @@ export const CARD_COPY = {
   never: { lead: 'Never', text: "show or read out a guest's details to anyone else." },
 }
 
+/**
+ * The volunteer's how-to page, /padi-check/guide (2026-10-26). Same rules as
+ * the Gate card, in more words. No phone numbers: the page needs no sign-in.
+ */
+export const GUIDE_COPY = {
+  linkLabel: 'How to use Padi Check',
+  back: 'Back to Padi Check',
+  title: 'How to use Padi Check',
+  intro: 'Everything you need for the gate at MAD Settings. It takes five minutes to read.',
+  before: {
+    heading: 'Before the gates open',
+    steps: [
+      'Charge the phone fully and check it has data.',
+      'Open campingnigeria.com/padi-check and sign in with the password Toyosi gives you.',
+      'When the phone asks to use the camera, tap Allow.',
+      'Turn the screen brightness up.',
+      'Keep the Gate card and the printed guest list with you.',
+    ],
+  },
+  checkIn: {
+    heading: 'Checking in a guest',
+    steps: [
+      'Ask the guest to show their gate pass: the QR code in their email, or a screenshot of it.',
+      'Hold the phone about an arm’s length away and point the camera at the QR code. Hold still for a second.',
+      'The whole screen changes colour. Read the big words.',
+      'When you are done with that guest, press Next guest.',
+    ],
+    noQr: {
+      lead: 'No QR code?',
+      text: 'Type the six letters and numbers after MAD- into the box and press Check.',
+    },
+  },
+  colours: {
+    heading: 'What the colours mean',
+    rows: [
+      { state: 'welcome', todo: 'Let them in and tell them their tribe. If it says Tent, hand them a tent.' },
+      { state: 'already', todo: 'This code was used before, at the time shown. Do not let them in yet. Call Toyosi.' },
+      { state: 'not-found', todo: 'Check the code with the guest, or type it again. Do not turn anyone away. Call Toyosi.' },
+      { state: 'not-paid', todo: 'Do not turn anyone away. Call Toyosi.' },
+      { state: 'offline', todo: 'There is no signal. Press Try again. Still stuck? Use the printed guest list.' },
+      { state: 'camera-off', todo: 'Allow the camera in your browser settings, or type the code instead.' },
+    ] as const,
+    callToyosi: 'Call Toyosi is a button on every orange and red screen. It rings Toyosi straight away.',
+  },
+  tribes: {
+    heading: 'Tribes',
+    text: 'Every guest belongs to one of four tribes. The green screen shows theirs as a coloured dot with its name. Tell the guest which tribe they are in.',
+  },
+  topBar: {
+    heading: 'The top of the screen',
+    count: 'shows how many guests are in so far, out of everyone who has paid.',
+    fast: 'means answers come straight away.',
+    slow: 'means each check takes a few seconds. Keep going: it still works.',
+  },
+  problems: {
+    heading: 'If something goes wrong',
+    rows: [
+      { lead: 'The phone dies or there is no signal.', text: 'Use the printed guest list. Find the name and tick the box. Their name still gets them in.' },
+      { lead: 'The guest has no gate pass.', text: 'Ask for their name and find it on the printed list, or ask for their code and type it in.' },
+      { lead: 'You are not sure.', text: 'Call Toyosi. Never guess, and never turn a guest away on your own.' },
+    ],
+  },
+  privacy: {
+    heading: 'Keep it private',
+    text: "Never show or read out a guest's details to anyone else, and never share the password.",
+  },
+}
+
 /** The printed guest list (R-011). */
 export const LIST_COPY = {
   title: 'Padi Check · Guest list',

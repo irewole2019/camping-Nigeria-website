@@ -2,10 +2,11 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BookOpen, Eye, EyeOff, ShieldCheck } from 'lucide-react'
 import PadiLogo from './PadiLogo'
-import { ADMIN_COPY, DETAIL_COPY, LOGIN_COPY, RESULTS } from '@/lib/padi-check/copy'
+import { ADMIN_COPY, DETAIL_COPY, GUIDE_COPY, LOGIN_COPY, RESULTS } from '@/lib/padi-check/copy'
 import type { PadiRole } from '@/lib/padi-check/session'
 
 /**
@@ -118,6 +119,16 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </button>
         </form>
+
+        {!admin && (
+          <Link
+            href="/padi-check/guide"
+            className="mx-auto mt-6 inline-flex h-11 items-center gap-2 rounded-full px-4 font-sans text-base font-semibold text-white underline underline-offset-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#4ade80]/60"
+          >
+            <BookOpen className="h-5 w-5" aria-hidden="true" />
+            {GUIDE_COPY.linkLabel}
+          </Link>
+        )}
 
         <p className="mx-auto mt-auto inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/30 px-5 py-3 font-sans text-base backdrop-blur-sm">
           <ShieldCheck className="h-5 w-5 text-[#4ade80]" aria-hidden="true" />

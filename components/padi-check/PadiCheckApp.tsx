@@ -1,15 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Camera, Lightbulb } from 'lucide-react'
+import { BookOpen, Camera, Lightbulb } from 'lucide-react'
 import PadiCheckShell from './PadiCheckShell'
 import PadiLogo from './PadiLogo'
 import ResultScreen from './ResultScreen'
 import Scanner from './Scanner'
 import StatusPill from './StatusPill'
 import TypeACode from './TypeACode'
-import { DETAIL_COPY, RESULTS, SCANNER_COPY } from '@/lib/padi-check/copy'
+import { DETAIL_COPY, GUIDE_COPY, RESULTS, SCANNER_COPY } from '@/lib/padi-check/copy'
 import { CODE_PREFIX, extractCode } from '@/lib/padi-check/extract-code'
 import { countsFrom, toScreen, type CheckReply, type ScreenContent } from '@/lib/padi-check/screen'
 
@@ -241,6 +242,14 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
             <span className="block font-sans text-base text-brand-dark/70">{SCANNER_COPY.tipText}</span>
           </span>
         </div>
+
+        <Link
+          href="/padi-check/guide"
+          className="mx-auto mt-5 flex h-11 w-fit items-center gap-2 rounded-full px-4 font-sans text-base font-semibold text-brand-dark underline underline-offset-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-accent/50"
+        >
+          <BookOpen className="h-5 w-5" aria-hidden="true" />
+          {GUIDE_COPY.linkLabel}
+        </Link>
       </div>
     </PadiCheckShell>
   )

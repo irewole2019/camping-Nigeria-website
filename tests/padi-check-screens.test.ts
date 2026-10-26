@@ -161,3 +161,22 @@ describe('Padi Check result content (AC-R005-03)', () => {
     expect(countsFrom(null)).toBeNull()
   })
 })
+
+describe('Padi Check volunteer guide (/padi-check/guide)', () => {
+  it('keeps the house rules', async () => {
+    const { GUIDE_COPY } = await import('@/lib/padi-check/copy')
+    const all = JSON.stringify(GUIDE_COPY)
+    expect(all).not.toMatch(/\b(can't|don't|didn't|isn't|won't|we're|you're|it's|let's)\b/i)
+    expect(all).not.toMatch(/invalid|denied|secure|fraud/i)
+  })
+
+  it('carries no phone number, because it needs no sign-in', async () => {
+    const { GUIDE_COPY } = await import('@/lib/padi-check/copy')
+    expect(JSON.stringify(GUIDE_COPY)).not.toMatch(/\+?\d[\d\s]{8,}/)
+  })
+
+  it('explains every result screen', async () => {
+    const { GUIDE_COPY, RESULTS } = await import('@/lib/padi-check/copy')
+    expect(GUIDE_COPY.colours.rows.map((r) => r.state).sort()).toEqual(Object.keys(RESULTS).sort())
+  })
+})
