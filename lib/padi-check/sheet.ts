@@ -25,6 +25,10 @@ export interface GateResult {
   usesTent?: boolean
   /** The tribe's display name ("Kutinga"), only when it is one of the four. */
   tribe?: string
+  /** Couple tickets: the second person's name (blank for couples from before the form asked). */
+  partnerName?: string
+  /** Couple tickets: the second person's tribe, never the same as `tribe`. */
+  partnerTribe?: string
   checkedInAt?: string
   checkedIn?: number
   total?: number
@@ -37,6 +41,10 @@ export interface RosterEntry {
   usesTent: boolean
   /** The tribe's display name, when the row has a valid one. */
   tribe?: string
+  /** Couple tickets: the second person's name, if the form had it. */
+  partnerName?: string
+  /** Couple tickets: the second person's tribe. */
+  partnerTribe?: string
   /** Present when the sheet already shows the guest as arrived. */
   checkedInAt?: string
 }
@@ -71,12 +79,24 @@ export function toGateResult(raw: unknown): GateResult {
   if (typeof raw.usesTent === 'boolean') out.usesTent = raw.usesTent
   const tribe = tribeFromName(raw.tribe)
   if (tribe) out.tribe = tribe.name
+  Object.assign(out, partnerFields(raw, tribe?.name))
   if (typeof raw.checkedInAt === 'string') out.checkedInAt = raw.checkedInAt
   const checkedIn = count(raw.checkedIn)
   const total = count(raw.total)
   if (checkedIn !== undefined) out.checkedIn = checkedIn
   if (total !== undefined) out.total = total
   return out
+}
+
+/**
+ * A couple's partner, from a script reply: their tribe only when it is a real
+ * tribe different from the guest's, and their name only alongside it.
+ */
+function partnerFields(raw: Record<string, unknown>, guestTribe?: string): { partnerName?: string; partnerTribe?: string } {
+  const partnerTribe = tribeFromName(raw.partnerTribe)
+  if (!guestTribe || !partnerTribe || partnerTribe.name === guestTribe) return {}
+  const name = typeof raw.partnerName === 'string' ? raw.partnerName.trim().slice(0, 80) : ''
+  return { partnerTribe: partnerTribe.name, ...(name ? { partnerName: name } : {}) }
 }
 
 /** The roster reply, reduced to well-formed entries with only the allowed fields. */
@@ -93,6 +113,7 @@ export function toRoster(raw: unknown): RosterEntry[] | null {
     }
     const tribe = tribeFromName(r.tribe)
     if (tribe) entry.tribe = tribe.name
+    Object.assign(entry, partnerFields(r, tribe?.name))
     if (typeof r.checkedInAt === 'string' && r.checkedInAt) entry.checkedInAt = r.checkedInAt
     out.push(entry)
   }

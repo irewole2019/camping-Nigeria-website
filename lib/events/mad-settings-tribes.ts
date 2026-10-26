@@ -105,6 +105,22 @@ export function tribeFromCode(code: string): Tribe {
   return TRIBES[h % TRIBES.length]
 }
 
+/**
+ * Fallback partner tribe for a couple the sheet did not record: always a
+ * different tribe from the guest's, and stable for the code.
+ */
+export function partnerTribeFromCode(code: string, guestTribe: Tribe): Tribe {
+  const others = TRIBES.filter((t) => t.id !== guestTribe.id)
+  let h = 7
+  for (const ch of code.trim().toUpperCase()) h = (h * 17 + ch.charCodeAt(0)) >>> 0
+  return others[h % others.length]
+}
+
+/** "Ada Obi" → "Ada"; empty for a blank name. Splits on whitespace only. */
+export function firstNameOf(name: string): string {
+  return name.trim().split(/\s+/)[0] ?? ''
+}
+
 /** "Kutinga tribe badge: an eagle" — the badge's alt text, wherever it shows. */
 export function tribeBadgeAlt(tribe: Tribe): string {
   const article = /^[aeiou]/i.test(tribe.animal) ? 'an' : 'a'

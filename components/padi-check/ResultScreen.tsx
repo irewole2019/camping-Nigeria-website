@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import StatusPill from './StatusPill'
 import { BUTTON_COPY, DETAIL_COPY, RESULTS, SCANNER_COPY, type ResultButton } from '@/lib/padi-check/copy'
+import { firstNameOf } from '@/lib/events/mad-settings-tribes'
 import { initials, type ScreenContent } from '@/lib/padi-check/screen'
 
 /**
@@ -118,9 +119,10 @@ function Tile({ icon, title, sub, className = '' }: { icon: ReactNode; title: st
  * tribe's colour rather than the badge art: the green and black badges would
  * vanish on the green and dark screens.
  */
-function TribeTile({ tribe }: { tribe: NonNullable<ScreenContent['tribe']> }) {
+function TribeTile({ tribe, who, className }: { tribe: NonNullable<ScreenContent['tribe']>; who?: string; className?: string }) {
   return (
     <Tile
+      className={className}
       icon={
         <span
           className="block h-7 w-7 rounded-full border-[3px] border-white"
@@ -128,8 +130,24 @@ function TribeTile({ tribe }: { tribe: NonNullable<ScreenContent['tribe']> }) {
         />
       }
       title={tribe.name}
-      sub={DETAIL_COPY.tribe}
+      sub={who ?? DETAIL_COPY.tribe}
     />
+  )
+}
+
+/**
+ * One tile per person: a couple ticket shows two, each labelled with whose
+ * tribe it is, so the volunteer can tell each of them theirs.
+ */
+function TribeTiles({ content }: { content: ScreenContent }) {
+  if (!content.tribe) return null
+  if (!content.partner) return <TribeTile tribe={content.tribe} />
+  const guestFirst = firstNameOf(content.name ?? '')
+  return (
+    <div className="flex gap-3">
+      <TribeTile className="flex-1" tribe={content.tribe} who={guestFirst || DETAIL_COPY.tribe} />
+      <TribeTile className="flex-1" tribe={content.partner.tribe} who={firstNameOf(content.partner.name ?? '') || DETAIL_COPY.partner} />
+    </div>
   )
 }
 
@@ -249,12 +267,12 @@ export default function ResultScreen({
               )}
             </div>
           )}
-          {state === 'welcome' && content.tribe && <TribeTile tribe={content.tribe} />}
+          {state === 'welcome' && <TribeTiles content={content} />}
           {state === 'already' && content.time && (
             <Tile icon={<Clock className="h-8 w-8" />} title={DETAIL_COPY.checkedInAt(content.time)} />
           )}
           {/* On the orange screen the first-arrival time is what matters; the tribe follows it. */}
-          {state === 'already' && content.tribe && <TribeTile tribe={content.tribe} />}
+          {state === 'already' && <TribeTiles content={content} />}
           {state === 'not-found' && content.code && <CodeBox code={content.code} />}
           {content.detail && (
             <p className={`font-sans text-lg leading-snug ${state === 'not-found' ? 'text-left' : 'text-center'}`}>{content.detail}</p>

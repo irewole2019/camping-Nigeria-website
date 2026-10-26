@@ -934,3 +934,15 @@ Padi Check was built against a separate TEST deployment of the live sheet, so th
 **Consequence: `.env.local` has an empty `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` on purpose.** The only remaining link is the live one, and putting it in a developer's `.env.local` would make every local sign-up a real row in the live sheet (and, for a sleepover, a tent). Local sign-ups and Padi Check therefore skip the sheet and fail soft. A script that genuinely needs the live sheet reads the link under its own name for one run — see conventions.md, "One-off scripts".
 
 **How to check the live deployment's version without the link:** sign in to the live `/padi-check` as admin and read the guest list. Fields only the newer script returns (e.g. `tribe`) prove which version is live.
+
+## A couple ticket is two people, with two tribes
+
+Asked for by the founders on 26/10/2026, hours after tribes went live. A couple ticket is one sign-up, one code and one gate scan, but two people, and the houses work better when a couple is split across them.
+
+**The partner gets a name.** Without it the email could only say "your partner", and the volunteer at the gate would have two tribes and no way to say whose is whose. So the form asks for the partner's name on couple tickets only, the API requires it there and stores '' for any other ticket.
+
+**Each person counts one.** Balancing now counts people, not sign-ups: Tribe is one person, Partner Tribe another. The one transitional case — a couple row from before the split, with no Partner Tribe yet — still counts two in Tribe, because both people are there until `setupPartnerTribes()` moves the partner. The partner always gets the least-filled tribe *other than* the guest's.
+
+**Two new last columns, Partner and Partner Tribe,** for the same reason Tribe went last: Padi Check reads the earlier columns by position.
+
+**Never the same tribe twice, wherever it is read.** The script cannot produce it, but the cell can be edited by hand, so the site (records, gate, screens, confirmation page) drops a partner tribe equal to the guest's rather than show "Kutinga and Kutinga".

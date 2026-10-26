@@ -5,13 +5,21 @@ import {
   TRIBES,
   getTribe,
   isValidTribeId,
+  firstNameOf,
+  partnerTribeFromCode,
   peopleForTicket,
   tribeBadgeAlt,
   tribeFromCode,
   tribeFromName,
 } from '@/lib/events/mad-settings-tribes'
 import { TICKETS } from '@/lib/events/mad-settings'
-import { EMAIL_SITE_URL, socialBlockHtml, tribeBlockHtml } from '@/lib/events/mad-settings-email'
+import {
+  EMAIL_SITE_URL,
+  buildTribeAnnouncementEmail,
+  socialBlockHtml,
+  tribeAnnouncementSubject,
+  tribeBlockHtml,
+} from '@/lib/events/mad-settings-email'
 import { generateSignupCode, recordMadSettingsSignup } from '@/lib/events/mad-settings-records'
 import { toGateResult, toRoster, type RosterEntry, type SheetClient } from '@/lib/padi-check/sheet'
 import { checkCode, createMemoryGateStore, refreshRoster } from '@/lib/padi-check/gate'
@@ -111,6 +119,7 @@ describe('the sheet’s reply carries the tribe', () => {
     usesTent: true,
     price: 35000,
     paid: 'Yes' as const,
+    partnerName: 'Tunde Bello',
   }
 
   async function record(reply: unknown) {
@@ -164,5 +173,141 @@ describe('the gate shows the tribe', () => {
     const { result } = await checkCode('MAD-ADA234', { store, sheet, now: Date.UTC(2026, 9, 31, 18) })
     expect(result.status).toBe('welcome')
     expect(result.tribe).toBe('Mandi')
+  })
+})
+
+describe('couples: two people, two different tribes', () => {
+  it('takes the first name by spaces, not by the letter s (bug in the 26/10 tribe email)', () => {
+    expect(firstNameOf('Tosin Ade')).toBe('Tosin')
+    expect(firstNameOf('  Sola   Bello ')).toBe('Sola')
+    expect(firstNameOf('')).toBe('')
+    const html = buildTribeAnnouncementEmail({ name: 'Tosin Ade', code: 'MAD-B8K2MQ' }, getTribe('mandi'))
+    expect(html).toContain('Meet your tribe, Tosin<')
+  })
+
+  it('never gives a partner the guest’s own tribe in the fallback', () => {
+    for (let i = 0; i < 200; i++) {
+      const code = generateSignupCode()
+      const guest = tribeFromCode(code)
+      expect(partnerTribeFromCode(code, guest).id).not.toBe(guest.id)
+    }
+  })
+
+  it('shows both tribes, named, in the email', () => {
+    const html = tribeBlockHtml(getTribe('kutinga'), {
+      guestName: 'Ada Obi',
+      partner: { name: 'Tunde Bello', tribe: getTribe('mandi') },
+    })
+    expect(html).toContain('Your tribes')
+    expect(html).toContain('/tribes/kutinga.png')
+    expect(html).toContain('/tribes/mandi.png')
+    const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
+    expect(text).toContain('You are in Kutinga and Tunde is in Mandi')
+  })
+
+  it('says "your partner" when the name is not known (couples from before the form asked)', () => {
+    const html = tribeBlockHtml(getTribe('kutinga'), { guestName: 'Ada', partner: { name: '', tribe: getTribe('sellas') } })
+    expect(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')).toContain('your partner is in Sellas')
+    expect(tribeAnnouncementSubject(getTribe('kutinga'), { name: '', tribe: getTribe('sellas') })).toBe(
+      'Your MAD Settings tribes: Kutinga and Sellas',
+    )
+  })
+
+  it('passes a couple through the gate with both tribes, and drops a partner tribe equal to the guest’s', () => {
+    const r = toGateResult({ ok: true, status: 'welcome', name: 'Ada', tribe: 'Kutinga', partnerName: 'Tunde', partnerTribe: 'mandi' })
+    expect(r).toMatchObject({ tribe: 'Kutinga', partnerName: 'Tunde', partnerTribe: 'Mandi' })
+    const same = toGateResult({ ok: true, status: 'welcome', name: 'Ada', tribe: 'Kutinga', partnerTribe: 'Kutinga' })
+    expect(same.partnerTribe).toBeUndefined()
+    const screen = toScreen({ status: 'welcome', name: 'Ada', tribe: 'Kutinga', partnerName: 'Tunde', partnerTribe: 'Mandi' }, 'x')
+    expect(screen.partner?.tribe.id).toBe('mandi')
+    expect(screen.partner?.name).toBe('Tunde')
+  })
+
+  it('remembers a couple in the gate memory', async () => {
+    const roster: RosterEntry[] = [
+      { name: 'Ada', code: 'MAD-ADA234', ticketLabel: 'Sleepover couple (2 in a tent)', usesTent: true, tribe: 'Kutinga', partnerName: 'Tunde', partnerTribe: 'Mandi' },
+    ]
+    const sheet: SheetClient = {
+      checkIn: async () => ({ status: 'welcome' }),
+      stats: async () => ({ checkedIn: 0, total: 1 }),
+      roster: async () => roster,
+    }
+    const store = createMemoryGateStore()
+    await refreshRoster(store, sheet, Date.UTC(2026, 9, 31, 18))
+    const { result } = await checkCode('MAD-ADA234', { store, sheet, now: Date.UTC(2026, 9, 31, 18) })
+    expect(result).toMatchObject({ status: 'welcome', tribe: 'Kutinga', partnerName: 'Tunde', partnerTribe: 'Mandi' })
+  })
+})
+
+describe('couples: the sign-up route', () => {
+  const saved = { ...process.env }
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    process.env = { ...saved }
+  })
+
+  async function signUp(body: Record<string, unknown>, sheetReply: Record<string, unknown>) {
+    process.env.GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL = 'https://sheet.invalid/exec'
+    process.env.RESEND_API_KEY = 're_test'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    const sheetPosts: Record<string, unknown>[] = []
+    const mails: Record<string, unknown>[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        const json = JSON.parse(String(init?.body))
+        if (url.startsWith('https://sheet.invalid')) {
+          sheetPosts.push(json)
+          return new Response(JSON.stringify({ ...sheetReply, code: json.code }), { status: 200 })
+        }
+        mails.push(json)
+        return new Response(JSON.stringify({ id: 'x' }), { status: 200 })
+      }),
+    )
+    const { POST } = await import('@/app/api/mad-settings-signup/route')
+    const res = await POST(
+      new Request('http://localhost/api/mad-settings-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': `10.1.1.${Math.floor(Math.random() * 250)}` },
+        body: JSON.stringify({
+          name: 'Ada Obi',
+          email: 'ada@example.com',
+          phone: '0803 000 0000',
+          instagram: '',
+          ageConfirmed: true,
+          paidConfirmed: true,
+          website_confirm: '',
+          ...body,
+        }),
+      }),
+    )
+    return { res, json: await res.json(), sheetPosts, mails }
+  }
+
+  it('refuses a couple ticket without the partner’s name, before touching the sheet', async () => {
+    const { res, json, sheetPosts } = await signUp({ ticketId: 'couple', partnerName: '  ' }, { ok: true })
+    expect(res.status).toBe(400)
+    expect(json.error).toMatch(/partner/i)
+    expect(sheetPosts).toHaveLength(0)
+  })
+
+  it('sends the partner to the sheet and both tribes to the guest', async () => {
+    const { res, json, sheetPosts, mails } = await signUp(
+      { ticketId: 'couple', partnerName: 'Tunde Bello' },
+      { ok: true, tribe: 'Kutinga', partnerTribe: 'Mandi' },
+    )
+    expect(res.status).toBe(200)
+    expect(json).toMatchObject({ success: true, tribe: 'kutinga', partnerTribe: 'mandi' })
+    expect(sheetPosts[0].partnerName).toBe('Tunde Bello')
+    const guestMail = mails.find((m) => (m.to as string[])[0] === 'ada@example.com')!
+    expect(String(guestMail.html)).toContain('Tunde</strong> is in <strong>Mandi')
+  })
+
+  it('ignores a partner name sent with a single ticket', async () => {
+    const { json, sheetPosts } = await signUp({ ticketId: 'single', partnerName: 'Someone' }, { ok: true, tribe: 'Sellas' })
+    expect(json.partnerTribe).toBeUndefined()
+    expect(sheetPosts[0].partnerName).toBe('')
   })
 })

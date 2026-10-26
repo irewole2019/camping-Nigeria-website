@@ -210,6 +210,31 @@ them.
 **Test rows:** deleting them, as planned at go-live, is fine; the next
 sign-ups simply fill whichever tribe is now smallest.
 
+### Couples: one tribe each (added 26/10/2026)
+
+A couple ticket is two people, so they get **two different tribes**: the
+guest's in **Tribe**, their partner's in **Partner Tribe**. The form asks for
+the partner's name on couple tickets, and it goes in **Partner**. Each person
+counts as one when the tribes are balanced. Both tribes show in the email, on
+the "You are in" page, on the gate screen (one tile each, named) and on the
+printed list.
+
+To switch it on:
+
+1. **Extensions → Apps Script** → click in the code → **Ctrl+A** →
+   **Delete** → paste the whole of `docs/mad-settings/apps-script.gs` →
+   **Ctrl+S**.
+2. In the dropdown at the top, pick **`setupPartnerTribes`** → **Run**. It
+   adds the **Partner** and **Partner Tribe** headings at the far right and
+   gives any earlier couple a second tribe. (On 26/10 there were none.)
+   Running it again changes nothing.
+3. **Deploy → Manage deployments** → the deployment → **pencil** →
+   **Version: New version** → **Deploy**.
+
+**Moving a partner to another tribe:** type the tribe in their Partner Tribe
+cell. Keep it different from the same row's Tribe; the gate ignores a
+partner tribe that matches the guest's.
+
 ---
 
 ## The 80-tent cap lives in here

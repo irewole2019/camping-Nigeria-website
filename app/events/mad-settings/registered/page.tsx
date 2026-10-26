@@ -9,7 +9,7 @@ import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 import { isValidSignupCode } from '@/lib/events/mad-settings-records'
 import { gatePassFields, gatePassSvg } from '@/lib/gate-pass/qr'
-import { getTribe, isValidTribeId, tribeBadgeAlt } from '@/lib/events/mad-settings-tribes'
+import { firstNameOf, getTribe, isValidTribeId, tribeBadgeAlt, type Tribe } from '@/lib/events/mad-settings-tribes'
 import {
   BRING,
   EVENT_DATE_LABEL,
@@ -44,7 +44,14 @@ export const metadata = buildPageMetadata({
 export default async function MadSettingsRegisteredPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string; name?: string; ticket?: string; tribe?: string }>
+  searchParams: Promise<{
+    code?: string
+    name?: string
+    ticket?: string
+    tribe?: string
+    partner?: string
+    tribe2?: string
+  }>
 }) {
   const params = await searchParams
 
@@ -55,6 +62,10 @@ export default async function MadSettingsRegisteredPage({
   // moment. Editing it changes only this page: the email and the gate both
   // go by the sheet.
   const tribe = code && isValidTribeId(params.tribe) ? getTribe(params.tribe) : null
+  // A couple: the second person's tribe, which the sheet never makes the same.
+  const partnerTribe =
+    tribe && isValidTribeId(params.tribe2) && params.tribe2 !== tribe.id ? getTribe(params.tribe2) : null
+  const partnerFirst = firstNameOf((params.partner || '').slice(0, 80))
   // The Gate pass QR (R-007), drawn on the server as inline SVG. Only for a
   // code of the right shape; the name and ticket in it are a convenience for
   // whoever reads it, and the gate trusts only the code.
@@ -122,7 +133,22 @@ export default async function MadSettingsRegisteredPage({
             </p>
           )}
 
-          {tribe && (
+          {tribe && partnerTribe && (
+            <div className="mt-6 rounded-2xl border-2 border-brand-accent bg-white px-4 py-7 text-center sm:px-6">
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-brand-dark/60">
+                Your tribes
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <TribeBadge who={firstName || 'You'} tribe={tribe} />
+                <TribeBadge who={partnerFirst || 'Your partner'} tribe={partnerTribe} />
+              </div>
+              <p className="mt-5 font-sans text-base text-brand-dark">
+                On a couple ticket, each of you belongs to a different MAD Settings tribe.
+              </p>
+            </div>
+          )}
+
+          {tribe && !partnerTribe && (
             <div
               className="mt-6 rounded-2xl border-2 bg-white px-6 py-7 text-center"
               style={{ borderColor: tribe.colour }}
@@ -234,6 +260,27 @@ export default async function MadSettingsRegisteredPage({
 
       <Footer />
     </main>
+  )
+}
+
+function TribeBadge({ who, tribe }: { who: string; tribe: Tribe }) {
+  return (
+    <div className="flex flex-col items-center">
+      <p className="font-sans text-sm font-bold text-brand-dark">{who}</p>
+      <Image
+        src={tribe.image}
+        alt={tribeBadgeAlt(tribe)}
+        width={tribe.imageWidth}
+        height={tribe.imageHeight}
+        className="mt-2 h-auto w-full max-w-[180px]"
+      />
+      <span
+        className="mt-3 inline-block rounded-full px-3 py-0.5 font-sans text-sm font-bold"
+        style={{ backgroundColor: tribe.colour, color: tribe.ink }}
+      >
+        {tribe.name}
+      </span>
+    </div>
   )
 }
 

@@ -12,20 +12,22 @@ describe('printed guest list (AC-R011-01)', () => {
     ok: true,
     roster: [
       { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticketLabel: 'Attendance only (no tent)', usesTent: false, email: 'z@example.com', phone: '+2348000000001' },
-      { name: 'ada Obi', code: 'MAD-AAA234', ticketLabel: 'Sleepover single (1 person)', usesTent: true, instagram: '@ada', price: 30000, checkedInAt: '2026-10-31T19:05:00', tribe: 'kutinga ' },
+      { name: 'ada Obi', code: 'MAD-AAA234', ticketLabel: 'Sleepover couple (2 in a tent)', usesTent: true, instagram: '@ada', price: 30000, checkedInAt: '2026-10-31T19:05:00', tribe: 'kutinga ', partnerName: 'Tunde Bello', partnerTribe: 'mandi' },
     ],
   }
 
-  it('keeps name, code, ticket, tent and tribe only, and never email or phone', () => {
+  it('keeps name, code, ticket, tent, tribe and a couple’s partner only, and never email or phone', () => {
     const list = toPrintedList(toRoster(raw)!)
-    for (const g of list) expect(Object.keys(g).sort()).toEqual(['code', 'name', 'tent', 'ticket', 'tribe'])
+    for (const g of list) {
+      expect(Object.keys(g).sort()).toEqual(['code', 'name', 'partnerName', 'partnerTribe', 'tent', 'ticket', 'tribe'])
+    }
     expect(JSON.stringify(list)).not.toMatch(/example\.com|\+234|@ada|30000/)
   })
 
   it('sorts by name, ignoring case, labels the tent, and tidies the tribe (blank when the row has none)', () => {
     expect(toPrintedList(toRoster(raw)!)).toEqual([
-      { name: 'ada Obi', code: 'MAD-AAA234', ticket: 'Sleepover single (1 person)', tent: 'Tent', tribe: 'Kutinga' },
-      { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticket: 'Attendance only (no tent)', tent: 'No tent', tribe: '' },
+      { name: 'ada Obi', code: 'MAD-AAA234', ticket: 'Sleepover couple (2 in a tent)', tent: 'Tent', tribe: 'Kutinga', partnerName: 'Tunde Bello', partnerTribe: 'Mandi' },
+      { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticket: 'Attendance only (no tent)', tent: 'No tent', tribe: '', partnerName: '', partnerTribe: '' },
     ])
   })
 

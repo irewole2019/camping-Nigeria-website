@@ -88,7 +88,7 @@ export const GUIDE_COPY = {
   },
   tribes: {
     heading: 'Tribes',
-    text: 'Every guest belongs to one of four tribes. The green screen shows theirs as a coloured dot with its name. Tell the guest which tribe they are in.',
+    text: 'Every guest belongs to one of four tribes. The green screen shows theirs as a coloured dot with its name. Tell the guest which tribe they are in. A couple ticket shows two tribes, one for each person, with their names: tell each of them theirs.',
   },
   topBar: {
     heading: 'The top of the screen',
@@ -173,6 +173,8 @@ export const DETAIL_COPY = {
   checkInTime: 'Check-in time',
   /** Under the tribe name on the welcome and already screens. */
   tribe: 'Tribe',
+  /** A couple's second person, when the form did not have their name. */
+  partner: 'Partner',
   checkedInAt: (time: string) => `Checked in at ${time}`,
   notFound: 'Check the code with the guest, or type it in again.',
   notPaid: 'Signed up, but payment not confirmed.',

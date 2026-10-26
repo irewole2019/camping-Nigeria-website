@@ -9,6 +9,8 @@ export interface CheckReply {
   ticket?: unknown
   usesTent?: unknown
   tribe?: unknown
+  partnerName?: unknown
+  partnerTribe?: unknown
   checkedInAt?: unknown
   checkedIn?: unknown
   total?: unknown
@@ -26,6 +28,8 @@ export interface ScreenContent {
   tent?: string
   /** So the volunteer can send the guest to their tribe. */
   tribe?: Tribe
+  /** A couple ticket: the second person and their (different) tribe. */
+  partner?: { name?: string; tribe: Tribe }
   time?: string
   code?: string
   detail?: string
@@ -37,6 +41,11 @@ const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v : undefined)
 export function toScreen(reply: CheckReply | null, code: string): ScreenContent {
   const name = str(reply?.name)
   const tribe = tribeFromName(reply?.tribe) ?? undefined
+  const partnerTribe = tribe ? tribeFromName(reply?.partnerTribe) : null
+  const partner =
+    partnerTribe && partnerTribe.id !== tribe?.id
+      ? { tribe: partnerTribe, ...(str(reply?.partnerName) ? { name: str(reply?.partnerName) } : {}) }
+      : undefined
   switch (reply?.status) {
     case 'welcome':
       return {
@@ -45,10 +54,17 @@ export function toScreen(reply: CheckReply | null, code: string): ScreenContent 
         ticket: str(reply.ticket),
         tent: reply.usesTent === true ? DETAIL_COPY.tent : DETAIL_COPY.noTent,
         tribe,
+        ...(partner ? { partner } : {}),
         time: formatArrivalTime(str(reply.checkedInAt)) || undefined,
       }
     case 'already':
-      return { state: 'already', name, tribe, time: formatArrivalTime(str(reply.checkedInAt)) || undefined }
+      return {
+        state: 'already',
+        name,
+        tribe,
+        ...(partner ? { partner } : {}),
+        time: formatArrivalTime(str(reply.checkedInAt)) || undefined,
+      }
     case 'not-found':
       return { state: 'not-found', code, detail: DETAIL_COPY.notFound }
     case 'not-paid':

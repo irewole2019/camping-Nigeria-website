@@ -52,6 +52,12 @@
  * setupTribes() ONCE: it adds the Tribe heading and spreads everyone who
  * signed up before tribes existed evenly, oldest first. Details in SETUP.md,
  * "Tribes".
+ *
+ * COUPLES (added 26/10/2026). A couple ticket is two people, so the two get
+ * DIFFERENT tribes: the guest's in Tribe, the partner's in Partner Tribe, and
+ * the partner's name (asked on the form) in Partner. Each person counts as
+ * one. After pasting this version, run setupPartnerTribes() ONCE: it adds
+ * the two headings and gives every earlier couple a partner tribe.
  */
 
 const SHEET_NAME = 'Sign-ups'
@@ -92,6 +98,10 @@ const HEADERS = [
   // Added 26/10/2026, last so no earlier column moved. Set by doPost (and by
   // setupTribes() for earlier rows); edit by hand only to move someone.
   'Tribe',
+  // Couple tickets only (26/10/2026): the second person's name from the
+  // form, and their tribe, which is never the same as Tribe.
+  'Partner',
+  'Partner Tribe',
 ]
 
 /**
@@ -133,6 +143,8 @@ function getOrCreateSheet() {
     sheet.setColumnWidth(12, 90) // Tent ID
     sheet.setColumnWidth(13, 240) // Notes
     sheet.setColumnWidth(14, 100) // Tribe
+    sheet.setColumnWidth(15, 180) // Partner
+    sheet.setColumnWidth(16, 110) // Partner Tribe
   }
   return sheet
 }
@@ -159,7 +171,12 @@ function peopleFor(ticket) {
   return /couple/i.test(String(ticket)) ? 2 : 1
 }
 
-/** People already in each tribe, from the Tribe column. Blank cells are not counted. */
+/**
+ * People already in each tribe. Tribe counts one person, Partner Tribe one
+ * more. A couple row with no Partner Tribe yet (from before couples were
+ * split) still counts two in Tribe, because both people are there until
+ * setupPartnerTribes() moves the partner. Blank cells are not counted.
+ */
 function tribeTotals(sheet) {
   const totals = {}
   for (let t = 0; t < TRIBE_NAMES.length; t += 1) totals[TRIBE_NAMES[t]] = 0
@@ -167,19 +184,33 @@ function tribeTotals(sheet) {
   if (last < 2) return totals
   const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
   for (let i = 0; i < rows.length; i += 1) {
-    const name = canonicalTribe(rows[i][TRIBE_COLUMN - 1])
-    if (name) totals[name] += peopleFor(rows[i][TICKET_COLUMN - 1])
+    const tribe = canonicalTribe(rows[i][TRIBE_COLUMN - 1])
+    const partnerTribe = canonicalTribe(rows[i][PARTNER_TRIBE_COLUMN - 1])
+    const couple = peopleFor(rows[i][TICKET_COLUMN - 1]) === 2
+    if (tribe) totals[tribe] += couple && !partnerTribe ? 2 : 1
+    if (partnerTribe) totals[partnerTribe] += 1
   }
   return totals
 }
 
-/** The tribe with the fewest people; on a tie, the first in TRIBE_NAMES. */
-function pickTribe(totals) {
-  let best = TRIBE_NAMES[0]
-  for (let t = 1; t < TRIBE_NAMES.length; t += 1) {
-    if (totals[TRIBE_NAMES[t]] < totals[best]) best = TRIBE_NAMES[t]
+/**
+ * The tribe with the fewest people; on a tie, the first in TRIBE_NAMES.
+ * `exclude` is skipped, so a partner never lands in the guest's tribe.
+ */
+function pickTribe(totals, exclude) {
+  let best = ''
+  for (let t = 0; t < TRIBE_NAMES.length; t += 1) {
+    const name = TRIBE_NAMES[t]
+    if (name === exclude) continue
+    if (best === '' || totals[name] < totals[best]) best = name
   }
   return best
+}
+
+/** Text a guest typed, kept from starting with = + - @, which Sheets would run as a formula. */
+function safeText(v) {
+  const s = String(v || '').trim()
+  return /^[=+\-@]/.test(s) ? "'" + s : s
 }
 
 /** "kutinga " -> "Kutinga"; anything that is not a tribe -> ''. */
@@ -249,13 +280,21 @@ function doPost(e) {
     }
 
     // Least-filled tribe, decided inside the lock so two sign-ups arriving
-    // together cannot both land in the same "emptiest" tribe.
-    const tribe = pickTribe(tribeTotals(sheet))
+    // together cannot both land in the same "emptiest" tribe. A couple gets a
+    // second, different tribe for the partner.
+    const totals = tribeTotals(sheet)
+    const tribe = pickTribe(totals)
+    const couple = peopleFor(body.ticketLabel || body.ticketId) === 2
+    let partnerTribe = ''
+    if (couple) {
+      totals[tribe] += 1
+      partnerTribe = pickTribe(totals, tribe)
+    }
 
     sheet.appendRow([
       new Date(),
       body.code,
-      body.name || '',
+      safeText(body.name),
       body.email || '',
       body.phone || '',
       body.instagram || '',
@@ -270,12 +309,15 @@ function doPost(e) {
       '',     // Tent ID — set by hand at check-in
       '',     // Notes
       tribe,  // Tribe — what the confirmation email tells the guest
+      couple ? safeText(body.partnerName) : '', // Partner
+      partnerTribe, // Partner Tribe — never the same as Tribe
     ])
 
     return jsonOut({
       ok: true,
       code: body.code,
       tribe: tribe,
+      partnerTribe: partnerTribe,
       tentsRemaining: Math.max(0, TENT_CAP - countTents(sheet)),
     })
   } catch (err) {
@@ -378,6 +420,8 @@ const PAID_COLUMN = HEADERS.indexOf('Paid?') + 1
 const CHECKED_IN_COLUMN = HEADERS.indexOf('Checked In?') + 1
 const EMAIL_COLUMN = HEADERS.indexOf('Email') + 1
 const TRIBE_COLUMN = HEADERS.indexOf('Tribe') + 1
+const PARTNER_COLUMN = HEADERS.indexOf('Partner') + 1
+const PARTNER_TRIBE_COLUMN = HEADERS.indexOf('Partner Tribe') + 1
 
 /**
  * Routes a gate request. Every action needs the shared secret, held in the
@@ -427,6 +471,8 @@ function padiCheckIn(sheet, code, at) {
     ticket: String(values[TICKET_COLUMN - 1]),
     usesTent: isYes(values[TENT_COLUMN - 1]),
     tribe: canonicalTribe(values[TRIBE_COLUMN - 1]),
+    partnerName: String(values[PARTNER_COLUMN - 1]).replace(/^'/, ''),
+    partnerTribe: canonicalTribe(values[PARTNER_TRIBE_COLUMN - 1]),
   }
 
   if (!isYes(values[PAID_COLUMN - 1])) {
@@ -467,6 +513,8 @@ function padiRoster(sheet) {
       ticketLabel: String(r[TICKET_COLUMN - 1]),
       usesTent: isYes(r[TENT_COLUMN - 1]),
       tribe: canonicalTribe(r[TRIBE_COLUMN - 1]),
+      partnerName: String(r[PARTNER_COLUMN - 1]).replace(/^'/, ''),
+      partnerTribe: canonicalTribe(r[PARTNER_TRIBE_COLUMN - 1]),
     }
     if (hasArrived(r[CHECKED_IN_COLUMN - 1])) entry.checkedInAt = formatArrival(r[CHECKED_IN_COLUMN - 1])
     out.push(entry)
@@ -564,8 +612,8 @@ function setupPadiCheck() {
  * Paid guests with a tribe, for the one-off email that tells guests who
  * signed up before tribes existed (scripts/send-tribe-emails.ts). The only
  * action that returns email addresses, which is why it sits behind the same
- * secret as the gate. Code, name, email, ticket, tribe and when they signed
- * up (so the email goes only to guests from before tribes): nothing else.
+ * secret as the gate. Code, name, email, ticket, tribe, partner and partner
+ * tribe, and when they signed up: nothing else.
  */
 function tribeMailing(sheet) {
   const last = sheet.getLastRow()
@@ -585,6 +633,8 @@ function tribeMailing(sheet) {
       email: String(r[EMAIL_COLUMN - 1]),
       ticketLabel: String(r[TICKET_COLUMN - 1]),
       tribe: tribe,
+      partnerName: String(r[PARTNER_COLUMN - 1]).replace(/^'/, ''),
+      partnerTribe: canonicalTribe(r[PARTNER_TRIBE_COLUMN - 1]),
     })
   }
   return out
@@ -634,6 +684,73 @@ function setupTribes() {
     setupLookupTab()
     const final = tribeTotals(sheet)
     Logger.log('Tribes given to ' + assigned + ' earlier sign-ups. People per tribe: ' + JSON.stringify(final))
+    return final
+  } finally {
+    lock.releaseLock()
+  }
+}
+
+/** Writes a heading cell in the house style, if it is blank. */
+function ensureHeading(sheet, column, text, width) {
+  const cell = sheet.getRange(1, column)
+  if (String(cell.getValue()).trim() !== '') return
+  cell
+    .setValue(text)
+    .setFontWeight('bold')
+    .setBackground('#0e3e2e')
+    .setFontColor('#ffffff')
+    .setHorizontalAlignment('left')
+  sheet.setColumnWidth(column, width)
+}
+
+/**
+ * Run ONCE after pasting this version. Adds the Partner and Partner Tribe
+ * headings, then gives every earlier couple a partner tribe: the least-filled
+ * tribe that is not the guest's own, oldest sign-up first. The partner's name
+ * stays blank for those (the form did not ask then). Couples that already
+ * have a partner tribe are left alone, so running it again changes nothing.
+ * Rebuilds the Lookup tab and writes the totals to the execution log.
+ */
+function setupPartnerTribes() {
+  const lock = LockService.getScriptLock()
+  lock.waitLock(30000)
+  try {
+    const sheet = getOrCreateSheet()
+    ensureHeading(sheet, TRIBE_COLUMN, 'Tribe', 100)
+    ensureHeading(sheet, PARTNER_COLUMN, 'Partner', 180)
+    ensureHeading(sheet, PARTNER_TRIBE_COLUMN, 'Partner Tribe', 110)
+
+    const last = sheet.getLastRow()
+    let assigned = 0
+    if (last >= 2) {
+      const totals = tribeTotals(sheet)
+      const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+      const tribes = rows.map(function (r) { return [r[TRIBE_COLUMN - 1]] })
+      const partners = rows.map(function (r) { return [r[PARTNER_TRIBE_COLUMN - 1]] })
+      for (let i = 0; i < rows.length; i += 1) {
+        if (!String(rows[i][CODE_COLUMN - 1]).trim()) continue
+        if (peopleFor(rows[i][TICKET_COLUMN - 1]) !== 2) continue
+        if (canonicalTribe(rows[i][PARTNER_TRIBE_COLUMN - 1])) continue
+        let tribe = canonicalTribe(rows[i][TRIBE_COLUMN - 1])
+        if (tribe) {
+          totals[tribe] -= 1 // the partner leaves the guest's tribe...
+        } else {
+          tribe = pickTribe(totals) // (a couple setupTribes never reached)
+          totals[tribe] += 1
+          tribes[i] = [tribe]
+        }
+        const partnerTribe = pickTribe(totals, tribe)
+        totals[partnerTribe] += 1 // ...for the least-filled other one
+        partners[i] = [partnerTribe]
+        assigned += 1
+      }
+      sheet.getRange(2, TRIBE_COLUMN, tribes.length, 1).setValues(tribes)
+      sheet.getRange(2, PARTNER_TRIBE_COLUMN, partners.length, 1).setValues(partners)
+    }
+
+    setupLookupTab()
+    const final = tribeTotals(sheet)
+    Logger.log('Partner tribes given to ' + assigned + ' earlier couples. People per tribe: ' + JSON.stringify(final))
     return final
   } finally {
     lock.releaseLock()

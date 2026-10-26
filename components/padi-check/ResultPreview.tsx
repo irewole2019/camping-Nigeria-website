@@ -12,7 +12,8 @@ import { toScreen, type ScreenContent } from '@/lib/padi-check/screen'
 /** Made-up guests only. */
 const FIXTURES: Record<ResultState, ScreenContent> = {
   welcome: toScreen(
-    { status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover single (1 person)', usesTent: true, tribe: 'Kutinga', checkedInAt: '2026-10-31T19:05:00' },
+    // A couple, so the preview shows both tribe tiles.
+    { status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover couple (2 in a tent)', usesTent: true, tribe: 'Kutinga', partnerName: 'Tunde Bello', partnerTribe: 'Mandi', checkedInAt: '2026-10-31T19:05:00' },
     'MAD-B8K2MQ',
   ),
   already: toScreen({ status: 'already', name: 'Ada Obi', tribe: 'Kutinga', checkedInAt: '2026-10-31T19:05:00' }, 'MAD-B8K2MQ'),

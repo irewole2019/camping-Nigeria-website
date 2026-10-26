@@ -20,6 +20,7 @@ const labelBase = 'block font-sans text-sm font-semibold text-brand-dark mb-1.5'
 
 interface FormErrors {
   name?: string
+  partnerName?: string
   email?: string
   phone?: string
   age?: string
@@ -40,6 +41,9 @@ export default function SignupForm() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [instagram, setInstagram] = useState('')
+  // Couple tickets only: the second person gets their own tribe, so the
+  // email, gate screen and printed list need their name.
+  const [partnerName, setPartnerName] = useState('')
   const [ticketId, setTicketId] = useState<TicketId>('attendance')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [paidConfirmed, setPaidConfirmed] = useState(false)
@@ -51,6 +55,9 @@ export default function SignupForm() {
   function validate(): FormErrors {
     const next: FormErrors = {}
     if (!name.trim()) next.name = 'Tell us your name.'
+    if (ticketId === 'couple' && !partnerName.trim()) {
+      next.partnerName = 'Tell us your partner’s name. A couple ticket is for two people.'
+    }
     if (!email.trim()) next.email = 'We need an email to send your code to.'
     else if (!EMAIL_RE.test(email.trim())) next.email = 'That email does not look right.'
     if (!phone.trim()) next.phone = 'We need a phone number.'
@@ -81,6 +88,7 @@ export default function SignupForm() {
           phone: phone.trim(),
           instagram: instagram.trim(),
           ticketId,
+          partnerName: ticketId === 'couple' ? partnerName.trim() : '',
           ageConfirmed,
           paidConfirmed,
           website_confirm: honeypotRef.current?.value || '',
@@ -88,7 +96,13 @@ export default function SignupForm() {
       })
 
       const json: unknown = await res.json().catch(() => null)
-      const body = (json ?? {}) as { success?: boolean; code?: string; tribe?: string; error?: string }
+      const body = (json ?? {}) as {
+        success?: boolean
+        code?: string
+        tribe?: string
+        partnerTribe?: string
+        error?: string
+      }
 
       if (res.ok && body.success && body.code) {
         const params = new URLSearchParams({
@@ -97,6 +111,10 @@ export default function SignupForm() {
           ticket: ticketId,
           // The tribe the sheet assigned, so the page can show it at once.
           ...(body.tribe ? { tribe: body.tribe } : {}),
+          // A couple's second person and their (different) tribe.
+          ...(ticketId === 'couple' && body.partnerTribe
+            ? { partner: partnerName.trim(), tribe2: body.partnerTribe }
+            : {}),
         })
         router.push(`${REGISTERED_PATH}?${params.toString()}`)
         return
@@ -175,6 +193,20 @@ export default function SignupForm() {
           })}
         </div>
       </fieldset>
+
+      {ticketId === 'couple' && (
+        <Field
+          id="ms-partner"
+          label="Your partner’s name"
+          required
+          value={partnerName}
+          onChange={setPartnerName}
+          error={errors.partnerName}
+          autoComplete="off"
+          placeholder="e.g. Tunde Bello"
+          hint="On a couple ticket, each of you is put in a different tribe."
+        />
+      )}
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field

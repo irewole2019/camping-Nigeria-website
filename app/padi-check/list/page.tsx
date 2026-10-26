@@ -67,11 +67,19 @@ export default async function GuestListPage() {
             <tbody>
               {guests.map((g) => (
                 <tr key={g.code} className="border-b border-brand-dark/15 break-inside-avoid">
-                  <td className="px-2 py-2 font-semibold">{g.name}</td>
+                  <td className="px-2 py-2 font-semibold">
+                    {g.name}
+                    {g.partnerTribe && (
+                      <span className="block font-normal">+ {g.partnerName || DETAIL_COPY.partner}</span>
+                    )}
+                  </td>
                   <td className="whitespace-nowrap px-2 py-2 tracking-wide">{g.code}</td>
                   <td className="px-2 py-2">{g.ticket}</td>
                   <td className="whitespace-nowrap px-2 py-2">{g.tent}</td>
-                  <td className="whitespace-nowrap px-2 py-2 font-semibold">{g.tribe}</td>
+                  <td className="whitespace-nowrap px-2 py-2 font-semibold">
+                    {g.tribe}
+                    {g.partnerTribe && <span className="block">{g.partnerTribe}</span>}
+                  </td>
                   <td className="px-2 py-2 text-center">
                     <span className="inline-block h-5 w-5 border-2 border-brand-dark/60" aria-hidden="true" />
                   </td>

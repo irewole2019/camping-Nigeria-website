@@ -19,6 +19,11 @@
  * --expect   The send refuses unless exactly this many guests are due, so a
  *            list that changed since the preview is never mailed blind.
  * --out      Where the preview writes one sample email (HTML) and the list.
+ * --couples-update
+ *            Instead: guests on a couple ticket who already had the first
+ *            tribe email (it showed one tribe) and now have a partner tribe,
+ *            from the 26/10/2026 change that splits couples. They get a short
+ *            update with both tribes. --before does not apply; --expect does.
  *
  * Reads .env.local for the live sheet link, PADI_CHECK_SCRIPT_SECRET and (for
  * --send) RESEND_API_KEY, and never prints them. The link is read from
@@ -49,6 +54,7 @@ interface Guest {
   name: string
   email: string
   tribe: Tribe
+  partner?: { name: string; tribe: Tribe }
 }
 
 function arg(name: string): string | undefined {
@@ -95,15 +101,25 @@ async function fetchGuests(url: string, secret: string): Promise<Guest[]> {
       console.warn(`  skipped a row that is not mailable (code ${code || '(blank)'})`)
       continue
     }
-    guests.push({ signedUpAt: String(g.signedUpAt ?? ''), code, name: String(g.name ?? ''), email, tribe })
+    const partnerTribe = tribeFromName(g.partnerTribe)
+    const partner =
+      partnerTribe && partnerTribe.id !== tribe.id
+        ? { name: String(g.partnerName ?? '').trim(), tribe: partnerTribe }
+        : undefined
+    guests.push({ signedUpAt: String(g.signedUpAt ?? ''), code, name: String(g.name ?? ''), email, tribe, partner })
   }
   return guests
 }
 
 async function main() {
+  const coupleUpdate = process.argv.includes('--couples-update')
   const before = arg('before')
   const cutoff = before ? Date.parse(before) : NaN
-  if (!Number.isFinite(cutoff)) throw new Error('Give --before with a date and time, e.g. 2026-10-26T16:00:00+01:00')
+  if (!coupleUpdate && !Number.isFinite(cutoff)) {
+    throw new Error('Give --before with a date and time, e.g. 2026-10-26T16:00:00+01:00')
+  }
+  /** The send log key: a guest can be due both emails, once each. */
+  const key = (code: string) => (coupleUpdate ? `${code}#couple` : code)
 
   const env = loadEnvLocal()
   const url = env.MAD_SETTINGS_LIVE_SHEET_URL || env.GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL
@@ -113,14 +129,21 @@ async function main() {
   const sent: Record<string, string> = fs.existsSync(SENT_LOG) ? JSON.parse(fs.readFileSync(SENT_LOG, 'utf8')) : {}
   const all = await fetchGuests(url, secret)
   const due = all.filter((g) => {
+    if (sent[key(g.code)]) return false
+    // The update is only for couples whose first email showed a single tribe.
+    if (coupleUpdate) return Boolean(g.partner) && Boolean(sent[g.code])
     const t = Date.parse(g.signedUpAt)
-    return Number.isFinite(t) && t < cutoff && !sent[g.code]
+    return Number.isFinite(t) && t < cutoff
   })
 
   const byTribe: Record<string, number> = {}
   for (const g of due) byTribe[g.tribe.name] = (byTribe[g.tribe.name] ?? 0) + 1
   console.log(`Paid guests with a tribe: ${all.length}`)
-  console.log(`Due this email (signed up before ${before}, not yet sent): ${due.length}`)
+  console.log(
+    coupleUpdate
+      ? `Due the couples update (couple ticket, had the first email, now two tribes): ${due.length}`
+      : `Due this email (signed up before ${before}, not yet sent): ${due.length}`,
+  )
   console.log(`  by tribe: ${JSON.stringify(byTribe)}`)
   if (Object.keys(sent).length) console.log(`  already sent earlier and skipped: ${Object.keys(sent).length}`)
 
@@ -130,9 +153,15 @@ async function main() {
       fs.mkdirSync(out, { recursive: true })
       const sample = due[0] ?? all[0]
       if (sample) {
-        fs.writeFileSync(path.join(out, 'tribe-email-sample.html'), buildTribeAnnouncementEmail(sample, sample.tribe))
+        fs.writeFileSync(
+          path.join(out, 'tribe-email-sample.html'),
+          buildTribeAnnouncementEmail(sample, sample.tribe, { coupleUpdate }),
+        )
       }
-      const lines = due.map((g) => `${g.name}\t${g.tribe.name}\t${mask(g.email)}\t${g.code}`)
+      const lines = due.map((g) => {
+        const tribes = g.partner ? `${g.tribe.name} + ${g.partner.name || 'partner'}: ${g.partner.tribe.name}` : g.tribe.name
+        return `${g.name}\t${tribes}\t${mask(g.email)}\t${g.code}`
+      })
       fs.writeFileSync(path.join(out, 'tribe-email-list.tsv'), ['Name\tTribe\tEmail\tCode', ...lines].join('\n'))
       console.log(`Preview written to ${out} (one sample email and the list). Nothing was sent.`)
     } else {
@@ -154,12 +183,12 @@ async function main() {
     const accepted = await sendSingleMail(resendKey, {
       from: FROM,
       to: [g.email],
-      subject: tribeAnnouncementSubject(g.tribe),
-      html: buildTribeAnnouncementEmail(g, g.tribe),
+      subject: tribeAnnouncementSubject(g.tribe, g.partner),
+      html: buildTribeAnnouncementEmail(g, g.tribe, { coupleUpdate }),
     })
     if (accepted) {
       ok += 1
-      sent[g.code] = new Date().toISOString()
+      sent[key(g.code)] = new Date().toISOString()
       fs.writeFileSync(SENT_LOG, JSON.stringify(sent, null, 2))
     } else {
       failed += 1

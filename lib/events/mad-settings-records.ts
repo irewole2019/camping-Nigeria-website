@@ -30,6 +30,8 @@ export interface MadSettingsSheetPayload {
   price: number
   /** `Yes` whenever the guest ticked "I have already paid" — see PAYMENT_IS_OFFLINE. */
   paid: 'Yes' | 'No'
+  /** Couple tickets only: the second person's name. Empty otherwise. */
+  partnerName: string
 }
 
 export interface RecordResult {
@@ -41,6 +43,11 @@ export interface RecordResult {
    * caller falls back to `tribeFromCode` and flags it in the internal email.
    */
   tribe?: Tribe
+  /**
+   * Couple tickets only: the partner's tribe, always different from `tribe`.
+   * Absent for other tickets, or when the sheet did not assign one.
+   */
+  partnerTribe?: Tribe
 }
 
 /** Same alphabet as Camp Night: no 0/O, no 1/I. See CODE_ALPHABET there. */
@@ -97,10 +104,15 @@ export async function recordMadSettingsSignup(
 
     const json: unknown = await res.json().catch(() => null)
     if (json && typeof json === 'object' && 'ok' in json) {
-      const result = json as { ok: boolean; error?: string; tribe?: unknown }
+      const result = json as { ok: boolean; error?: string; tribe?: unknown; partnerTribe?: unknown }
       if (!result.ok) return { ok: false, error: result.error || 'unknown' }
       const tribe = tribeFromName(result.tribe)
-      return tribe ? { ok: true, tribe } : { ok: true }
+      const partnerTribe = tribeFromName(result.partnerTribe)
+      return {
+        ok: true,
+        ...(tribe ? { tribe } : {}),
+        ...(tribe && partnerTribe && partnerTribe.id !== tribe.id ? { partnerTribe } : {}),
+      }
     }
     return { ok: true }
   } catch (err) {

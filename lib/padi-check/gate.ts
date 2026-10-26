@@ -34,6 +34,9 @@ export interface Guest {
   usesTent: boolean
   /** The tribe's display name; absent until the sheet has one for the row. */
   tribe?: string
+  /** Couple tickets: the second person's name and tribe. */
+  partnerName?: string
+  partnerTribe?: string
 }
 
 export interface GateStore {
@@ -133,6 +136,8 @@ export async function checkCode(
           ticket: r.ticket ?? '',
           usesTent: r.usesTent === true,
           ...(r.tribe ? { tribe: r.tribe } : {}),
+          ...(r.partnerTribe ? { partnerTribe: r.partnerTribe } : {}),
+          ...(r.partnerName ? { partnerName: r.partnerName } : {}),
         })
         await store.markArrived(code, r.checkedInAt ?? lagosTime(deps.now))
       }
@@ -194,6 +199,8 @@ export async function refreshRoster(store: GateStore, sheet: SheetClient, now = 
       ticket: r.ticketLabel,
       usesTent: r.usesTent,
       ...(r.tribe ? { tribe: r.tribe } : {}),
+      ...(r.partnerTribe ? { partnerTribe: r.partnerTribe } : {}),
+      ...(r.partnerName ? { partnerName: r.partnerName } : {}),
     })
     if (r.checkedInAt) arrivals.set(r.code, r.checkedInAt)
   }
@@ -258,6 +265,8 @@ function parseGuest(v: unknown): Guest | null {
     ticket: typeof g.ticket === 'string' ? g.ticket : '',
     usesTent: g.usesTent === true,
     ...(typeof g.tribe === 'string' && g.tribe ? { tribe: g.tribe } : {}),
+    ...(typeof g.partnerTribe === 'string' && g.partnerTribe ? { partnerTribe: g.partnerTribe } : {}),
+    ...(typeof g.partnerName === 'string' && g.partnerName ? { partnerName: g.partnerName } : {}),
   }
 }
 

@@ -29,7 +29,7 @@ import {
   normaliseInstagram,
   recordMadSettingsSignup,
 } from '@/lib/events/mad-settings-records'
-import { tribeFromCode, type Tribe } from '@/lib/events/mad-settings-tribes'
+import { partnerTribeFromCode, tribeFromCode, type Tribe } from '@/lib/events/mad-settings-tribes'
 import { socialBlockHtml, tribeBlockHtml } from '@/lib/events/mad-settings-email'
 
 const RECIPIENT = 'hello@campingnigeria.com'
@@ -42,6 +42,12 @@ interface SignupPayload {
   phone: string
   instagram: string
   ticketId: TicketId
+  /**
+   * Couple tickets: the second person's name, required. Ignored (stored as
+   * '') for any other ticket. Optional in the payload so a form loaded before
+   * this field existed still gets a clear "add your partner's name" error.
+   */
+  partnerName: string
   /** Ticked the "I am 18 or over" box. Re-checked here, not trusted from the UI. */
   ageConfirmed: boolean
   /**
@@ -61,6 +67,7 @@ function isValidPayload(raw: unknown): raw is SignupPayload {
   if (typeof r.phone !== 'string') return false
   // Instagram is optional, but must be a string when present.
   if (typeof r.instagram !== 'string') return false
+  if (r.partnerName !== undefined && typeof r.partnerName !== 'string') return false
   if (typeof r.ageConfirmed !== 'boolean') return false
   if (typeof r.paidConfirmed !== 'boolean') return false
   if (!isValidTicketId(r.ticketId)) return false
@@ -75,18 +82,20 @@ function countDigits(value: string): number {
 
 // ─── Internal notification ──────────────────────────────────────────────────
 
-/**
- * `tribeInSheet` is false when the sheet did not assign the tribe (row not
- * recorded, or a script that predates tribes): the tribe shown is then the
- * `tribeFromCode` fallback, and the team must type it into the Tribe column.
- */
-function buildInternalEmail(
-  data: SignupPayload,
-  code: string,
-  instagram: string,
-  tribe: Tribe,
-  tribeInSheet: boolean,
-): string {
+/** The tribes on a sign-up: the guest's, and for a couple the partner's (always different). */
+interface Tribes {
+  tribe: Tribe
+  partnerTribe?: Tribe
+  /**
+   * False when the sheet did not assign them (row not recorded, or a script
+   * that predates tribes or couples): what is shown is then the fallback
+   * from the code, and the team must type it into the sheet.
+   */
+  inSheet: boolean
+}
+
+function buildInternalEmail(data: SignupPayload, code: string, instagram: string, tribes: Tribes): string {
+  const { tribe, partnerTribe, inSheet: tribeInSheet } = tribes
   const ticket = getTicket(data.ticketId)
   const name = escapeHtml(data.name)
   const email = escapeHtml(data.email)
@@ -135,6 +144,17 @@ function buildInternalEmail(
           ? escapeHtml(tribe.name)
           : `<strong>${escapeHtml(tribe.name)}</strong> <span style="color:#b42318;">(not in the sheet: add it to the Tribe column by hand)</span>`,
       )}
+      ${
+        partnerTribe
+          ? row('Partner', escapeHtml(data.partnerName || 'Not given')) +
+            row(
+              'Partner tribe',
+              tribeInSheet
+                ? escapeHtml(partnerTribe.name)
+                : `<strong>${escapeHtml(partnerTribe.name)}</strong> <span style="color:#b42318;">(not in the sheet: add it to the Partner Tribe column by hand)</span>`,
+            )
+          : ''
+      }
     </table>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -172,7 +192,7 @@ function bulletList(items: readonly string[]): string {
 /** The inline attachment's id; the email's <img> points at `cid:` + this. */
 const GATE_PASS_CID = 'gate-pass'
 
-function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boolean, tribe: Tribe): string {
+function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boolean, tribes: Tribes): string {
   const ticket = getTicket(data.ticketId)
   const firstName = escapeHtml(data.name.split(' ')[0])
 
@@ -206,8 +226,12 @@ function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boo
       </td></tr>
     </table>
 
-    <!-- The tribe (26/10/2026): assigned by the sheet, least-filled first. -->
-    ${tribeBlockHtml(tribe)}
+    <!-- The tribe (26/10/2026): assigned by the sheet, least-filled first.
+         A couple gets two different tribes, one each. -->
+    ${tribeBlockHtml(tribes.tribe, {
+      guestName: data.name,
+      partner: tribes.partnerTribe ? { name: data.partnerName, tribe: tribes.partnerTribe } : undefined,
+    })}
 
     <!-- What you booked -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:#fafaf8;border-radius:8px;overflow:hidden;">
@@ -331,6 +355,8 @@ export async function POST(request: Request) {
     const email = raw.email.trim()
     const phone = raw.phone.trim()
     const instagram = normaliseInstagram(raw.instagram)
+    const isCouple = raw.ticketId === 'couple'
+    const partnerName = isCouple && typeof raw.partnerName === 'string' ? raw.partnerName.trim() : ''
 
     if (!name || !email || !phone) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -360,9 +386,18 @@ export async function POST(request: Request) {
         { status: 400 },
       )
     }
+    // A couple ticket is two people with a tribe each, so the second person
+    // needs a name for the email, the gate screen and the printed list.
+    if (isCouple && !partnerName) {
+      return NextResponse.json(
+        { success: false, error: 'Add your partner’s name: a couple ticket is for two people.' },
+        { status: 400 },
+      )
+    }
     if (
       !withinLengthCaps([
         [name, MAX_LENGTHS.name],
+        [partnerName, MAX_LENGTHS.name],
         [email, MAX_LENGTHS.email],
         [phone, MAX_LENGTHS.phone],
         [instagram, MAX_LENGTHS.name],
@@ -377,6 +412,7 @@ export async function POST(request: Request) {
       phone,
       instagram,
       ticketId: raw.ticketId,
+      partnerName,
       ageConfirmed: true,
       paidConfirmed: true,
     }
@@ -397,6 +433,7 @@ export async function POST(request: Request) {
       price: ticket.price,
       // Offline payment, made before sign-up and confirmed above.
       paid: 'Yes' as const,
+      partnerName: payload.partnerName,
     })
 
     let code = generateSignupCode()
@@ -434,10 +471,14 @@ export async function POST(request: Request) {
       console.error('MAD Settings sheet append failed:', recorded.error)
     }
 
-    // The sheet assigns the tribe so the four stay even. Without its answer
-    // the code decides, and the internal email asks the team to record it.
+    // The sheet assigns the tribes so the four stay even. Without its answer
+    // the code decides, and the internal email asks the team to record them.
     const tribe = recorded.tribe ?? tribeFromCode(code)
-    const tribeInSheet = recorded.tribe !== undefined
+    const tribes: Tribes = {
+      tribe,
+      ...(isCouple ? { partnerTribe: recorded.partnerTribe ?? partnerTribeFromCode(code, tribe) } : {}),
+      inSheet: recorded.tribe !== undefined && (!isCouple || recorded.partnerTribe !== undefined),
+    }
 
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
@@ -463,13 +504,13 @@ export async function POST(request: Request) {
       internal: {
         to: RECIPIENT,
         subject: `MAD Settings sign-up — ${payload.name} · ${ticket.label} · ${code}`,
-        html: buildInternalEmail(payload, code, instagram, tribe, tribeInSheet),
+        html: buildInternalEmail(payload, code, instagram, tribes),
         replyTo: payload.email,
       },
       customer: {
         to: payload.email,
         subject: `You are in — MAD Settings, ${EVENT_DATE_LABEL} (${code})`,
-        html: buildCustomerEmail(payload, code, gatePass !== null, tribe),
+        html: buildCustomerEmail(payload, code, gatePass !== null, tribes),
         attachments: gatePass ? [gatePass] : undefined,
       },
     })
@@ -481,7 +522,12 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ success: true, code, tribe: tribe.id })
+    return NextResponse.json({
+      success: true,
+      code,
+      tribe: tribe.id,
+      ...(tribes.partnerTribe ? { partnerTribe: tribes.partnerTribe.id } : {}),
+    })
   } catch (err) {
     console.error('MAD Settings sign-up error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
