@@ -12,8 +12,8 @@ export const dynamic = 'force-dynamic'
 
 /**
  * The printed guest list (R-011): the backup when phones fail, so "your name
- * still gets you in". Paid guests only, sorted by name; name, code, ticket
- * and tent, plus an empty box to tick by hand. Never email or phone.
+ * still gets you in". Paid guests only, sorted by name; name, code, ticket,
+ * tent and tribe, plus an empty box to tick by hand. Never email or phone.
  * Admin only; a volunteer session sees the admin sign-in.
  */
 export default async function GuestListPage() {
@@ -60,6 +60,7 @@ export default async function GuestListPage() {
                 <th className="px-2 py-2">{c.code}</th>
                 <th className="px-2 py-2">{c.ticket}</th>
                 <th className="px-2 py-2">{c.tent}</th>
+                <th className="px-2 py-2">{c.tribe}</th>
                 <th className="w-12 px-2 py-2 text-center">{c.in}</th>
               </tr>
             </thead>
@@ -70,6 +71,7 @@ export default async function GuestListPage() {
                   <td className="whitespace-nowrap px-2 py-2 tracking-wide">{g.code}</td>
                   <td className="px-2 py-2">{g.ticket}</td>
                   <td className="whitespace-nowrap px-2 py-2">{g.tent}</td>
+                  <td className="whitespace-nowrap px-2 py-2 font-semibold">{g.tribe}</td>
                   <td className="px-2 py-2 text-center">
                     <span className="inline-block h-5 w-5 border-2 border-brand-dark/60" aria-hidden="true" />
                   </td>

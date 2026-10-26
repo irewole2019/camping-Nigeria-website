@@ -8,6 +8,7 @@
  */
 
 import type { TicketId } from '@/lib/events/mad-settings'
+import { tribeFromName, type Tribe } from '@/lib/events/mad-settings-tribes'
 
 export { normaliseInstagram } from '@/lib/events/camp-night-records'
 
@@ -34,6 +35,12 @@ export interface MadSettingsSheetPayload {
 export interface RecordResult {
   ok: boolean
   error?: string
+  /**
+   * The tribe the sheet assigned (least-filled, under its lock). Absent when
+   * the row was not recorded, or when the live script predates tribes — the
+   * caller falls back to `tribeFromCode` and flags it in the internal email.
+   */
+  tribe?: Tribe
 }
 
 /** Same alphabet as Camp Night: no 0/O, no 1/I. See CODE_ALPHABET there. */
@@ -90,8 +97,10 @@ export async function recordMadSettingsSignup(
 
     const json: unknown = await res.json().catch(() => null)
     if (json && typeof json === 'object' && 'ok' in json) {
-      const result = json as { ok: boolean; error?: string }
-      return result.ok ? { ok: true } : { ok: false, error: result.error || 'unknown' }
+      const result = json as { ok: boolean; error?: string; tribe?: unknown }
+      if (!result.ok) return { ok: false, error: result.error || 'unknown' }
+      const tribe = tribeFromName(result.tribe)
+      return tribe ? { ok: true, tribe } : { ok: true }
     }
     return { ok: true }
   } catch (err) {

@@ -12,10 +12,10 @@ import { toScreen, type ScreenContent } from '@/lib/padi-check/screen'
 /** Made-up guests only. */
 const FIXTURES: Record<ResultState, ScreenContent> = {
   welcome: toScreen(
-    { status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover single (1 person)', usesTent: true, checkedInAt: '2026-10-31T19:05:00' },
+    { status: 'welcome', name: 'Ada Obi', ticket: 'Sleepover single (1 person)', usesTent: true, tribe: 'Kutinga', checkedInAt: '2026-10-31T19:05:00' },
     'MAD-B8K2MQ',
   ),
-  already: toScreen({ status: 'already', name: 'Ada Obi', checkedInAt: '2026-10-31T19:05:00' }, 'MAD-B8K2MQ'),
+  already: toScreen({ status: 'already', name: 'Ada Obi', tribe: 'Kutinga', checkedInAt: '2026-10-31T19:05:00' }, 'MAD-B8K2MQ'),
   'not-found': toScreen({ status: 'not-found' }, 'MAD-B8K2MQ'),
   'not-paid': toScreen({ status: 'not-paid', name: 'Bayo Adeyemi' }, 'MAD-B8K2MQ'),
   offline: toScreen(null, 'MAD-B8K2MQ'),

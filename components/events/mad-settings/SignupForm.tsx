@@ -88,13 +88,15 @@ export default function SignupForm() {
       })
 
       const json: unknown = await res.json().catch(() => null)
-      const body = (json ?? {}) as { success?: boolean; code?: string; error?: string }
+      const body = (json ?? {}) as { success?: boolean; code?: string; tribe?: string; error?: string }
 
       if (res.ok && body.success && body.code) {
         const params = new URLSearchParams({
           code: body.code,
           name: name.trim(),
           ticket: ticketId,
+          // The tribe the sheet assigned, so the page can show it at once.
+          ...(body.tribe ? { tribe: body.tribe } : {}),
         })
         router.push(`${REGISTERED_PATH}?${params.toString()}`)
         return

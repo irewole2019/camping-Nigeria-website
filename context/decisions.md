@@ -916,3 +916,13 @@ On 14/10/2026 the founders replaced the Individuals audience with the African Dr
 **Where "individuals" was kept.** The founders chose to leave general prose that uses the word to mean people — "camping equipment for schools, individuals, and organizations", the About page, the Terms, the site-wide OG line. The line drawn: anything that names the *audience* as a destination (a label, link, route, offer group, form option, or a heading listing the three markets) changed; descriptive prose did not. Search the codebase before assuming a remaining "individuals" is a miss.
 
 **The gallery shows nothing it cannot vouch for.** The team supplied 18 community photos without saying which event each came from. They are on the page as general community photography with scene-only alt text, and the three "Events we've hosted" galleries are empty until someone says which photos belong where — attributing a photo to the wrong event would be a public claim about who was there.
+
+## MAD Settings tribes are assigned by the sheet, not the site
+
+The founders wanted the four tribes **evenly** filled. An even split needs a count of who is already in each tribe, and the sheet is the only place that count exists — the site is static, and Upstash holds only the gate's copy of the paid list. So the Apps Script assigns the tribe inside the same lock that already guards the tent cap and the duplicate-code check (two sign-ups arriving together cannot both take the "emptiest" tribe), writes it to the sheet, and returns it for the email. A couple ticket counts as two people; a couple shares one tribe because it is one sign-up.
+
+**Rejected:** deriving the tribe from the code (a hash). Nothing to redeploy and earlier guests get one automatically, but the sizes are only roughly even — about 25 to 35 each per 120 guests — and the tribe would not be a column the team can see and edit. It survives only as the fallback when the sheet does not answer, and then the internal email says so.
+
+**Tribe is the last column.** Inserting it next to Ticket would have shifted Paid?, Checked In? and the rest in the live sheet, which Padi Check reads by position.
+
+**The badge in the email is a hosted image, not an inline attachment** like the gate pass: it is the same four files for everyone, and the tribe name is repeated as coloured text, so a client that blocks images still says it. On the Padi Check screens it is a colour swatch instead, because the green Mandi and black Sellas badges disappear on the green and dark result screens.

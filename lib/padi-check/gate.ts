@@ -32,6 +32,8 @@ export interface Guest {
   name: string
   ticket: string
   usesTent: boolean
+  /** The tribe's display name; absent until the sheet has one for the row. */
+  tribe?: string
 }
 
 export interface GateStore {
@@ -126,7 +128,12 @@ export async function checkCode(
   if (store && r.status !== 'offline') {
     try {
       if (r.status === 'welcome' || r.status === 'already') {
-        await store.addGuest(code, { name: r.name ?? '', ticket: r.ticket ?? '', usesTent: r.usesTent === true })
+        await store.addGuest(code, {
+          name: r.name ?? '',
+          ticket: r.ticket ?? '',
+          usesTent: r.usesTent === true,
+          ...(r.tribe ? { tribe: r.tribe } : {}),
+        })
         await store.markArrived(code, r.checkedInAt ?? lagosTime(deps.now))
       }
       // One source for the count: once the list is in memory, the memory's,
@@ -182,7 +189,12 @@ export async function refreshRoster(store: GateStore, sheet: SheetClient, now = 
   const guests = new Map<string, Guest>()
   const arrivals = new Map<string, string>()
   for (const r of roster) {
-    guests.set(r.code, { name: r.name, ticket: r.ticketLabel, usesTent: r.usesTent })
+    guests.set(r.code, {
+      name: r.name,
+      ticket: r.ticketLabel,
+      usesTent: r.usesTent,
+      ...(r.tribe ? { tribe: r.tribe } : {}),
+    })
     if (r.checkedInAt) arrivals.set(r.code, r.checkedInAt)
   }
   await store.replaceRoster(guests, arrivals, now)
@@ -245,6 +257,7 @@ function parseGuest(v: unknown): Guest | null {
     name: typeof g.name === 'string' ? g.name : '',
     ticket: typeof g.ticket === 'string' ? g.ticket : '',
     usesTent: g.usesTent === true,
+    ...(typeof g.tribe === 'string' && g.tribe ? { tribe: g.tribe } : {}),
   }
 }
 

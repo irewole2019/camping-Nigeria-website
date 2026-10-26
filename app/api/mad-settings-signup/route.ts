@@ -29,6 +29,8 @@ import {
   normaliseInstagram,
   recordMadSettingsSignup,
 } from '@/lib/events/mad-settings-records'
+import { tribeFromCode, type Tribe } from '@/lib/events/mad-settings-tribes'
+import { socialBlockHtml, tribeBlockHtml } from '@/lib/events/mad-settings-email'
 
 const RECIPIENT = 'hello@campingnigeria.com'
 const FROM = 'Camping Nigeria <hello@campingnigeria.com>'
@@ -73,7 +75,18 @@ function countDigits(value: string): number {
 
 // ─── Internal notification ──────────────────────────────────────────────────
 
-function buildInternalEmail(data: SignupPayload, code: string, instagram: string): string {
+/**
+ * `tribeInSheet` is false when the sheet did not assign the tribe (row not
+ * recorded, or a script that predates tribes): the tribe shown is then the
+ * `tribeFromCode` fallback, and the team must type it into the Tribe column.
+ */
+function buildInternalEmail(
+  data: SignupPayload,
+  code: string,
+  instagram: string,
+  tribe: Tribe,
+  tribeInSheet: boolean,
+): string {
   const ticket = getTicket(data.ticketId)
   const name = escapeHtml(data.name)
   const email = escapeHtml(data.email)
@@ -116,6 +129,12 @@ function buildInternalEmail(data: SignupPayload, code: string, instagram: string
       ${row('Instagram', ig)}
       ${row('Ticket', escapeHtml(ticket.label))}
       ${row('Price', escapeHtml(formatNaira(ticket.price)))}
+      ${row(
+        'Tribe',
+        tribeInSheet
+          ? escapeHtml(tribe.name)
+          : `<strong>${escapeHtml(tribe.name)}</strong> <span style="color:#b42318;">(not in the sheet: add it to the Tribe column by hand)</span>`,
+      )}
     </table>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -153,7 +172,7 @@ function bulletList(items: readonly string[]): string {
 /** The inline attachment's id; the email's <img> points at `cid:` + this. */
 const GATE_PASS_CID = 'gate-pass'
 
-function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boolean): string {
+function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boolean, tribe: Tribe): string {
   const ticket = getTicket(data.ticketId)
   const firstName = escapeHtml(data.name.split(' ')[0])
 
@@ -186,6 +205,9 @@ function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boo
         <p style="margin:0;font-size:14px;font-weight:700;color:#0e3e2e;">Screenshot this now. Show it at the gate.</p>
       </td></tr>
     </table>
+
+    <!-- The tribe (26/10/2026): assigned by the sheet, least-filled first. -->
+    ${tribeBlockHtml(tribe)}
 
     <!-- What you booked -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;background:#fafaf8;border-radius:8px;overflow:hidden;">
@@ -235,6 +257,9 @@ function buildCustomerEmail(data: SignupPayload, code: string, withGatePass: boo
       Questions before the day? Reply to this email, or call the MAD Settings line on
       <a href="${EVENT_PHONE_TEL}" style="color:#0e3e2e;font-weight:600;text-decoration:none;">${escapeHtml(EVENT_PHONE_DISPLAY)}</a>.
     </p>
+
+    <!-- The social link the team asked for at the foot of the email. -->
+    ${socialBlockHtml()}
 
   </td></tr>
 
@@ -409,6 +434,11 @@ export async function POST(request: Request) {
       console.error('MAD Settings sheet append failed:', recorded.error)
     }
 
+    // The sheet assigns the tribe so the four stay even. Without its answer
+    // the code decides, and the internal email asks the team to record it.
+    const tribe = recorded.tribe ?? tribeFromCode(code)
+    const tribeInSheet = recorded.tribe !== undefined
+
     const resendKey = process.env.RESEND_API_KEY
     if (!resendKey) {
       return NextResponse.json(
@@ -433,13 +463,13 @@ export async function POST(request: Request) {
       internal: {
         to: RECIPIENT,
         subject: `MAD Settings sign-up — ${payload.name} · ${ticket.label} · ${code}`,
-        html: buildInternalEmail(payload, code, instagram),
+        html: buildInternalEmail(payload, code, instagram, tribe, tribeInSheet),
         replyTo: payload.email,
       },
       customer: {
         to: payload.email,
         subject: `You are in — MAD Settings, ${EVENT_DATE_LABEL} (${code})`,
-        html: buildCustomerEmail(payload, code, gatePass !== null),
+        html: buildCustomerEmail(payload, code, gatePass !== null, tribe),
         attachments: gatePass ? [gatePass] : undefined,
       },
     })
@@ -451,7 +481,7 @@ export async function POST(request: Request) {
       )
     }
 
-    return NextResponse.json({ success: true, code })
+    return NextResponse.json({ success: true, code, tribe: tribe.id })
   } catch (err) {
     console.error('MAD Settings sign-up error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

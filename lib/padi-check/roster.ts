@@ -2,14 +2,16 @@ import { DETAIL_COPY } from './copy'
 import type { RosterEntry } from './sheet'
 
 /**
- * The printed guest list (R-011): name, code, ticket and tent, sorted by
- * name. Nothing else reaches the page, whatever the roster carries.
+ * The printed guest list (R-011): name, code, ticket, tent and tribe, sorted
+ * by name. Nothing else reaches the page, whatever the roster carries.
  */
 export interface PrintedGuest {
   name: string
   code: string
   ticket: string
   tent: string
+  /** Empty when the row has no tribe yet. */
+  tribe: string
 }
 
 export function toPrintedList(roster: RosterEntry[]): PrintedGuest[] {
@@ -19,6 +21,7 @@ export function toPrintedList(roster: RosterEntry[]): PrintedGuest[] {
       code: r.code,
       ticket: r.ticketLabel,
       tent: r.usesTent ? DETAIL_COPY.tent : DETAIL_COPY.noTent,
+      tribe: r.tribe ?? '',
     }))
     .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }) || a.code.localeCompare(b.code))
 }

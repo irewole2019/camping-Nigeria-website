@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, MapPin, Phone } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
@@ -8,6 +9,7 @@ import { buildPageMetadata } from '@/lib/seo'
 import { buildBreadcrumbJsonLd } from '@/lib/structured-data'
 import { isValidSignupCode } from '@/lib/events/mad-settings-records'
 import { gatePassFields, gatePassSvg } from '@/lib/gate-pass/qr'
+import { getTribe, isValidTribeId, tribeBadgeAlt } from '@/lib/events/mad-settings-tribes'
 import {
   BRING,
   EVENT_DATE_LABEL,
@@ -42,13 +44,17 @@ export const metadata = buildPageMetadata({
 export default async function MadSettingsRegisteredPage({
   searchParams,
 }: {
-  searchParams: Promise<{ code?: string; name?: string; ticket?: string }>
+  searchParams: Promise<{ code?: string; name?: string; ticket?: string; tribe?: string }>
 }) {
   const params = await searchParams
 
   const code = isValidSignupCode(params.code) ? params.code : null
   const firstName = (params.name || '').trim().split(' ')[0]
   const ticket = isValidTicketId(params.ticket) ? getTicket(params.ticket) : null
+  // Like the name and ticket, read back from the URL for the "it worked"
+  // moment. Editing it changes only this page: the email and the gate both
+  // go by the sheet.
+  const tribe = code && isValidTribeId(params.tribe) ? getTribe(params.tribe) : null
   // The Gate pass QR (R-007), drawn on the server as inline SVG. Only for a
   // code of the right shape; the name and ticket in it are a convenience for
   // whoever reads it, and the gate trusts only the code.
@@ -114,6 +120,34 @@ export default async function MadSettingsRegisteredPage({
               Your sign-up went through, but we could not show your code here. Check your email — it
               is in there. If nothing arrives, email hello@campingnigeria.com.
             </p>
+          )}
+
+          {tribe && (
+            <div
+              className="mt-6 rounded-2xl border-2 bg-white px-6 py-7 text-center"
+              style={{ borderColor: tribe.colour }}
+            >
+              <p className="font-sans text-xs font-semibold uppercase tracking-[0.2em] text-brand-dark/60">
+                Your tribe
+              </p>
+              <Image
+                src={tribe.image}
+                alt={tribeBadgeAlt(tribe)}
+                width={tribe.imageWidth}
+                height={tribe.imageHeight}
+                className="mx-auto mt-4 h-auto w-[220px]"
+              />
+              <p className="mt-4 font-sans text-base text-brand-dark">
+                You are in{' '}
+                <span
+                  className="inline-block rounded-full px-3 py-0.5 font-bold"
+                  style={{ backgroundColor: tribe.colour, color: tribe.ink }}
+                >
+                  {tribe.name}
+                </span>
+                , one of the four MAD Settings tribes.
+              </p>
+            </div>
           )}
 
           <dl className="mt-8 divide-y divide-brand-dark/10 overflow-hidden rounded-2xl border border-brand-dark/10 bg-white">

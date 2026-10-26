@@ -43,6 +43,15 @@
  * PADI_CHECK_SECRET, run `setupPadiCheck()` once (it makes the Scan log tab).
  * `checkin` is the one place this script edits a row after writing it: it
  * puts the arrival time in Checked In?. Details in SETUP.md, "Padi Check".
+ *
+ * TRIBES (added 26/10/2026). Every sign-up is put in one of four tribes, in
+ * the Tribe column (the last one, so no earlier column moved). doPost gives
+ * each new sign-up the tribe with the fewest people, a couple ticket counting
+ * as two, inside the same lock as the tent cap, and returns it so the site
+ * can put it in the confirmation email. After pasting this version, run
+ * setupTribes() ONCE: it adds the Tribe heading and spreads everyone who
+ * signed up before tribes existed evenly, oldest first. Details in SETUP.md,
+ * "Tribes".
  */
 
 const SHEET_NAME = 'Sign-ups'
@@ -80,7 +89,16 @@ const HEADERS = [
   // debrief (26/09/2026). Blank for attendance-only tickets.
   'Tent ID',
   'Notes',
+  // Added 26/10/2026, last so no earlier column moved. Set by doPost (and by
+  // setupTribes() for earlier rows); edit by hand only to move someone.
+  'Tribe',
 ]
+
+/**
+ * The four tribes, in tie-break order. A second copy of the names in
+ * lib/events/mad-settings-tribes.ts; change both together.
+ */
+const TRIBE_NAMES = ['Gadaff', 'Kutinga', 'Mandi', 'Sellas']
 
 const CODE_COLUMN = 2 // 1-indexed, matches HEADERS above
 const TENT_COLUMN = 8 // 'Tent?' — 1-indexed, matches HEADERS above
@@ -114,6 +132,7 @@ function getOrCreateSheet() {
     sheet.setColumnWidth(11, 110) // Checked In?
     sheet.setColumnWidth(12, 90) // Tent ID
     sheet.setColumnWidth(13, 240) // Notes
+    sheet.setColumnWidth(14, 100) // Tribe
   }
   return sheet
 }
@@ -133,6 +152,43 @@ function countTents(sheet) {
     if (String(flags[i][0]).trim().toLowerCase() === 'yes') n += 1
   }
   return n
+}
+
+/** People a ticket brings: a couple ticket is two, anything else one. */
+function peopleFor(ticket) {
+  return /couple/i.test(String(ticket)) ? 2 : 1
+}
+
+/** People already in each tribe, from the Tribe column. Blank cells are not counted. */
+function tribeTotals(sheet) {
+  const totals = {}
+  for (let t = 0; t < TRIBE_NAMES.length; t += 1) totals[TRIBE_NAMES[t]] = 0
+  const last = sheet.getLastRow()
+  if (last < 2) return totals
+  const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+  for (let i = 0; i < rows.length; i += 1) {
+    const name = canonicalTribe(rows[i][TRIBE_COLUMN - 1])
+    if (name) totals[name] += peopleFor(rows[i][TICKET_COLUMN - 1])
+  }
+  return totals
+}
+
+/** The tribe with the fewest people; on a tie, the first in TRIBE_NAMES. */
+function pickTribe(totals) {
+  let best = TRIBE_NAMES[0]
+  for (let t = 1; t < TRIBE_NAMES.length; t += 1) {
+    if (totals[TRIBE_NAMES[t]] < totals[best]) best = TRIBE_NAMES[t]
+  }
+  return best
+}
+
+/** "kutinga " -> "Kutinga"; anything that is not a tribe -> ''. */
+function canonicalTribe(v) {
+  const key = String(v).trim().toLowerCase()
+  for (let t = 0; t < TRIBE_NAMES.length; t += 1) {
+    if (TRIBE_NAMES[t].toLowerCase() === key) return TRIBE_NAMES[t]
+  }
+  return ''
 }
 
 /** Returns the 1-indexed row for a code, or -1. */
@@ -192,6 +248,10 @@ function doPost(e) {
       return jsonOut({ ok: false, error: 'duplicate-code' })
     }
 
+    // Least-filled tribe, decided inside the lock so two sign-ups arriving
+    // together cannot both land in the same "emptiest" tribe.
+    const tribe = pickTribe(tribeTotals(sheet))
+
     sheet.appendRow([
       new Date(),
       body.code,
@@ -209,11 +269,13 @@ function doPost(e) {
       'No',   // Checked In? — set by hand on the night
       '',     // Tent ID — set by hand at check-in
       '',     // Notes
+      tribe,  // Tribe — what the confirmation email tells the guest
     ])
 
     return jsonOut({
       ok: true,
       code: body.code,
+      tribe: tribe,
       tentsRemaining: Math.max(0, TENT_CAP - countTents(sheet)),
     })
   } catch (err) {
@@ -314,6 +376,8 @@ const NAME_COLUMN = HEADERS.indexOf('Name') + 1
 const TICKET_COLUMN = HEADERS.indexOf('Ticket') + 1
 const PAID_COLUMN = HEADERS.indexOf('Paid?') + 1
 const CHECKED_IN_COLUMN = HEADERS.indexOf('Checked In?') + 1
+const EMAIL_COLUMN = HEADERS.indexOf('Email') + 1
+const TRIBE_COLUMN = HEADERS.indexOf('Tribe') + 1
 
 /**
  * Routes a gate request. Every action needs the shared secret, held in the
@@ -333,6 +397,7 @@ function handlePadiCheck(body, sheet) {
     return { ok: true, checkedIn: counts.checkedIn, total: counts.total }
   }
   if (body.action === 'roster') return { ok: true, roster: padiRoster(sheet) }
+  if (body.action === 'tribe-mailing') return { ok: true, guests: tribeMailing(sheet) }
   return { ok: false, error: 'unknown-action' }
 }
 
@@ -361,6 +426,7 @@ function padiCheckIn(sheet, code, at) {
     name: String(values[NAME_COLUMN - 1]),
     ticket: String(values[TICKET_COLUMN - 1]),
     usesTent: isYes(values[TENT_COLUMN - 1]),
+    tribe: canonicalTribe(values[TRIBE_COLUMN - 1]),
   }
 
   if (!isYes(values[PAID_COLUMN - 1])) {
@@ -400,6 +466,7 @@ function padiRoster(sheet) {
       code: String(r[CODE_COLUMN - 1]),
       ticketLabel: String(r[TICKET_COLUMN - 1]),
       usesTent: isYes(r[TENT_COLUMN - 1]),
+      tribe: canonicalTribe(r[TRIBE_COLUMN - 1]),
     }
     if (hasArrived(r[CHECKED_IN_COLUMN - 1])) entry.checkedInAt = formatArrival(r[CHECKED_IN_COLUMN - 1])
     out.push(entry)
@@ -487,4 +554,88 @@ function logScan(code, status, name) {
 /** Run once after pasting this version: creates the Scan log tab. */
 function setupPadiCheck() {
   getOrCreateScanLog()
+}
+
+// ---------------------------------------------------------------------------
+// Tribes (26/10/2026)
+// ---------------------------------------------------------------------------
+
+/**
+ * Paid guests with a tribe, for the one-off email that tells guests who
+ * signed up before tribes existed (scripts/send-tribe-emails.ts). The only
+ * action that returns email addresses, which is why it sits behind the same
+ * secret as the gate. Code, name, email, ticket, tribe and when they signed
+ * up (so the email goes only to guests from before tribes): nothing else.
+ */
+function tribeMailing(sheet) {
+  const last = sheet.getLastRow()
+  if (last < 2) return []
+  const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+  const out = []
+  for (let i = 0; i < rows.length; i += 1) {
+    const r = rows[i]
+    if (!isYes(r[PAID_COLUMN - 1])) continue
+    const tribe = canonicalTribe(r[TRIBE_COLUMN - 1])
+    if (!tribe) continue
+    const ts = r[0]
+    out.push({
+      signedUpAt: ts instanceof Date ? ts.toISOString() : String(ts),
+      code: String(r[CODE_COLUMN - 1]),
+      name: String(r[NAME_COLUMN - 1]),
+      email: String(r[EMAIL_COLUMN - 1]),
+      ticketLabel: String(r[TICKET_COLUMN - 1]),
+      tribe: tribe,
+    })
+  }
+  return out
+}
+
+/**
+ * Run ONCE after pasting this version. Adds the Tribe heading if it is not
+ * there, then gives every row without a tribe the least-filled one, oldest
+ * sign-up first, so everyone who signed up before tribes existed is spread
+ * evenly. Rows that already have a tribe are left alone, so running it again
+ * changes nothing. Rebuilds the Lookup tab so it shows the tribe too, and
+ * writes the totals to the execution log.
+ */
+function setupTribes() {
+  const lock = LockService.getScriptLock()
+  lock.waitLock(30000)
+  try {
+    const sheet = getOrCreateSheet()
+    const heading = sheet.getRange(1, TRIBE_COLUMN)
+    if (String(heading.getValue()).trim() === '') {
+      heading
+        .setValue('Tribe')
+        .setFontWeight('bold')
+        .setBackground('#0e3e2e')
+        .setFontColor('#ffffff')
+        .setHorizontalAlignment('left')
+      sheet.setColumnWidth(TRIBE_COLUMN, 100)
+    }
+
+    const last = sheet.getLastRow()
+    let assigned = 0
+    if (last >= 2) {
+      const totals = tribeTotals(sheet)
+      const rows = sheet.getRange(2, 1, last - 1, HEADERS.length).getValues()
+      const column = rows.map(function (r) { return [r[TRIBE_COLUMN - 1]] })
+      for (let i = 0; i < rows.length; i += 1) {
+        if (canonicalTribe(rows[i][TRIBE_COLUMN - 1])) continue
+        if (!String(rows[i][CODE_COLUMN - 1]).trim()) continue
+        const tribe = pickTribe(totals)
+        totals[tribe] += peopleFor(rows[i][TICKET_COLUMN - 1])
+        column[i] = [tribe]
+        assigned += 1
+      }
+      sheet.getRange(2, TRIBE_COLUMN, column.length, 1).setValues(column)
+    }
+
+    setupLookupTab()
+    const final = tribeTotals(sheet)
+    Logger.log('Tribes given to ' + assigned + ' earlier sign-ups. People per tribe: ' + JSON.stringify(final))
+    return final
+  } finally {
+    lock.releaseLock()
+  }
 }

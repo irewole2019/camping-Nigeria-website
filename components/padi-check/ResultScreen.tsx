@@ -113,6 +113,26 @@ function Tile({ icon, title, sub, className = '' }: { icon: ReactNode; title: st
   )
 }
 
+/**
+ * The guest's tribe, so the volunteer can send them to it. A swatch of the
+ * tribe's colour rather than the badge art: the green and black badges would
+ * vanish on the green and dark screens.
+ */
+function TribeTile({ tribe }: { tribe: NonNullable<ScreenContent['tribe']> }) {
+  return (
+    <Tile
+      icon={
+        <span
+          className="block h-7 w-7 rounded-full border-[3px] border-white"
+          style={{ backgroundColor: tribe.colour }}
+        />
+      }
+      title={tribe.name}
+      sub={DETAIL_COPY.tribe}
+    />
+  )
+}
+
 function CodeBox({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -229,9 +249,12 @@ export default function ResultScreen({
               )}
             </div>
           )}
+          {state === 'welcome' && content.tribe && <TribeTile tribe={content.tribe} />}
           {state === 'already' && content.time && (
             <Tile icon={<Clock className="h-8 w-8" />} title={DETAIL_COPY.checkedInAt(content.time)} />
           )}
+          {/* On the orange screen the first-arrival time is what matters; the tribe follows it. */}
+          {state === 'already' && content.tribe && <TribeTile tribe={content.tribe} />}
           {state === 'not-found' && content.code && <CodeBox code={content.code} />}
           {content.detail && (
             <p className={`font-sans text-lg leading-snug ${state === 'not-found' ? 'text-left' : 'text-center'}`}>{content.detail}</p>

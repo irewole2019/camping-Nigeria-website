@@ -2,7 +2,7 @@
 
 What is built, what is in progress, what is next. Update every session.
 
-Last updated: 2026-10-14
+Last updated: 2026-10-26
 
 ## Company
 
@@ -294,7 +294,11 @@ Worked through the full code-review punch list plus a follow-up review:
 - **Facebook page URL**, to make the Facebook line a link.
 - **Photo consent** for the people in the community photos, as was done for Kiddies Hike.
 
+58. ✅ **MAD Settings tribes and the social link** (26/10/2026, built; live once the sheet script is redeployed and the site is merged). Every sign-up is put in one of four tribes — Gadaff (gold, ram), Kutinga (red, eagle), Mandi (green, bear), Sellas (black, wolf), the team's badge art in `public/images/events/mad-settings/tribes/`. **The sheet assigns it**: the Apps Script gives each new sign-up the least-filled tribe (a couple counts as two) inside its existing lock, writes it to a new last column, **Tribe**, and returns it; `setupTribes()` adds the heading and spreads earlier rows evenly. Simulated against a fake 13-column sheet: 37 earlier sign-ups split 12/13/12/12, 40 more stayed within one person, a rerun changes nothing. The tribe shows in the confirmation email (badge plus the name as text), on the "You are in" page, on the Padi Check welcome and already screens (a colour swatch tile, not the badge, which vanishes on the green and dark screens), and on the printed list. Every confirmation email now ends with the team's line: "Visit https://madsettings.theboostnation.space/ to join the social part of the camping experience for the African Dream Camping Experience." Source of truth `lib/events/mad-settings-tribes.ts`; shared email fragments `lib/events/mad-settings-email.ts`. If the sheet does not return a tribe, the site falls back to one derived from the code and the internal email says to type it into the sheet. **A one-off email to earlier guests** (`scripts/send-tribe-emails.ts`, preview by default, sends only with `--send --expect <count>`, skips anyone already sent) was built on request, but on 26/10 the sheet held only founder test rows (deleted at Padi Check's go-live that morning) and sales open 27/10, so **nothing was sent and nothing needs to be** if tribes are live before the first real sign-up. 224 tests.
+
 ### MAD Settings — what is outstanding
+
+- **Tribes go live in this order:** (1) paste the new `apps-script.gs`, run `setupTribes()`, and move **both** deployments (live and test) to the new version — `docs/mad-settings/SETUP.md`, "Tribes". This is a **second** redeploy: Padi Check's went out on the morning of 26/10, before tribes existed. (2) merge the site to `main`. Ideally both before sales open on 27/10, so every real guest's first email has a tribe. The other way round works but leaves tribes to type in by hand.
 
 - ✅ **Deployed and live** (13/10/2026, `eb984b5`). Verified on campingnigeria.com: `/events/mad-settings` 200 with no venue in the HTML, homepage banner showing "Early Bird · From ₦10,000", `/events`, the coded confirmation page and the OG card all 200, sitemap entry present. The push had to rebase over three unrelated commits (team focus areas, `.gitignore`, a `.claude` hook) — no overlap.
 - ✅ **Sheet created** by the founders (13/10/2026) and `setup()` run. Its first run failed with Apps Script's bare "An unknown error has occurred" — the browser was signed into several Google accounts, so the editor ran as the default account rather than the sheet's owner. Running it from an incognito window signed into only the owning account fixed it. Now in the troubleshooting section of `docs/mad-settings/SETUP.md`.

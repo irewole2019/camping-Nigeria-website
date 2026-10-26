@@ -9,18 +9,22 @@
  * background write.
  */
 
+import { tribeFromName } from '@/lib/events/mad-settings-tribes'
+
 export type ScanStatus = 'welcome' | 'already' | 'not-found' | 'not-paid'
 export type GateStatus = ScanStatus | 'offline'
 
 /**
- * Everything the gate may show. Name, ticket, tent and a time: never email,
- * phone, Instagram or price, whatever the script sends.
+ * Everything the gate may show. Name, ticket, tent, tribe and a time: never
+ * email, phone, Instagram or price, whatever the script sends.
  */
 export interface GateResult {
   status: GateStatus
   name?: string
   ticket?: string
   usesTent?: boolean
+  /** The tribe's display name ("Kutinga"), only when it is one of the four. */
+  tribe?: string
   checkedInAt?: string
   checkedIn?: number
   total?: number
@@ -31,6 +35,8 @@ export interface RosterEntry {
   code: string
   ticketLabel: string
   usesTent: boolean
+  /** The tribe's display name, when the row has a valid one. */
+  tribe?: string
   /** Present when the sheet already shows the guest as arrived. */
   checkedInAt?: string
 }
@@ -63,6 +69,8 @@ export function toGateResult(raw: unknown): GateResult {
   if (typeof raw.name === 'string') out.name = raw.name
   if (typeof raw.ticket === 'string') out.ticket = raw.ticket
   if (typeof raw.usesTent === 'boolean') out.usesTent = raw.usesTent
+  const tribe = tribeFromName(raw.tribe)
+  if (tribe) out.tribe = tribe.name
   if (typeof raw.checkedInAt === 'string') out.checkedInAt = raw.checkedInAt
   const checkedIn = count(raw.checkedIn)
   const total = count(raw.total)
@@ -83,6 +91,8 @@ export function toRoster(raw: unknown): RosterEntry[] | null {
       ticketLabel: typeof r.ticketLabel === 'string' ? r.ticketLabel : '',
       usesTent: r.usesTent === true,
     }
+    const tribe = tribeFromName(r.tribe)
+    if (tribe) entry.tribe = tribe.name
     if (typeof r.checkedInAt === 'string' && r.checkedInAt) entry.checkedInAt = r.checkedInAt
     out.push(entry)
   }

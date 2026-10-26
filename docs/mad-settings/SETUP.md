@@ -163,6 +163,51 @@ refused. Sign-ups are not affected either way.
 
 ---
 
+## Tribes (added 26/10/2026)
+
+Every sign-up is put in one of four tribes: **Gadaff**, **Kutinga**,
+**Mandi** or **Sellas**. The sheet decides, not the website, because only
+the sheet knows how many people each tribe has. Each new sign-up goes to the
+tribe with the fewest people (a couple ticket counts as two), and the tribe is
+written in a new **Tribe** column at the far right. The guest sees it in their
+confirmation email, on the "You are in" page, and on the gate screen.
+
+**Do this BEFORE the website update goes live** — the website expects the
+sheet to answer with a tribe. It is safe the other way round too (the website
+picks a fallback and the internal email says "add it to the Tribe column by
+hand"), but then you have typing to do.
+
+1. Open the **MAD Settings Sign-ups** sheet → **Extensions → Apps Script**.
+2. Click in the code, press **Ctrl+A**, then **Delete**. Paste in the whole of
+   `docs/mad-settings/apps-script.gs` from this repo, and press **Ctrl+S**.
+   (This version includes everything Padi Check needs as well.)
+3. In the function dropdown at the top, pick **`setupTribes`** and click
+   **Run**. It adds the **Tribe** heading and gives everyone already in the
+   sheet a tribe, spread evenly, oldest first. The **Execution log** at the
+   bottom ends with a line like
+   `People per tribe: {"Gadaff":1,"Kutinga":1,"Mandi":0,"Sellas":0}`.
+   Running it again changes nothing.
+4. Publish the new version to **both** links — the live one the website uses,
+   and the test one:
+   **Deploy → Manage deployments** → pick a deployment on the left → the
+   **pencil** icon → **Version: New version** → **Deploy**. Then pick the
+   other deployment and do the same. Never use *New deployment* here: that
+   makes a new link the website does not know.
+5. Check: paste the live Web app URL into a browser. It still shows the
+   heartbeat (`"service":"mad-settings-signups"`). Then tell whoever is
+   updating the website that the sheet is done.
+
+**Moving someone to another tribe:** type the tribe's name in their Tribe
+cell (spelling as above; capitals do not matter). New sign-ups balance
+against whatever the column says. **Do not leave a Tribe cell blank** for a
+real guest: blank cells are not counted, and the gate shows no tribe for
+them.
+
+**Test rows:** deleting them, as planned at go-live, is fine; the next
+sign-ups simply fill whichever tribe is now smallest.
+
+---
+
 ## The 80-tent cap lives in here
 
 Only **sleepover** tickets take a tent, so only they count. Once the sheet

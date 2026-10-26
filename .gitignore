@@ -22,3 +22,6 @@ node_modules/
 
 # Rendered copy of the gear sourcing guide; the .md beside it is the source
 /Camping Nigeria Gear Sourcing.html
+
+# One-off tribe email: which codes were already sent (scripts/send-tribe-emails.ts)
+.tribe-emails-sent.json

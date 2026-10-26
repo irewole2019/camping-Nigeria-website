@@ -12,20 +12,20 @@ describe('printed guest list (AC-R011-01)', () => {
     ok: true,
     roster: [
       { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticketLabel: 'Attendance only (no tent)', usesTent: false, email: 'z@example.com', phone: '+2348000000001' },
-      { name: 'ada Obi', code: 'MAD-AAA234', ticketLabel: 'Sleepover single (1 person)', usesTent: true, instagram: '@ada', price: 30000, checkedInAt: '2026-10-31T19:05:00' },
+      { name: 'ada Obi', code: 'MAD-AAA234', ticketLabel: 'Sleepover single (1 person)', usesTent: true, instagram: '@ada', price: 30000, checkedInAt: '2026-10-31T19:05:00', tribe: 'kutinga ' },
     ],
   }
 
-  it('keeps name, code, ticket and tent only, and never email or phone', () => {
+  it('keeps name, code, ticket, tent and tribe only, and never email or phone', () => {
     const list = toPrintedList(toRoster(raw)!)
-    for (const g of list) expect(Object.keys(g).sort()).toEqual(['code', 'name', 'tent', 'ticket'])
+    for (const g of list) expect(Object.keys(g).sort()).toEqual(['code', 'name', 'tent', 'ticket', 'tribe'])
     expect(JSON.stringify(list)).not.toMatch(/example\.com|\+234|@ada|30000/)
   })
 
-  it('sorts by name, ignoring case, and labels the tent', () => {
+  it('sorts by name, ignoring case, labels the tent, and tidies the tribe (blank when the row has none)', () => {
     expect(toPrintedList(toRoster(raw)!)).toEqual([
-      { name: 'ada Obi', code: 'MAD-AAA234', ticket: 'Sleepover single (1 person)', tent: 'Tent' },
-      { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticket: 'Attendance only (no tent)', tent: 'No tent' },
+      { name: 'ada Obi', code: 'MAD-AAA234', ticket: 'Sleepover single (1 person)', tent: 'Tent', tribe: 'Kutinga' },
+      { name: 'Zainab Bello', code: 'MAD-ZZZ234', ticket: 'Attendance only (no tent)', tent: 'No tent', tribe: '' },
     ])
   })
 

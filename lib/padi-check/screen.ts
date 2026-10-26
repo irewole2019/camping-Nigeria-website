@@ -1,5 +1,6 @@
 import { DETAIL_COPY, type ResultState } from './copy'
 import { formatArrivalTime } from './extract-code'
+import { tribeFromName, type Tribe } from '@/lib/events/mad-settings-tribes'
 
 /** What the check API sends back (see app/api/padi-check/check/route.ts). */
 export interface CheckReply {
@@ -7,20 +8,24 @@ export interface CheckReply {
   name?: unknown
   ticket?: unknown
   usesTent?: unknown
+  tribe?: unknown
   checkedInAt?: unknown
   checkedIn?: unknown
   total?: unknown
 }
 
 /**
- * What a result screen shows: name, ticket, Tent or No tent, a time, or the
- * code that was not found. Nothing else, whatever the reply carries.
+ * What a result screen shows: name, ticket, Tent or No tent, the tribe, a
+ * time, or the code that was not found. Nothing else, whatever the reply
+ * carries.
  */
 export interface ScreenContent {
   state: ResultState
   name?: string
   ticket?: string
   tent?: string
+  /** So the volunteer can send the guest to their tribe. */
+  tribe?: Tribe
   time?: string
   code?: string
   detail?: string
@@ -31,6 +36,7 @@ const str = (v: unknown) => (typeof v === 'string' && v.trim() ? v : undefined)
 /** Anything unrecognised is shown as offline rather than guessed at. */
 export function toScreen(reply: CheckReply | null, code: string): ScreenContent {
   const name = str(reply?.name)
+  const tribe = tribeFromName(reply?.tribe) ?? undefined
   switch (reply?.status) {
     case 'welcome':
       return {
@@ -38,10 +44,11 @@ export function toScreen(reply: CheckReply | null, code: string): ScreenContent 
         name,
         ticket: str(reply.ticket),
         tent: reply.usesTent === true ? DETAIL_COPY.tent : DETAIL_COPY.noTent,
+        tribe,
         time: formatArrivalTime(str(reply.checkedInAt)) || undefined,
       }
     case 'already':
-      return { state: 'already', name, time: formatArrivalTime(str(reply.checkedInAt)) || undefined }
+      return { state: 'already', name, tribe, time: formatArrivalTime(str(reply.checkedInAt)) || undefined }
     case 'not-found':
       return { state: 'not-found', code, detail: DETAIL_COPY.notFound }
     case 'not-paid':

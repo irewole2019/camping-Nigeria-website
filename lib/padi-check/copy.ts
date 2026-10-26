@@ -45,7 +45,7 @@ export const CARD_COPY = {
 /** The printed guest list (R-011). */
 export const LIST_COPY = {
   title: 'Padi Check · Guest list',
-  columns: { name: 'Name', code: 'Code', ticket: 'Ticket', tent: 'Tent', in: 'In' },
+  columns: { name: 'Name', code: 'Code', ticket: 'Ticket', tent: 'Tent', tribe: 'Tribe', in: 'In' },
   printed: (when: string) => `Printed ${when} (Lagos time)`,
   count: (n: number) => `${n} paid ${n === 1 ? 'guest' : 'guests'}`,
   empty: 'No paid guests yet.',
@@ -103,6 +103,8 @@ export const DETAIL_COPY = {
   tent: 'Tent',
   noTent: 'No tent',
   checkInTime: 'Check-in time',
+  /** Under the tribe name on the welcome and already screens. */
+  tribe: 'Tribe',
   checkedInAt: (time: string) => `Checked in at ${time}`,
   notFound: 'Check the code with the guest, or type it in again.',
   notPaid: 'Signed up, but payment not confirmed.',
