@@ -44,10 +44,17 @@ Public pages (all App Router `page.tsx`):
   Setup guide: `docs/camp-night/SETUP.md`.
 - `/events/kiddies-hike` — the 21 August 2026 potluck family hike, a **past edition** with real photography. Source of truth: `lib/events/kiddies-hike.ts`. Built from the approved copy deck at `docs/events/CampingNigeria_KiddiesHike_EventBreakdown_v3.docx`; that deck's no-em-dash house style is deliberate on this page and differs from Base Camp Kids.
 - `/events/base-camp-kids` — the 30 May 2026 Children's Day camp, now a **past edition**. `EVENT_STATUS` in `lib/events/base-camp-kids.ts` drives everything: `'past'` closes the registration form, drops the ticket `Offer` from the Event JSON-LD, switches Hero/Pricing/metadata to recap copy, and makes `/api/event-registration` return 403. Deliberately a flag rather than a date comparison — the pages are statically rendered, so `Date.now()` bakes in at build time. Confirmation page at `/events/base-camp-kids/registered`.
+- `/padi-check` — **Padi Check**, the gate check-in tool for MAD Settings (built 17–26/10/2026; plan and decisions in `usl-build/`, especially `8-build-sequence.md` Section 9). Volunteer password → rear-camera QR scanner plus a typed-code box → one full-screen answer per scan: green **Welcome in!**, orange **Already checked in**, red **We cannot find this code** / **Not marked as paid**, grey **Cannot reach the list**, and a camera-off screen. Look and copy follow the founder's designs (25/10/2026), recorded in `usl-build/6-landing-page-copy.md` Surfaces 4–6. Admin password opens `/padi-check/card` (A5 Gate card with the Toyosi number from `PADI_CHECK_CALL_PHONE`) and `/padi-check/list` (printed backup: paid guests, name/code/ticket/tent only). `/padi-check/preview` shows all six screens with made-up guests (signed-in, never in production). Every `/padi-check` route is noindex, robots-disallowed, and has no Vercel Analytics (`components/SiteAnalytics.tsx`). Four things to know:
+  - **The Google Sheet is too slow to answer the gate** (median 4.8 s, a third of calls past 15 s), so known guests are answered from a copy of the paid list in **Upstash** (`lib/padi-check/gate.ts`) and the arrival is written to the sheet afterwards, retried until it lands. The sheet stays the record. Unknown codes still ask the sheet. The scanner's **Fast/Slow** badge says which is happening.
+  - The Apps Script (`docs/mad-settings/apps-script.gs`) gained `checkin`, `stats` and `roster` actions behind the `PADI_CHECK_SECRET` Script Property (= `PADI_CHECK_SCRIPT_SECRET` on the site), and a **Scan log** tab of every non-welcome scan.
+  - Guests get a **Gate pass** QR (`CODE|Name|Ticket`, only the code is trusted) on `/events/mad-settings/registered` and inline in the confirmation email (`lib/gate-pass/qr.ts`; a signed PNG route `/api/gate-pass/qr` also exists, unused).
+  - The camera needs `camera=(self)`: `next.config.mjs` overrides the site-wide `Permissions-Policy` for `/padi-check` only.
 - `/contact` — contact form → `/api/contact`
 - `/privacy-policy`, `/terms`
 
 Internal API routes (in `app/api/*/route.ts`): `contact`, `proposal`, `assessment-lead` and `award-proposal` (both currently 404 — the DoE surface is hidden), `event-registration` (gated closed — see `/events/base-camp-kids` above), `camp-night-signup` (gated closed since 28/09/2026 — see `/events/camp-night` above), `mad-settings-signup` (open — see `/events/mad-settings` above). Each runs the full defensive stack before Resend: honeypot (`website_confirm`) → per-IP rate limit (Upstash, 5/hr/route) → type-guard validation with enum allowlists → format checks (email regex, phone digits) → length caps → server-side recommendation derivation (proposal + assessment) → escape-html on every user field in the template → send both emails via `lib/mail.ts#sendPairedMail`. Internal notification to `hello@campingnigeria.com`, customer confirmation to the submitter. Falls back to opening a pre-filled `mailto:` if `RESEND_API_KEY` is missing.
+
+Padi Check has its own routes under `app/api/padi-check/` — `login`, `logout`, `check`, `stats`, `roster` (admin) — with signed `padi_session` cookies (`lib/padi-check/session.ts`), a 5-wrong-passwords lockout, and per-session rate limits; plus `app/api/gate-pass/qr` and the daily `app/api/cron/upstash-heartbeat` (Vercel Cron in `vercel.json`, needs `CRON_SECRET`), which keeps the free Upstash database from being archived and emails hello@ if it stops answering.
 
 The gear-rental form does **not** use this stack — it talks straight to the quote tool. The website hosts the form UI + the live-CSV equipment selector + the confirmation page; everything else is upstream. See [context/state.md](context/state.md) for the Phase 2 quote-tool integration details.
 
@@ -56,7 +63,8 @@ The gear-rental form does **not** use this stack — it talks straight to the qu
 - **Resend** — transactional email. Needs `RESEND_API_KEY` env var. From address: `rentals@campingnigeria.com` / similar per route.
 - **Microsoft Forms** — Open Camp seat bookings. URL lives in `lib/constants.ts#BOOKING_FORM_URL`. All "Book Your Spot" CTAs link out — don't re-hardcode it.
 - **Outlook Bookings** — DoE consultation calendar. URL lives in `lib/constants.ts#CALENDAR_BOOKING_URL`. **Cannot be iframed** (X-Frame-Options) — always link-out.
-- **Vercel** — hosting + analytics.
+- **Vercel** — hosting + analytics (through `components/SiteAnalytics.tsx`, which skips Padi Check and strips names and codes from confirmation-page URLs).
+- **Upstash Redis** — form rate limiting and Padi Check's gate memory. Free plan, one database, archived after 30 days unused: the old one was found dead on 23/10/2026. A new one is in `.env.local` and Vercel (all environments); the daily heartbeat keeps it alive. Under a founder's personal account for now — move it to a shared login after the event.
 
 ## Brand tokens
 
@@ -94,7 +102,7 @@ npm install
 npm run dev       # localhost:3000 (or :3001 if 3000 is taken)
 npm run build     # production build — run before merging
 npm run lint      # eslint
-npm test          # vitest run (140 pure-function tests)
+npm test          # vitest run (209 tests, mostly pure functions)
 npm run test:watch # vitest watch mode
 npx tsc --noEmit  # type check
 ```
@@ -103,4 +111,6 @@ Needs `.env.local` with `RESEND_API_KEY` for email delivery, `UPSTASH_REDIS_REST
 
 Three Apps Script webhooks record event sign-ups to Google Sheets: `GOOGLE_SHEETS_REGISTRATION_WEBHOOK_URL` (Base Camp Kids), `GOOGLE_SHEETS_CAMP_NIGHT_WEBHOOK_URL` (Camp Night) and `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` (MAD Settings) — each a separate sheet and deployment. All are optional and fail soft: sign-ups still send both emails and the internal one carries every field, so the row can be added by hand. **The MAD Settings one is load-bearing for capacity right now** — the 80-tent cap is counted in the sheet, so with the webhook unset there is no cap at all (the same was true of Camp Night's 60). Deploying any of them is a manual job in the owner's own Google account; see `docs/mad-settings/SETUP.md`.
 
-**A note on rate limiting:** *missing* Upstash env vars fail closed in production, but an Upstash host that is set and *unreachable* fails **open** in both environments (`lib/rate-limit.ts` catches the throw). A dead Redis therefore looks exactly like a working one until a bot finds a form.
+Padi Check needs seven more, all in `.env.example`: `PADI_CHECK_SCRIPT_SECRET`, `PADI_CHECK_PASSWORD`, `PADI_CHECK_ADMIN_PASSWORD`, `PADI_CHECK_SESSION_SECRET`, `GATE_PASS_SECRET`, `PADI_CHECK_CALL_PHONE` (the Toyosi number, never committed), and `CRON_SECRET` for the heartbeat. Rotate both passwords after every event; rotating `PADI_CHECK_SESSION_SECRET` signs everyone out.
+
+**A note on rate limiting:** *missing* Upstash env vars fail closed in production, but an Upstash host that is set and *unreachable* fails **open** in both environments (`lib/rate-limit.ts` catches the throw). A dead Redis therefore looks exactly like a working one until a bot finds a form — which is what happened in 2026, and why the shared client (`lib/redis.ts`) now times out at 1.5 s and the daily heartbeat exists.
