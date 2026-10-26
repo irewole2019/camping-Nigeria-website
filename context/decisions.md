@@ -931,7 +931,7 @@ The founders wanted the four tribes **evenly** filled. An even split needs a cou
 
 Padi Check was built against a separate TEST deployment of the live sheet, so the live link stayed untouched until go-live. On 26/10/2026, when the tribes version had reached one deployment but not the other and comparing the two became the job, the owner chose to archive the test deployment: one link to keep current, not two. It now answers 404.
 
-**Consequence: `.env.local` has an empty `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` on purpose.** The only remaining link is the live one, and putting it in a developer's `.env.local` would make every local sign-up a real row in the live sheet (and, for a sleepover, a tent). Local sign-ups and Padi Check therefore skip the sheet and fail soft. A script that genuinely needs the live sheet reads the link under its own name for one run — see conventions.md, "One-off scripts".
+**Consequence: `.env.local` has an empty `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` on purpose.** The only remaining link is the live one, and putting it in a developer's `.env.local` would make every local sign-up a real row in the live sheet (and, for a sleepover, a tent). Local sign-ups and Padi Check therefore skip the sheet and fail soft. A script that genuinely needs the live sheet reads the link under its own name, `MAD_SETTINGS_LIVE_SHEET_URL`, which the site never reads — see conventions.md, "One-off scripts". Since 26/10/2026 that line stays in `.env.local`, so the live script's version can be checked from a dev machine.
 
 **How to check the live deployment's version without the link:** sign in to the live `/padi-check` as admin and read the guest list. Fields only the newer script returns (e.g. `tribe`) prove which version is live.
 

@@ -286,5 +286,5 @@ site's `@/` imports, so a script builds emails with exactly the code the site us
   preview showed (`--send --expect N`), so a list that changed is never mailed blind;
 - **records what it sent** in a gitignored file and skips those on a rerun;
 - reads secrets from `.env.local` and **never prints them**; a live link a script needs
-  goes under a name only that script reads, added for the run and removed after, so
-  local dev never writes into a live sheet.
+  goes under a name only that script reads (e.g. `MAD_SETTINGS_LIVE_SHEET_URL`), never
+  under the name the site itself reads, so local dev never writes into a live sheet.
