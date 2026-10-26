@@ -926,3 +926,11 @@ The founders wanted the four tribes **evenly** filled. An even split needs a cou
 **Tribe is the last column.** Inserting it next to Ticket would have shifted Paid?, Checked In? and the rest in the live sheet, which Padi Check reads by position.
 
 **The badge in the email is a hosted image, not an inline attachment** like the gate pass: it is the same four files for everyone, and the tribe name is repeated as coloured text, so a client that blocks images still says it. On the Padi Check screens it is a colour swatch instead, because the green Mandi and black Sellas badges disappear on the green and dark result screens.
+
+## One Apps Script deployment for MAD Settings, and no sheet link on dev machines
+
+Padi Check was built against a separate TEST deployment of the live sheet, so the live link stayed untouched until go-live. On 26/10/2026, when the tribes version had reached one deployment but not the other and comparing the two became the job, the owner chose to archive the test deployment: one link to keep current, not two. It now answers 404.
+
+**Consequence: `.env.local` has an empty `GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL` on purpose.** The only remaining link is the live one, and putting it in a developer's `.env.local` would make every local sign-up a real row in the live sheet (and, for a sleepover, a tent). Local sign-ups and Padi Check therefore skip the sheet and fail soft. A script that genuinely needs the live sheet reads the link under its own name for one run — see conventions.md, "One-off scripts".
+
+**How to check the live deployment's version without the link:** sign in to the live `/padi-check` as admin and read the guest list. Fields only the newer script returns (e.g. `tribe`) prove which version is live.

@@ -8,7 +8,7 @@ Project-specific naming and patterns. If something is standard Next.js or React,
 - **API routes**: `app/api/<route>/route.ts`, default `POST` handler exported
 - **Components**: `components/<feature>/<PascalComponent>.tsx` — feature-scoped folders (`schools/`, `gear-rental/`, `contact/`, `proposal/`, `offers/`, `events/`, `programs/`, `about/`, `community/`, `organizations/`, `home/`, `shared/`, `seo/`, `ui/`, `layout/`)
 - **Feature flags**: `lib/feature-flags.ts`. Use a flag to hide a whole surface rather than deleting it, so it comes back with one edit. Annotate the type (`export const X: boolean = false`) — without it TypeScript narrows to the literal and every downstream `if (X)` becomes a compile error the moment the flag is flipped. Same reason `EVENT_STATUS` routes through `isRegistrationOpen()`.
-- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/index.ts` (the event registry), `events/base-camp-kids.ts`, `events/kiddies-hike.ts`, `events/camp-night.ts`, `events/camp-night-records.ts`, `events/mad-settings.ts`, `events/mad-settings-records.ts`, `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
+- **Shared helpers**: `lib/` — `html.ts`, `constants.ts`, `media.ts`, `animation.ts`, `feature-flags.ts`, `proposal-engine.ts`, `expedition-recommendation.ts`, `program-data.ts`, `offers-data.ts`, `award-proposal.ts`, `award-faq.ts`, `event-records.ts`, `events/index.ts` (the event registry), `events/base-camp-kids.ts`, `events/kiddies-hike.ts`, `events/camp-night.ts`, `events/camp-night-records.ts`, `events/mad-settings.ts`, `events/mad-settings-records.ts`, `events/mad-settings-tribes.ts` (the four tribes), `events/mad-settings-email.ts` (email fragments shared by the confirmation route and one-off scripts), `mail.ts`, `rate-limit.ts`, `seo.ts`, `structured-data.ts`, `og-image.tsx`, `quote-config.ts`, `utils.ts`
 - **Assets**:
   - `public/images/<feature>/...` — **WebP only.** JPGs were cleaned up; don't reintroduce them. Export WebP from the design tool directly.
   - **Event photography from a phone needs converting.** iPhone `.heic` files are not single images — they are a grid of 512×512 tiles plus assembly instructions. ffmpeg assembles the grid through an *internal complex filtergraph*, so a simple `-vf` cannot attach to the decode and `ffmpeg -i x.heic -vf scale=... out.webp` fails with "Simple and complex filtering cannot be used together". **Decode to a full-size PNG first, then scale and encode WebP from that PNG.** Worked example with sizes and quality settings: the header of `lib/events/kiddies-hike.ts`. Long edge 1400px (hero ~1750px) at quality 82 took ten Kiddies Hike frames from ~57 MB of originals to 2.8 MB.
@@ -274,3 +274,17 @@ npx tsc --noEmit   # type check
 **`npm audit` is no longer clean.** As of 31/08/2026 a fresh `npm install` reports 10 vulnerabilities (1 critical, 7 high). Next 16.2.4 itself now carries ~18 advisories (middleware/proxy bypass, RSC cache poisoning, XSS with CSP nonces, several DoS); the rest are dev-only transitive deps (`@babel/core`, `esbuild`, `js-yaml`, `brace-expansion`, `nanoid`). These are new disclosures against a pinned version, not a regression introduced by any change here. Upgrading Next is tracked in [state.md](state.md#next-tracked-todos) — treat it as its own session, not a drive-by bump.
 
 Note also that npm 11+ blocks postinstall scripts by default: `esbuild`, `sharp` and `unrs-resolver` are listed as pending on install. Nothing has broken so far; if `next/image` optimisation or vitest misbehaves, run `npm approve-scripts --allow-scripts-pending`.
+
+## One-off scripts
+
+Operational one-offs live in `scripts/` as TypeScript and run with
+`npx vite-node -c vitest.config.ts scripts/<name>.ts -- <args>`, which resolves the
+site's `@/` imports, so a script builds emails with exactly the code the site uses
+(`scripts/send-tribe-emails.ts` is the worked example). Anything that sends:
+
+- **previews by default** and sends only with an explicit flag plus the count the
+  preview showed (`--send --expect N`), so a list that changed is never mailed blind;
+- **records what it sent** in a gitignored file and skips those on a rerun;
+- reads secrets from `.env.local` and **never prints them**; a live link a script needs
+  goes under a name only that script reads, added for the run and removed after, so
+  local dev never writes into a live sheet.
