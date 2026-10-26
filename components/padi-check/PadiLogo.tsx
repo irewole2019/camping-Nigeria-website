@@ -3,18 +3,19 @@ import { useId } from 'react'
 /**
  * The Padi Check mark: a "P" with a tick cut through it (founder's design,
  * 2026-10-25), redrawn as a vector. The tick is a true cut-out (an SVG mask),
- * so the mark sits on any background. `bright` is for the dark sign-in screen;
- * `brand` is the original dark-to-light green.
+ * so the mark sits on any background. In the brand colours (2026-10-26):
+ * `brand` is forest green for light backgrounds; `gold` is for the dark
+ * sign-in screen.
  */
 export default function PadiLogo({
   tone = 'brand',
   className,
 }: {
-  tone?: 'brand' | 'bright'
+  tone?: 'brand' | 'gold'
   className?: string
 }) {
   const id = useId().replace(/:/g, '')
-  const [dark, light] = tone === 'bright' ? ['#22c55e', '#86efac'] : ['#075a32', '#23913a']
+  const [dark, light] = tone === 'gold' ? ['#e6b325', '#f3d77a'] : ['#0e3e2e', '#2e6b52']
   return (
     <svg viewBox="0 0 650 745" className={className} aria-hidden="true">
       <defs>

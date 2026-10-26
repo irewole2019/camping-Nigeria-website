@@ -88,10 +88,10 @@ export default function TypeACode({
         type="submit"
         disabled={!ready}
         aria-busy={busy}
-        className={`flex h-16 w-full items-center justify-center gap-3 rounded-full font-sans text-xl font-bold shadow-lg disabled:opacity-60 focus:outline-none focus-visible:ring-4 ${
+        className={`flex h-16 w-full items-center justify-center gap-3 rounded-full font-sans text-xl font-bold shadow-lg disabled:shadow-none focus:outline-none focus-visible:ring-4 ${
           dark
-            ? 'bg-[#4ade80] text-brand-dark focus-visible:ring-white/60'
-            : 'bg-gradient-to-b from-[#14563f] to-brand-dark text-white focus-visible:ring-brand-accent/50'
+            ? 'bg-brand-accent text-brand-dark focus-visible:ring-white/60 disabled:bg-white/15 disabled:text-white/75'
+            : 'bg-brand-dark text-white focus-visible:ring-brand-accent/50 disabled:opacity-60'
         }`}
       >
         {busy ? SCANNER_COPY.checking : SCANNER_COPY.check}

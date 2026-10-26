@@ -143,7 +143,7 @@ export default function PadiCheckGuidePage() {
 
         <Link
           href="/padi-check"
-          className="mt-8 flex h-16 w-full items-center justify-center rounded-full bg-gradient-to-b from-[#14563f] to-brand-dark text-xl font-bold text-white shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-accent/50"
+          className="mt-8 flex h-16 w-full items-center justify-center rounded-full bg-brand-dark text-xl font-bold text-white shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-accent/50"
         >
           {g.back}
         </Link>

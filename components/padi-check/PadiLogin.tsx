@@ -50,8 +50,8 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
   }
 
   return (
-    <main id="main-content" className="relative min-h-dvh overflow-hidden bg-[#0a2a1f] text-white">
-      {/* A community photo under a dark green wash, as in the design. */}
+    <main id="main-content" className="relative min-h-dvh overflow-hidden bg-brand-dark text-white">
+      {/* A community photo under a forest-green wash (brand colours, 2026-10-26). */}
       <Image
         src="/images/community/hero-poster.webp"
         alt=""
@@ -63,16 +63,16 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
       {/* Solid behind the logo and the card; the photo shows through below them. */}
       <div
         className="absolute inset-0"
-        style={{ backgroundImage: 'linear-gradient(to bottom, #0a2a1f 0%, rgba(10,42,31,0.96) 40%, rgba(10,42,31,0.6) 68%, rgba(10,42,31,0.35) 85%, rgba(10,42,31,0.75) 100%)' }}
+        style={{ backgroundImage: 'linear-gradient(to bottom, #0e3e2e 0%, rgba(14,62,46,0.96) 40%, rgba(14,62,46,0.62) 68%, rgba(14,62,46,0.38) 85%, rgba(14,62,46,0.78) 100%)' }}
         aria-hidden="true"
       />
 
       <div className="relative mx-auto flex min-h-dvh w-full max-w-[480px] flex-col px-6 pb-8 pt-14">
         <div className="flex flex-col items-center text-center">
-          <PadiLogo tone="bright" className="h-20 w-auto" />
+          <PadiLogo tone="gold" className="h-20 w-auto" />
           <h1 className="mt-5 font-sans text-[3.25rem] leading-none">
             <span className="font-bold">{LOGIN_COPY.wordmarkBold}</span>{' '}
-            <span className="font-normal">{LOGIN_COPY.wordmarkLight}</span>
+            <span className="font-normal text-brand-accent">{LOGIN_COPY.wordmarkLight}</span>
           </h1>
           <p className="mt-4 max-w-[18rem] font-sans text-lg leading-snug text-white/85">{admin ? ADMIN_COPY.tagline : LOGIN_COPY.tagline}</p>
         </div>
@@ -84,7 +84,7 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
           <label htmlFor="padi-password" className="block font-sans text-lg font-semibold">
             {LOGIN_COPY.passwordLabel}
           </label>
-          <div className="flex h-16 items-center rounded-2xl bg-[#eef2f7] pr-2 focus-within:ring-4 focus-within:ring-[#4ade80]/50">
+          <div className="flex h-16 items-center rounded-2xl bg-brand-light pr-2 focus-within:ring-4 focus-within:ring-brand-accent/60">
             <input
               id="padi-password"
               type={visible ? 'text' : 'password'}
@@ -93,12 +93,12 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
               autoComplete="current-password"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? 'padi-login-error' : undefined}
-              className="h-full min-w-0 flex-1 bg-transparent px-5 font-sans text-xl text-slate-900 outline-none"
+              className="h-full min-w-0 flex-1 bg-transparent px-5 font-sans text-xl text-brand-dark outline-none"
             />
             <button
               type="button"
               onClick={() => setVisible((v) => !v)}
-              className="flex h-12 w-12 items-center justify-center rounded-xl text-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#4ade80]/60"
+              className="flex h-12 w-12 items-center justify-center rounded-xl text-brand-dark/70 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-accent/60"
               aria-label={visible ? LOGIN_COPY.hidePassword : LOGIN_COPY.showPassword}
               aria-pressed={visible}
             >
@@ -106,14 +106,14 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
             </button>
           </div>
           {error && (
-            <p id="padi-login-error" role="alert" className="font-sans text-base font-semibold text-[#fde68a]">
+            <p id="padi-login-error" role="alert" className="font-sans text-base font-semibold text-brand-accent">
               {error}
             </p>
           )}
           <button
             type="submit"
             disabled={!password || sending}
-            className="flex h-16 w-full items-center justify-center gap-3 rounded-full bg-gradient-to-b from-[#6ee7a0] to-[#4ade80] font-sans text-xl font-bold text-brand-dark shadow-lg disabled:opacity-60 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60"
+            className="flex h-16 w-full items-center justify-center gap-3 rounded-full bg-brand-accent font-sans text-xl font-bold text-brand-dark shadow-lg disabled:bg-white/15 disabled:text-white/75 disabled:shadow-none focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60"
           >
             {admin ? ADMIN_COPY.submit : LOGIN_COPY.submit}
             <ArrowRight className="h-5 w-5" aria-hidden="true" />
@@ -123,7 +123,7 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
         {!admin && (
           <Link
             href="/padi-check/guide"
-            className="mx-auto mt-6 inline-flex h-11 items-center gap-2 rounded-full px-4 font-sans text-base font-semibold text-white underline underline-offset-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-[#4ade80]/60"
+            className="mx-auto mt-6 inline-flex h-11 items-center gap-2 rounded-full px-4 font-sans text-base font-semibold text-white underline underline-offset-4 focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-accent/60"
           >
             <BookOpen className="h-5 w-5" aria-hidden="true" />
             {GUIDE_COPY.linkLabel}
@@ -131,7 +131,7 @@ export default function PadiLogin({ role = 'volunteer' }: { role?: PadiRole }) {
         )}
 
         <p className="mx-auto mt-auto inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/30 px-5 py-3 font-sans text-base backdrop-blur-sm">
-          <ShieldCheck className="h-5 w-5 text-[#4ade80]" aria-hidden="true" />
+          <ShieldCheck className="h-5 w-5 text-brand-accent" aria-hidden="true" />
           {admin ? ADMIN_COPY.adminOnly : LOGIN_COPY.volunteerOnly}
         </p>
       </div>

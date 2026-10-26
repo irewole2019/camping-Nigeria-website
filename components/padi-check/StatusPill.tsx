@@ -23,16 +23,18 @@ export default function StatusPill({
           {SCANNER_COPY.count(counts.checkedIn, counts.total)}
         </span>
       )}
-      {fast !== null && (
-        <span
-          className={`inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider ${fast ? 'text-[#4ade80]' : 'text-brand-accent'}`}
-        >
-          {fast ? (
-            <Zap className="h-4 w-4 fill-current" aria-hidden="true" />
-          ) : (
-            <ChartNoAxesColumn className="h-4 w-4" aria-hidden="true" />
-          )}
-          {fast ? SCANNER_COPY.fast : SCANNER_COPY.slow}
+      {/* Brand colours (2026-10-26): Fast is calm, cream with a gold bolt;
+          Slow is the one that should catch the eye, a solid gold label. */}
+      {fast === true && (
+        <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-brand-light">
+          <Zap className="h-4 w-4 fill-brand-accent text-brand-accent" aria-hidden="true" />
+          {SCANNER_COPY.fast}
+        </span>
+      )}
+      {fast === false && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-brand-accent px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-brand-dark">
+          <ChartNoAxesColumn className="h-4 w-4" aria-hidden="true" />
+          {SCANNER_COPY.slow}
         </span>
       )}
     </span>

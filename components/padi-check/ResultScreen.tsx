@@ -55,7 +55,7 @@ function Picture({ content }: { content: ScreenContent }) {
         </div>
         <span
           className={`absolute -bottom-1 -right-1 flex h-12 w-12 items-center justify-center rounded-full border-4 ${
-            welcome ? 'border-[#0f6a34] bg-[#4ade80] text-[#0b5a2b]' : 'border-[#a8360a] bg-[#fdba74] text-[#8a2c07]'
+            welcome ? 'border-[#0f6a34] bg-brand-accent text-brand-dark' : 'border-[#a8360a] bg-brand-accent-tint text-[#8a2c07]'
           }`}
           aria-hidden="true"
         >
@@ -80,15 +80,15 @@ function Picture({ content }: { content: ScreenContent }) {
   )
 }
 
-/** Static flecks around the welcome picture, as drawn. No animation. */
+/** Static flecks around the welcome picture, as drawn, in gold and cream (brand colours). No animation. */
 function Confetti() {
   const bits = [
-    { c: '#86efac', s: '-left-14 top-2 rotate-45' },
-    { c: '#fde047', s: '-left-10 top-12 rotate-12' },
-    { c: '#bef264', s: '-left-14 top-24 -rotate-12' },
-    { c: '#5eead4', s: '-right-14 top-2 -rotate-45' },
-    { c: '#fde047', s: '-right-10 top-14 -rotate-12' },
-    { c: '#bef264', s: '-right-14 top-24 rotate-12' },
+    { c: '#e6b325', s: '-left-14 top-2 rotate-45' },
+    { c: '#f3efe6', s: '-left-10 top-12 rotate-12' },
+    { c: '#f3d77a', s: '-left-14 top-24 -rotate-12' },
+    { c: '#f3efe6', s: '-right-14 top-2 -rotate-45' },
+    { c: '#e6b325', s: '-right-10 top-14 -rotate-12' },
+    { c: '#f3d77a', s: '-right-14 top-24 rotate-12' },
   ]
   return (
     <span aria-hidden="true">
@@ -194,7 +194,7 @@ export default function ResultScreen({
         ref={b === last ? primary : undefined}
         type="button"
         onClick={b === 'next' ? onNext : onRetry}
-        className={`${base} bg-white text-slate-900 shadow-lg`}
+        className={`${base} bg-brand-light text-brand-dark shadow-lg`}
       >
         {b === 'retry' && <RefreshCw className="h-5 w-5" aria-hidden="true" />}
         {BUTTON_COPY[b]}

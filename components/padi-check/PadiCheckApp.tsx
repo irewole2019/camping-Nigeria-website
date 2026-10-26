@@ -234,8 +234,8 @@ export default function PadiCheckApp({ callHref }: { callHref: string | null }) 
         />
 
         <div className="mt-7 flex items-center gap-4 rounded-3xl bg-white p-4 shadow-sm">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber-50" aria-hidden="true">
-            <Lightbulb className="h-7 w-7 fill-amber-300 text-amber-500" />
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-accent-tint" aria-hidden="true">
+            <Lightbulb className="h-7 w-7 fill-brand-accent/40 text-brand-accent-readable" />
           </span>
           <span>
             <span className="block font-sans text-lg font-bold text-brand-dark">{SCANNER_COPY.tipTitle}</span>
