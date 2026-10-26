@@ -34,7 +34,7 @@ arrival list. Must work at MAD Settings on 31 Oct 2026.
 | expertise-map | n/a | Idea already stated |
 | buyer-conversations | deferred | Deferred by user 2026-10-15; informal operative chat suggested |
 
-**Next action:** 2026-10-26: Session 3.2 run on the volunteer phone (not-found, not-paid, already seen in preview logs). Session 4.1 in progress: CLAUDE.md briefed, main merged into the branch (docs only, no overlap), all checks pass. Waiting on the owner: (1) Apps Script production deployment to the new version, (2) Vercel Production env vars (six Padi Check + CRON_SECRET), then approval to merge into main.
+**Next action:** LIVE since 2026-10-26: Padi Check at campingnigeria.com/padi-check; new sign-ups get the gate pass by email and on the confirmation page. Go-live checks passed (build sequence Section 9). Next: Session 4.2, the rehearsal after dark on 28 Oct with the volunteer, three TEST rows on the live site, 10 timed checks, then delete the TEST rows and record the go/no-go here. Then 4.3, the event on 31 Oct, and rotating the passwords and session secret afterwards.
 
 **Stage 8 decisions:** 15 sessions in 5 phases. No sheet copy: build against a separate TEST Apps Script deployment of the live sheet (only founder test rows until sales open 27 Oct); production deployment untouched until go-live 26 Oct. Back-fill email deferred (PRD v1.1, D-006) because sales open after go-live. Walking skeleton on the real phone by 20 Oct; feature complete 24 Oct; run-through 25 Oct; go live 26 Oct (attendance-only smoke test, then delete all TEST rows); rehearsal 28 Oct; event 31 Oct; rotate passwords after.
 
