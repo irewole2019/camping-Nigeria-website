@@ -20,8 +20,11 @@
  *            list that changed since the preview is never mailed blind.
  * --out      Where the preview writes one sample email (HTML) and the list.
  *
- * Reads .env.local for GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL,
- * PADI_CHECK_SCRIPT_SECRET and (for --send) RESEND_API_KEY. Never prints them.
+ * Reads .env.local for the live sheet link, PADI_CHECK_SCRIPT_SECRET and (for
+ * --send) RESEND_API_KEY, and never prints them. The link is read from
+ * MAD_SETTINGS_LIVE_SHEET_URL, a name only this script uses, so adding it for
+ * a send does not make local dev write into the live sheet; remove the line
+ * afterwards. GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL is the fallback.
  * Every email that Resend accepts is recorded in .tribe-emails-sent.json
  * (gitignored), and a rerun skips those codes, so a send that stops halfway
  * can simply be run again.
@@ -103,9 +106,9 @@ async function main() {
   if (!Number.isFinite(cutoff)) throw new Error('Give --before with a date and time, e.g. 2026-10-26T16:00:00+01:00')
 
   const env = loadEnvLocal()
-  const url = env.GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL
+  const url = env.MAD_SETTINGS_LIVE_SHEET_URL || env.GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL
   const secret = env.PADI_CHECK_SCRIPT_SECRET
-  if (!url || !secret) throw new Error('.env.local needs GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL and PADI_CHECK_SCRIPT_SECRET')
+  if (!url || !secret) throw new Error('.env.local needs MAD_SETTINGS_LIVE_SHEET_URL (the live Web app URL) and PADI_CHECK_SCRIPT_SECRET')
 
   const sent: Record<string, string> = fs.existsSync(SENT_LOG) ? JSON.parse(fs.readFileSync(SENT_LOG, 'utf8')) : {}
   const all = await fetchGuests(url, secret)
