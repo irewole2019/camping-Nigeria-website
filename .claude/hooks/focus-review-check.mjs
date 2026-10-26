@@ -18,7 +18,7 @@ const today = process.env.FOCUS_REVIEW_TODAY
 const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 
 if (month < FIRST_REVIEW_MONTH) process.exit(0)
-// The plan is gitignored (the repo is public), so clones without it stay quiet.
+// Clones without the plan (e.g. after it is replaced) stay quiet.
 if (!existsSync(join(root, PLAN))) process.exit(0)
 
 const reviewFile = `${REVIEWS_DIR}/${month}.md`

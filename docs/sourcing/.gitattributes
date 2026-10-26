@@ -1,0 +1,5 @@
+# Generated HTML must remain byte-identical to the generator on Windows too.
+*.html text eol=lf
+*.cjs text eol=lf
+*.webp binary
+*.webm binary
