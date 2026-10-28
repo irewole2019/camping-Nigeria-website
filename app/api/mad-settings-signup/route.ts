@@ -355,6 +355,17 @@ export async function POST(request: Request) {
     const email = raw.email.trim()
     const phone = raw.phone.trim()
     const instagram = normaliseInstagram(raw.instagram)
+    // A sold-out ticket is refused here too, not just greyed out on the form:
+    // a page loaded before it sold out, or a direct post, still reaches this.
+    if (getTicket(raw.ticketId).soldOut) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `${getTicket(raw.ticketId).name} tickets are sold out. Sleepover tickets are still available: pick one above.`,
+        },
+        { status: 409 },
+      )
+    }
     const isCouple = raw.ticketId === 'couple'
     const partnerName = isCouple && typeof raw.partnerName === 'string' ? raw.partnerName.trim() : ''
 

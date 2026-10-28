@@ -33,6 +33,7 @@ import {
   type OnSiteIcon,
   TENT_CAP,
   TICKETS,
+  DAY_TICKET_ON_SALE,
   VENUE_CITY,
   VENUE_COUNTRY,
   VENUE_PUBLIC_LABEL,
@@ -113,7 +114,7 @@ export default function MadSettingsPage() {
               Early-bird tickets
             </p>
             <h2 className="mt-3 font-serif text-3xl font-bold leading-tight text-brand-dark text-balance md:text-4xl">
-              Come for the day, or stay the night
+              {DAY_TICKET_ON_SALE ? 'Come for the day, or stay the night' : 'Stay the night'}
             </h2>
             <p className="mt-4 font-sans text-base leading-relaxed text-brand-dark/70">
               Every ticket gets the pop-up, the bonfire party and the free Chapman and popcorn.
@@ -131,10 +132,23 @@ export default function MadSettingsPage() {
             {TICKETS.map((ticket) => (
               <li
                 key={ticket.id}
-                className="flex flex-col rounded-2xl border border-brand-dark/10 bg-white p-7 shadow-sm"
+                className={`relative flex flex-col rounded-2xl border p-7 shadow-sm ${
+                  ticket.soldOut ? 'border-brand-dark/10 bg-white/60' : 'border-brand-dark/10 bg-white'
+                }`}
               >
-                <p className="font-serif text-2xl font-bold text-brand-dark">{ticket.name}</p>
-                <p className="mt-2 font-sans text-3xl font-bold tabular-nums text-brand-dark">
+                {ticket.soldOut && (
+                  <span className="mb-3 self-start rounded-full bg-brand-dark px-3 py-1 font-sans text-xs font-bold uppercase tracking-widest text-white">
+                    Sold out
+                  </span>
+                )}
+                <p className={`font-serif text-2xl font-bold ${ticket.soldOut ? 'text-brand-dark/50' : 'text-brand-dark'}`}>
+                  {ticket.name}
+                </p>
+                <p
+                  className={`mt-2 font-sans text-3xl font-bold tabular-nums ${
+                    ticket.soldOut ? 'text-brand-dark/40 line-through' : 'text-brand-dark'
+                  }`}
+                >
                   {formatNaira(ticket.price)}
                 </p>
                 <p className="mt-4 flex-1 font-sans text-sm leading-relaxed text-brand-dark/65">

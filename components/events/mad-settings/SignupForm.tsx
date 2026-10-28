@@ -9,6 +9,7 @@ import {
   MIN_AGE,
   REGISTERED_PATH,
   TICKETS,
+  TICKETS_ON_SALE,
   formatNaira,
   type TicketId,
 } from '@/lib/events/mad-settings'
@@ -44,7 +45,8 @@ export default function SignupForm() {
   // Couple tickets only: the second person gets their own tribe, so the
   // email, gate screen and printed list need their name.
   const [partnerName, setPartnerName] = useState('')
-  const [ticketId, setTicketId] = useState<TicketId>('attendance')
+  // Starts on the first ticket still on sale, never on a sold-out one.
+  const [ticketId, setTicketId] = useState<TicketId>(TICKETS_ON_SALE[0]?.id ?? 'single')
   const [ageConfirmed, setAgeConfirmed] = useState(false)
   const [paidConfirmed, setPaidConfirmed] = useState(false)
 
@@ -156,13 +158,16 @@ export default function SignupForm() {
         <div className="grid gap-3 sm:grid-cols-3">
           {TICKETS.map((ticket) => {
             const selected = ticketId === ticket.id
+            const soldOut = ticket.soldOut === true
             return (
               <label
                 key={ticket.id}
-                className={`relative flex cursor-pointer flex-col rounded-xl border-2 p-4 transition-colors duration-200 ${
-                  selected
-                    ? 'border-brand-accent bg-brand-accent-tint'
-                    : 'border-brand-dark/15 bg-white hover:border-brand-dark/30'
+                className={`relative flex flex-col rounded-xl border-2 p-4 transition-colors duration-200 ${
+                  soldOut
+                    ? 'cursor-not-allowed border-brand-dark/10 bg-white/50'
+                    : selected
+                      ? 'cursor-pointer border-brand-accent bg-brand-accent-tint'
+                      : 'cursor-pointer border-brand-dark/15 bg-white hover:border-brand-dark/30'
                 }`}
               >
                 <input
@@ -170,9 +175,15 @@ export default function SignupForm() {
                   name="ticketId"
                   value={ticket.id}
                   checked={selected}
+                  disabled={soldOut}
                   onChange={() => setTicketId(ticket.id)}
                   className="sr-only"
                 />
+                {soldOut && (
+                  <span className="mb-2 self-start rounded-full bg-brand-dark px-2 py-0.5 font-sans text-[10px] font-bold uppercase tracking-widest text-white">
+                    Sold out
+                  </span>
+                )}
                 {selected && (
                   <span
                     className="absolute right-3 top-3 inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand-accent"
@@ -181,8 +192,14 @@ export default function SignupForm() {
                     <Check className="h-3 w-3 text-brand-dark" strokeWidth={3} />
                   </span>
                 )}
-                <span className="font-serif text-lg font-bold text-brand-dark">{ticket.name}</span>
-                <span className="mt-1 font-sans text-xl font-bold text-brand-dark tabular-nums">
+                <span className={`font-serif text-lg font-bold ${soldOut ? 'text-brand-dark/45' : 'text-brand-dark'}`}>
+                  {ticket.name}
+                </span>
+                <span
+                  className={`mt-1 font-sans text-xl font-bold tabular-nums ${
+                    soldOut ? 'text-brand-dark/40 line-through' : 'text-brand-dark'
+                  }`}
+                >
                   {formatNaira(ticket.price)}
                 </span>
                 <span className="mt-2 font-sans text-xs leading-relaxed text-brand-dark/60">

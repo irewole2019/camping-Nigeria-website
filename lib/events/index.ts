@@ -86,6 +86,7 @@ import {
   EVENT_TAGLINE as MS_TAGLINE,
   HERO_IMAGE_ALT as MS_IMAGE_ALT,
   LOWEST_PRICE as MS_LOWEST_PRICE,
+  DAY_TICKET_ON_SALE as MS_DAY_TICKET_ON_SALE,
   MIN_AGE as MS_MIN_AGE,
   PARTNER_NAME as MS_PARTNER,
   TENT_CAP as MS_TENT_CAP,
@@ -271,7 +272,7 @@ const MAD_SETTINGS: EventSummary = {
     eyebrow: 'MAD Settings · Abuja · 2026',
     headline: 'MAD Settings — pop-up, bonfire party and camping.',
     announcement: `${MS_COMMUNITY} × ${MS_PARTNER}`,
-    body: `A day-into-night party with a sleepover for anyone who wants it. Three DJs, a bonfire, games, movies and karaoke, with free Chapman and popcorn. Come for the day, or book one of ${MS_TENT_CAP} tents.`,
+    body: `A day-into-night party with a sleepover for anyone who wants it. Three DJs, a bonfire, games, movies and karaoke, with free Chapman and popcorn. ${MS_DAY_TICKET_ON_SALE ? `Come for the day, or book one of ${MS_TENT_CAP} tents.` : `Day tickets are sold out: book one of ${MS_TENT_CAP} tents.`}`,
     stats: [
       { icon: 'calendar', label: 'When', value: MS_DATE_LABEL.replace('Saturday, ', '') },
       { icon: 'map-pin', label: 'Where', value: MS_CITY },

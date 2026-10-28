@@ -17,6 +17,7 @@ import {
   HERO_IMAGE,
   HERO_IMAGE_ALT,
   LOWEST_PRICE,
+  DAY_TICKET_ON_SALE,
   MIN_AGE,
   PARTNER_NAME,
   SIGNUP_OPEN,
@@ -83,8 +84,10 @@ export default function Hero() {
                 <>
                   A pop-up and bonfire party from midday at a private garden venue in{' '}
                   {VENUE_PUBLIC_LABEL}, then a night under canvas for anyone who stays. Three DJs,
-                  karaoke, movies and games on the big screen, with Chapman and popcorn on us. Come
-                  for the day, or book a tent and wake up there.
+                  karaoke, movies and games on the big screen, with Chapman and popcorn on us.{' '}
+                  {DAY_TICKET_ON_SALE
+                    ? 'Come for the day, or book a tent and wake up there.'
+                    : 'Day tickets are sold out: book a tent and wake up there.'}
                 </>
               ) : (
                 <>{EVENT_DESCRIPTION} Here’s how it ran.</>

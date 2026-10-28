@@ -87,8 +87,12 @@ describe('tickets', () => {
     expect(getTicket('couple').usesTent).toBe(true)
   })
 
-  it('advertises the cheapest ticket as the from-price', () => {
-    expect(LOWEST_PRICE).toBe(10_000)
+  it('advertises the cheapest ticket still on sale as the from-price', () => {
+    // Attendance only (₦10,000) sold out on 28/10/2026, so the from-price is
+    // the cheapest sleepover ticket.
+    expect(LOWEST_PRICE).toBe(30_000)
+    expect(EVENT_DESCRIPTION).toContain('from ₦30,000')
+    expect(EVENT_DESCRIPTION).not.toContain('₦10,000')
   })
 
   it('validates ticket ids from the form', () => {
@@ -199,5 +203,60 @@ describe('event enquiries line', () => {
     expect(EVENT_PHONE_DISPLAY).toBe('+234 704 053 8528')
     expect(EVENT_PHONE_DISPLAY).not.toBe(CONTACT.phone)
     expect(EVENT_PHONE_TEL.replace('tel:', '')).toBe(EVENT_PHONE_DISPLAY.replace(/\s/g, ''))
+  })
+})
+
+describe('sold-out tickets', () => {
+  it('has Attendance only sold out, and both sleepover tickets on sale', async () => {
+    const { TICKETS_ON_SALE, DAY_TICKET_ON_SALE, getTicket } = await import('@/lib/events/mad-settings')
+    expect(getTicket('attendance').soldOut).toBe(true)
+    expect(TICKETS_ON_SALE.map((t) => t.id)).toEqual(['single', 'couple'])
+    expect(DAY_TICKET_ON_SALE).toBe(false)
+    // Still listed on the page, marked sold out, so the flyer and page agree.
+    expect(TICKETS.map((t) => t.id)).toEqual(['attendance', 'single', 'couple'])
+  })
+
+  it('tells the homepage banner the day ticket is gone, and quotes the new from-price', async () => {
+    const banner = FEATURED_UPCOMING_EVENT?.banner
+    expect(banner?.badge).toBe('Early Bird · From ₦30,000')
+    expect(banner?.body).toContain('Day tickets are sold out')
+    expect(banner?.body).not.toContain('Come for the day')
+  })
+
+  it('refuses a sold-out ticket at the API, before touching the sheet', async () => {
+    const { vi } = await import('vitest')
+    const saved = { ...process.env }
+    process.env.GOOGLE_SHEETS_MAD_SETTINGS_WEBHOOK_URL = 'https://sheet.invalid/exec'
+    process.env.RESEND_API_KEY = 're_test'
+    delete process.env.UPSTASH_REDIS_REST_URL
+    delete process.env.UPSTASH_REDIS_REST_TOKEN
+    const fetchSpy = vi.fn(async () => new Response('{}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchSpy)
+    try {
+      const { POST } = await import('@/app/api/mad-settings-signup/route')
+      const res = await POST(
+        new Request('http://localhost/api/mad-settings-signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '10.3.3.3' },
+          body: JSON.stringify({
+            name: 'Ada Obi',
+            email: 'ada@example.com',
+            phone: '0803 000 0000',
+            instagram: '',
+            ticketId: 'attendance',
+            partnerName: '',
+            ageConfirmed: true,
+            paidConfirmed: true,
+            website_confirm: '',
+          }),
+        }),
+      )
+      expect(res.status).toBe(409)
+      expect((await res.json()).error).toMatch(/sold out/i)
+      expect(fetchSpy).not.toHaveBeenCalled()
+    } finally {
+      vi.unstubAllGlobals()
+      process.env = saved
+    }
   })
 })

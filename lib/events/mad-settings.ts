@@ -37,8 +37,11 @@ export const PARTNER_NAME = 'Tbee Sounds'
 // and from-price would read as an open offer once the night has run. Written
 // as a pair from the start so retiring the event is a one-line change — the
 // lesson from Camp Night (decisions.md, "Retiring an event…").
-const DESCRIPTION_UPCOMING =
-  'A pop-up, bonfire party and camping night in Abuja, from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over. Three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for sleepover tickets. Venue shared with everyone who signs up. Early-bird tickets from ₦10,000.'
+// The from-price is the cheapest ticket still on sale, so it moves when a
+// ticket sells out; the string is built where EVENT_DESCRIPTION is declared,
+// below LOWEST_PRICE.
+const describeUpcoming = (fromPrice: string) =>
+  `A pop-up, bonfire party and camping night in Abuja, from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over. Three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for sleepover tickets. Venue shared with everyone who signs up. Early-bird tickets from ${fromPrice}.`
 const DESCRIPTION_PAST =
   'A pop-up, bonfire party and camping night in Abuja that ran from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over, three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for the sleepover.'
 
@@ -141,7 +144,6 @@ export function isSignupOpen(status: EventStatus): boolean {
 
 export const SIGNUP_OPEN: boolean = isSignupOpen(EVENT_STATUS)
 
-export const EVENT_DESCRIPTION = SIGNUP_OPEN ? DESCRIPTION_UPCOMING : DESCRIPTION_PAST
 
 // ─── Tickets ────────────────────────────────────────────────────────────────
 
@@ -157,6 +159,12 @@ export interface Ticket {
   label: string
   /** Whether this ticket takes one of the TENT_CAP tents. */
   usesTent: boolean
+  /**
+   * No more of this ticket. It stays on the page marked "Sold out", cannot be
+   * picked on the form, and the API refuses it (409). Guests who already hold
+   * one are unaffected. Set back to false (or remove) to reopen it.
+   */
+  soldOut?: boolean
 }
 
 /**
@@ -174,6 +182,8 @@ export const TICKETS: Ticket[] = [
     price: 10_000,
     label: 'Attendance only (no tent)',
     usesTent: false,
+    // Sold out on 28/10/2026, at the founders' call.
+    soldOut: true,
   },
   {
     id: 'single',
@@ -205,12 +215,28 @@ export function getTicket(id: TicketId): Ticket {
   return ticket
 }
 
-/** Lowest price on the page, for "from ₦X" copy and the schema Offer. */
-export const LOWEST_PRICE = Math.min(...TICKETS.map((t) => t.price))
+export function isTicketOnSale(ticket: Ticket): boolean {
+  return !ticket.soldOut
+}
+
+/** The tickets that can still be bought, in page order. */
+export const TICKETS_ON_SALE: Ticket[] = TICKETS.filter(isTicketOnSale)
+
+/** Whether the day ticket (no tent) can still be bought: drives the "come for the day" copy. */
+export const DAY_TICKET_ON_SALE: boolean = TICKETS_ON_SALE.some((t) => !t.usesTent)
+
+/**
+ * Cheapest ticket still on sale, for "from ₦X" copy and the schema Offer. A
+ * sold-out ticket does not count: advertising its price would sell something
+ * the form will not take. Falls back to every ticket if all are sold out.
+ */
+export const LOWEST_PRICE = Math.min(...(TICKETS_ON_SALE.length ? TICKETS_ON_SALE : TICKETS).map((t) => t.price))
 
 export function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString('en-NG')}`
 }
+
+export const EVENT_DESCRIPTION = SIGNUP_OPEN ? describeUpcoming(formatNaira(LOWEST_PRICE)) : DESCRIPTION_PAST
 
 // ─── Safety and security ────────────────────────────────────────────────────
 
