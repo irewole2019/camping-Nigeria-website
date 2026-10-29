@@ -53,12 +53,6 @@
  * signed up before tribes existed evenly, oldest first. Details in SETUP.md,
  * "Tribes".
  *
- * ONE SIGN-UP PER EMAIL (added 29/10/2026). doPost refuses an email that is
- * already in the sheet (any case, spaces ignored) with `duplicate-email`,
- * and the site tells the person to look for their first confirmation. The
- * answer never carries the existing code: the code is the gate pass. To let
- * someone sign up again, delete or edit their earlier row.
- *
  * COUPLES (added 26/10/2026). A couple ticket is two people, so the two get
  * DIFFERENT tribes: the guest's in Tribe, the partner's in Partner Tribe, and
  * the partner's name (asked on the form) in Partner. Each person counts as
@@ -67,13 +61,6 @@
  */
 
 const SHEET_NAME = 'Sign-ups'
-
-/**
- * Shown on the heartbeat (open the Web app URL in a browser), so anyone can
- * see which version a deployment is running without writing to the sheet.
- * Change it with every edit to this file.
- */
-const SCRIPT_VERSION = '2026-10-29 one-email'
 const LOOKUP_SHEET_NAME = 'Lookup'
 
 /**
@@ -235,23 +222,6 @@ function canonicalTribe(v) {
   return ''
 }
 
-/** An email as compared for duplicates: trimmed and lower-cased. */
-function normaliseEmail(v) {
-  return String(v || '').trim().toLowerCase()
-}
-
-/** Returns the 1-indexed row already holding this email, or -1. */
-function findRowByEmail(sheet, email) {
-  const wanted = normaliseEmail(email)
-  const last = sheet.getLastRow()
-  if (!wanted || last < 2) return -1
-  const emails = sheet.getRange(2, EMAIL_COLUMN, last - 1, 1).getValues()
-  for (let i = 0; i < emails.length; i += 1) {
-    if (normaliseEmail(emails[i][0]) === wanted) return i + 2
-  }
-  return -1
-}
-
 /** Returns the 1-indexed row for a code, or -1. */
 function findRowByCode(sheet, code) {
   const last = sheet.getLastRow()
@@ -294,13 +264,6 @@ function doPost(e) {
     if (body.action) return jsonOut(handlePadiCheck(body, sheet))
 
     if (!body.code) return jsonOut({ ok: false, error: 'missing-code' })
-
-    // One sign-up per email (29/10/2026). Checked first, so a repeat is told
-    // it already has a place even when the tents are full. Never answers with
-    // the existing code: anyone can type someone else's email.
-    if (findRowByEmail(sheet, body.email) !== -1) {
-      return jsonOut({ ok: false, error: 'duplicate-email' })
-    }
 
     // Capacity, for tent tickets only. Checked before the duplicate guard so a
     // full camp answers 'tents-full' rather than sending the site into its
@@ -378,7 +341,6 @@ function doGet(e) {
     return jsonOut({
       ok: true,
       service: 'mad-settings-signups',
-      version: SCRIPT_VERSION,
       sheet: SHEET_NAME,
       signups: countSignups(sheet),
       tents: tents,

@@ -457,20 +457,6 @@ export async function POST(request: Request) {
       recorded = await recordMadSettingsSignup(rowFor(code))
     }
 
-    // One sign-up per email (29/10/2026): the sheet refuses an email it
-    // already holds. Like capacity, this stops the sign-up before any email
-    // goes out. The message never includes the earlier code, which is the
-    // gate pass: anyone can type someone else's email address.
-    if (!recorded.ok && recorded.error === 'duplicate-email') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `This email is already signed up for ${EVENT_FULL_TITLE}. Your code is in the confirmation email we sent you then (check spam too). To add or change a ticket, call ${EVENT_PHONE_DISPLAY}.`,
-        },
-        { status: 409 },
-      )
-    }
-
     // Capacity is the one refusal that must stop the sign-up. Everything else
     // the sheet can say is non-blocking, but sending "You are in" for tent 81
     // would be a promise we cannot keep, so this returns before any email.
