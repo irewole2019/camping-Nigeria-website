@@ -300,6 +300,8 @@ Worked through the full code-review punch list plus a follow-up review:
 
 60. ✅ **Attendance only (₦10,000) sold out** (28/10/2026, at the founders' call). A `soldOut` flag on the ticket, so reopening it is one line. It stays on the page and the form, marked **Sold out** with the price struck through, but cannot be picked (the form starts on Sleepover single), and `/api/mad-settings-signup` refuses it with 409 before touching the sheet, for pages loaded earlier or direct posts. `LOWEST_PRICE` is now the cheapest ticket **still on sale**, so the hero "From", the description, the Event JSON-LD offer and the homepage banner badge all read ₦30,000. The "come for the day" copy (hero, ticket heading, banner) switches to "Day tickets are sold out: book a tent…" via `DAY_TICKET_ON_SALE`. Guests who already hold an attendance ticket are unaffected. 239 tests.
 
+61. ↩️ **One sign-up per email: built, then reverted** (29/10/2026). The founders asked for it, then chose to allow multiple sign-ups from one email instead; reverted before the sheet script was redeployed, so the live behaviour never changed. Repeats are intended — see decisions.md, "The same email may sign up more than once".
+
 ### MAD Settings — what is outstanding
 
 - ✅ **Couples live** (26/10/2026). A first paste attempt left the editor on the previous version (the Run dropdown ended at `setupTribes`; the new version also lists `ensureHeading` and `setupPartnerTribes`, ~759 lines). That dropdown is the quickest way to tell which version is in the editor.

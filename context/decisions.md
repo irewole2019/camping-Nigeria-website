@@ -946,3 +946,7 @@ Asked for by the founders on 26/10/2026, hours after tribes went live. A couple 
 **Two new last columns, Partner and Partner Tribe,** for the same reason Tribe went last: Padi Check reads the earlier columns by position.
 
 **Never the same tribe twice, wherever it is read.** The script cannot produce it, but the cell can be edited by hand, so the site (records, gate, screens, confirmation page) drops a partner tribe equal to the guest's rather than show "Kutinga and Kutinga".
+
+## The same email may sign up more than once, on purpose
+
+On 29/10/2026 a "one sign-up per email" block was built (refused in the Apps Script, 409 at the API) and then **reverted the same day at the founders' request, before the script was deployed**: they want to allow multiple sign-ups from one email, for example someone booking for friends. So repeats are intended. Each sign-up gets its own code, row and tribe, and each sleepover takes a tent. The only duplicate guard is on the code (the sheet refuses a repeated MAD code). Do not add an email check without asking; if accidental repeats become a problem, the team deletes the extra row, which frees the tent. The reverted work is commit `4b305a1` if it is ever wanted.
