@@ -210,6 +210,25 @@ them.
 **Test rows:** deleting them, as planned at go-live, is fine; the next
 sign-ups simply fill whichever tribe is now smallest.
 
+### One sign-up per email (added 29/10/2026)
+
+Each email address can sign up **once**. A second sign-up with the same email
+(capitals and spaces ignored) is refused before anything is written, and the
+person is told to look for their first confirmation email or call the events
+line. They are **not** shown their code: anyone can type someone else's email,
+and the code is the gate pass.
+
+- **Someone needs a second ticket:** add it by hand, or ask them to use
+  another email address.
+- **Someone typed the wrong ticket:** edit their row, or delete it and let
+  them sign up again. Deleting a row frees the email (and the tent).
+
+To switch it on: paste the new `apps-script.gs` (Ctrl+A, Delete, paste,
+Ctrl+S), then **Deploy → Manage deployments → pencil → New version → Deploy**.
+There is no setup function to run this time. **To check which version is live,
+open the Web app URL in a browser**: the heartbeat now shows a `"version"`
+line, `"2026-10-29 one-email"` for this one.
+
 ### Couples: one tribe each (added 26/10/2026)
 
 A couple ticket is two people, so they get **two different tribes**: the

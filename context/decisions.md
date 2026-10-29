@@ -946,3 +946,15 @@ Asked for by the founders on 26/10/2026, hours after tribes went live. A couple 
 **Two new last columns, Partner and Partner Tribe,** for the same reason Tribe went last: Padi Check reads the earlier columns by position.
 
 **Never the same tribe twice, wherever it is read.** The script cannot produce it, but the cell can be edited by hand, so the site (records, gate, screens, confirmation page) drops a partner tribe equal to the guest's rather than show "Kutinga and Kutinga".
+
+## One sign-up per email, and the refusal never shows the code
+
+The founders chose (29/10/2026) to allow one sign-up per email address. A repeat is refused by the Apps Script, which is the only place that knows who has signed up, and the site turns the refusal into a 409 message.
+
+**The message does not include the earlier code.** It would be the friendliest answer, but the code is the gate pass: anyone who knows someone's email address could type it in and get their way in. So the message points to the first confirmation email and the events line instead.
+
+**Checked before the tent cap**, so a repeat hears "you are already signed up" rather than "all tents are taken", which would suggest booking again.
+
+**Blocking, not flagging.** The alternative was to let repeats through and flag them for the team. The founders preferred a hard stop; legitimate extra tickets are added by hand or under another email.
+
+**A version marker on the heartbeat.** Every script change has needed a "which version is live?" check, and the earlier checks either needed the founder to read version numbers or a request whose answer differs between versions. `SCRIPT_VERSION` on the heartbeat makes it one browser visit, and writes nothing.
