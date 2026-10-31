@@ -20,6 +20,7 @@ import {
   EVENT_START_ISO,
   EVENT_TAGLINE,
   FLYER_IMAGE,
+  PRICES_ARE_EARLY_BIRD,
   FLYER_IMAGE_ALT,
   HERO_IMAGE,
   LOWEST_PRICE,
@@ -111,7 +112,7 @@ export default function MadSettingsPage() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 max-w-2xl">
             <p className="font-sans text-sm font-semibold uppercase tracking-widest text-brand-accent-readable">
-              Early-bird tickets
+              {PRICES_ARE_EARLY_BIRD ? 'Early-bird tickets' : 'Tickets'}
             </p>
             <h2 className="mt-3 font-serif text-3xl font-bold leading-tight text-brand-dark text-balance md:text-4xl">
               {DAY_TICKET_ON_SALE ? 'Come for the day, or stay the night' : 'Stay the night'}
@@ -292,7 +293,7 @@ export default function MadSettingsPage() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-10 text-center">
             <p className="font-sans text-sm font-semibold uppercase tracking-widest text-brand-accent-readable">
-              {SIGNUP_OPEN ? 'Early-bird tickets' : 'Sign-ups closed'}
+              {SIGNUP_OPEN ? (PRICES_ARE_EARLY_BIRD ? 'Early-bird tickets' : 'Tickets') : 'Sign-ups closed'}
             </p>
             <h2 className="mt-3 font-serif text-3xl font-bold leading-tight text-brand-dark text-balance md:text-4xl">
               {SIGNUP_OPEN ? 'Save your spot' : 'This one has passed'}
@@ -336,21 +337,24 @@ export default function MadSettingsPage() {
         </div>
       </Section>
 
-      {/* The flyer, so the page and the DM match */}
-      <Section className="bg-white">
-        <div className="mx-auto max-w-sm">
-          <div className="relative overflow-hidden rounded-2xl border border-brand-dark/10 shadow-sm">
-            <Image
-              src={FLYER_IMAGE}
-              alt={FLYER_IMAGE_ALT}
-              width={856}
-              height={1080}
-              sizes="(max-width: 640px) 100vw, 384px"
-              className="h-auto w-full"
-            />
+      {/* The flyer, so the page and the DM match. It prints the early-bird
+          prices, so it is hidden once early bird is over. */}
+      {PRICES_ARE_EARLY_BIRD && (
+        <Section className="bg-white">
+          <div className="mx-auto max-w-sm">
+            <div className="relative overflow-hidden rounded-2xl border border-brand-dark/10 shadow-sm">
+              <Image
+                src={FLYER_IMAGE}
+                alt={FLYER_IMAGE_ALT}
+                width={856}
+                height={1080}
+                sizes="(max-width: 640px) 100vw, 384px"
+                className="h-auto w-full"
+              />
+            </div>
           </div>
-        </div>
-      </Section>
+        </Section>
+      )}
 
       <Footer />
     </main>

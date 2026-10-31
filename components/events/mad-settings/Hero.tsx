@@ -17,6 +17,7 @@ import {
   HERO_IMAGE,
   HERO_IMAGE_ALT,
   LOWEST_PRICE,
+  PRICES_ARE_EARLY_BIRD,
   DAY_TICKET_ON_SALE,
   MIN_AGE,
   PARTNER_NAME,
@@ -141,7 +142,7 @@ export default function Hero() {
             >
               {SIGNUP_OPEN ? (
                 <>
-                  Early-bird prices. {TENT_CAP} tents for the sleepover. Adults {MIN_AGE}+. The exact
+                  {PRICES_ARE_EARLY_BIRD && 'Early-bird prices. '}{TENT_CAP} tents for the sleepover. Adults {MIN_AGE}+. The exact
                   venue goes out to everyone who signs up.
                   <br />
                   Enquiries and bookings:{' '}

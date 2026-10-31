@@ -86,6 +86,7 @@ import {
   EVENT_TAGLINE as MS_TAGLINE,
   HERO_IMAGE_ALT as MS_IMAGE_ALT,
   LOWEST_PRICE as MS_LOWEST_PRICE,
+  PRICES_ARE_EARLY_BIRD as MS_EARLY_BIRD,
   DAY_TICKET_ON_SALE as MS_DAY_TICKET_ON_SALE,
   MIN_AGE as MS_MIN_AGE,
   PARTNER_NAME as MS_PARTNER,
@@ -268,7 +269,7 @@ const MAD_SETTINGS: EventSummary = {
   banner: {
     image: MS_BANNER_IMAGE,
     imageAlt: MS_IMAGE_ALT,
-    badge: `Early Bird · From ${msFormatNaira(MS_LOWEST_PRICE)}`,
+    badge: `${MS_EARLY_BIRD ? 'Early Bird · ' : 'Tickets '}From ${msFormatNaira(MS_LOWEST_PRICE)}`,
     eyebrow: 'MAD Settings · Abuja · 2026',
     headline: 'MAD Settings — pop-up, bonfire party and camping.',
     announcement: `${MS_COMMUNITY} × ${MS_PARTNER}`,

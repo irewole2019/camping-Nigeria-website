@@ -76,7 +76,8 @@ describe('isValidSignupCode', () => {
 describe('tickets', () => {
   it('offers exactly the three the flyer prices', () => {
     expect(TICKETS.map((t) => t.id)).toEqual(['attendance', 'single', 'couple'])
-    expect(TICKETS.map((t) => t.price)).toEqual([10_000, 30_000, 35_000])
+    // Couple went from ₦35,000 (early bird) to ₦40,000 on 31/10/2026.
+    expect(TICKETS.map((t) => t.price)).toEqual([10_000, 30_000, 40_000])
   })
 
   it('gives a tent to the sleepover tickets only', () => {
@@ -218,7 +219,7 @@ describe('sold-out tickets', () => {
 
   it('tells the homepage banner the day ticket is gone, and quotes the new from-price', async () => {
     const banner = FEATURED_UPCOMING_EVENT?.banner
-    expect(banner?.badge).toBe('Early Bird · From ₦30,000')
+    expect(banner?.badge).toBe('Tickets From ₦30,000')
     expect(banner?.body).toContain('Day tickets are sold out')
     expect(banner?.body).not.toContain('Come for the day')
   })
@@ -258,5 +259,16 @@ describe('sold-out tickets', () => {
       vi.unstubAllGlobals()
       process.env = saved
     }
+  })
+})
+
+describe('after early bird (31/10/2026)', () => {
+  it('drops the words "early bird" from the description, and the couple ticket is ₦40,000', async () => {
+    const { PRICES_ARE_EARLY_BIRD, getTicket } = await import('@/lib/events/mad-settings')
+    expect(PRICES_ARE_EARLY_BIRD).toBe(false)
+    expect(EVENT_DESCRIPTION).not.toMatch(/early.bird/i)
+    expect(EVENT_DESCRIPTION).toContain('Tickets from ₦30,000')
+    expect(getTicket('couple').price).toBe(40_000)
+    expect(getTicket('single').price).toBe(30_000)
   })
 })

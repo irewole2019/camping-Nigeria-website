@@ -302,6 +302,8 @@ Worked through the full code-review punch list plus a follow-up review:
 
 61. ↩️ **One sign-up per email: built, then reverted** (29/10/2026). The founders asked for it, then chose to allow multiple sign-ups from one email instead; reverted before the sheet script was redeployed, so the live behaviour never changed. Repeats are intended — see decisions.md, "The same email may sign up more than once".
 
+62. ✅ **Early bird over; couple ticket now ₦40,000** (31/10/2026, event day, at the founders' call). `PRICES_ARE_EARLY_BIRD` set to false: the ticket and sign-up eyebrows read "Tickets", the hero small print loses "Early-bird prices.", the homepage banner badge reads "Tickets From ₦30,000", and the description (meta, OG copy, Event JSON-LD) says "Tickets from ₦30,000". Couple ₦35,000 → ₦40,000; single stays ₦30,000; Attendance only stays sold out. The flyer image is hidden while the flag is false, because it prints the early-bird prices. Couples who signed up earlier keep their price (per-row in the sheet). 240 tests.
+
 ### MAD Settings — what is outstanding
 
 - ✅ **Couples live** (26/10/2026). A first paste attempt left the editor on the previous version (the Run dropdown ended at `setupTribes`; the new version also lists `ensureHeading` and `setupPartnerTribes`, ~759 lines). That dropdown is the quickest way to tell which version is in the editor.

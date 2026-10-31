@@ -41,7 +41,7 @@ export const PARTNER_NAME = 'Tbee Sounds'
 // ticket sells out; the string is built where EVENT_DESCRIPTION is declared,
 // below LOWEST_PRICE.
 const describeUpcoming = (fromPrice: string) =>
-  `A pop-up, bonfire party and camping night in Abuja, from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over. Three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for sleepover tickets. Venue shared with everyone who signs up. Early-bird tickets from ${fromPrice}.`
+  `A pop-up, bonfire party and camping night in Abuja, from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over. Three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for sleepover tickets. Venue shared with everyone who signs up. ${PRICES_ARE_EARLY_BIRD ? 'Early-bird tickets' : 'Tickets'} from ${fromPrice}.`
 const DESCRIPTION_PAST =
   'A pop-up, bonfire party and camping night in Abuja that ran from 12 noon on Saturday 31 October 2026, with sleepovers until 9am the next morning. Adults 18 and over, three DJs, bonfire, games, movies and karaoke, free Chapman and popcorn, and tents with mattresses for the sleepover.'
 
@@ -168,11 +168,13 @@ export interface Ticket {
 }
 
 /**
- * The flyer's three prices, all marked as early-bird tickets. Nobody has given
- * a regular price or an early-bird deadline, so the page says "early bird"
- * and invents neither.
+ * The flyer's three prices were early-bird tickets. On 31/10/2026 the founders
+ * said early bird is over and the couple ticket went from ₦35,000 to ₦40,000
+ * (single unchanged at ₦30,000). With this false, the page, banner and
+ * description drop the words "early bird", and the flyer image (which prints
+ * the early-bird prices) is hidden so it cannot contradict the page.
  */
-export const PRICES_ARE_EARLY_BIRD = true
+export const PRICES_ARE_EARLY_BIRD = false
 
 export const TICKETS: Ticket[] = [
   {
@@ -197,7 +199,9 @@ export const TICKETS: Ticket[] = [
     id: 'couple',
     name: 'Sleepover couple',
     detail: 'A tent for two. Book once, bring your person, and stay the night.',
-    price: 35_000,
+    // ₦35,000 early bird until 31/10/2026. Couples who signed up before keep
+    // what they paid; the sheet's Price column records it per row.
+    price: 40_000,
     label: 'Sleepover couple (2 in a tent)',
     usesTent: true,
   },
